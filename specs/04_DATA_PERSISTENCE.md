@@ -28,8 +28,8 @@
 ## 2. QUY CHUẨN CƠ SỞ DỮ LIỆU & EF CORE
 
 - Engine: PostgreSQL.
-- Database: `notification_db` tại port `5438`.
-- Chuỗi kết nối: `Host=localhost;Port=5438;Database=notification_db;Username=postgres;Password=...`.
+- Database: `notification_db` tại port `5439`.
+- Chuỗi kết nối: `Host=localhost;Port=5439;Database=notification_db;Username=postgres;Password=MatkhaucuaTui123@`.
 - Tên bảng: `notifications`, `notification_preferences`.
 - **Đánh Index**: `Index` trên `(UserId, IsRead, CreatedAt)` để tối ưu hóa truy vấn thông báo chưa đọc của user.
 - **No Repository Pattern**: Tầng Application tương tác trực tiếp với `NotificationDbContext`.

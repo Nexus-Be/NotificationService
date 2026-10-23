@@ -26,6 +26,6 @@
 2. **KHÔNG GỬI THÔNG BÁO NẾU USER ĐÃ TẮT PREFERENCES TƯƠNG ỨNG**:
    - Trước khi gửi email hoặc push, luôn kiểm tra `NotificationPreferences` của user. Nếu user đã tắt `OrderUpdates` $\rightarrow$ Không gửi email về đơn hàng.
 
-3. **TUYỆT ĐỐI KHÔNG THAY ĐỔI CỔNG 8007 VÀ DATABASE 5438**:
+3. **TUYỆT ĐỐI KHÔNG THAY ĐỔI CỔNG 8007 VÀ DATABASE 5439**:
    - Service gRPC chạy tại `http://localhost:8007`.
-   - Chuỗi kết nối DB trỏ tới `localhost:5438/notification_db`.
+   - Chuỗi kết nối DB trỏ tới `localhost:5439/notification_db` với mật khẩu mặc định `MatkhaucuaTui123@`.

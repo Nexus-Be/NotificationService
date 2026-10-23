@@ -1,7 +1,39 @@
+using MassTransit;
+using Notification.Application.Common.Interfaces;
+using Notification.Infrastructure.Consumers;
+using Notification.Infrastructure.Email;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// 1. Cấu hình SmtpOptions & EmailSenderService
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionName));
+builder.Services.AddSingleton<IEmailSenderService, MailKitEmailSenderService>();
+
+// 2. Cấu hình MassTransit RabbitMQ Consumer
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<SendOtpEmailConsumer>();
+
+    x.SetKebabCaseEndpointNameFormatter();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        var host = builder.Configuration["RabbitMq:Host"] ?? "localhost";
+        var portStr = builder.Configuration["RabbitMq:Port"] ?? "5672";
+        var port = ushort.TryParse(portStr, out var p) ? p : (ushort)5672;
+        var user = builder.Configuration["RabbitMq:User"] ?? "guest";
+        var pass = builder.Configuration["RabbitMq:Password"] ?? "guest";
+
+        cfg.Host(host, port, "/", h =>
+        {
+            h.Username(user);
+            h.Password(pass);
+        });
+
+        cfg.ConfigureEndpoints(context);
+    });
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -11,38 +43,12 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast")
-    .WithOpenApi();
+app.MapGet("/health", () => Results.Ok(new { status = "Healthy", service = "Notification.Api" }));
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

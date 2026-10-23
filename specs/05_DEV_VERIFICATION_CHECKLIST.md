@@ -22,5 +22,5 @@ dotnet run --project Notification.Api
 
 - [ ] **Biên dịch thành công 100%**: Không lỗi cảnh báo nghiêm trọng.
 - [ ] **Không vi phạm rào chắn**: Không dùng Repository Pattern bọc ngoài EF Core.
-- [ ] **Port & Database**: Lắng nghe đúng port `8007`, kết nối `notification_db` trên port `5438`.
+- [ ] **Port & Database**: Lắng nghe đúng port `8007`, kết nối `notification_db` trên port `5439` (Password: `MatkhaucuaTui123@`).
 - [ ] **Git Status**: Không commit file rác (`bin/`, `obj/`, `.idea/`, `.env`).
