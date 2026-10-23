@@ -10,6 +10,7 @@ COPY ["Notification.Api/Notification.Api.csproj", "Notification.Api/"]
 COPY ["Notification.Application/Notification.Application.csproj", "Notification.Application/"]
 COPY ["Notification.Domain/Notification.Domain.csproj", "Notification.Domain/"]
 COPY ["Notification.Infrastructure/Notification.Infrastructure.csproj", "Notification.Infrastructure/"]
+COPY ["Notification.Tests/Notification.Tests.csproj", "Notification.Tests/"]
 RUN dotnet restore "Notification.sln"
 COPY . .
 RUN dotnet build "Notification.Api/Notification.Api.csproj" -c Release -o /app/build
