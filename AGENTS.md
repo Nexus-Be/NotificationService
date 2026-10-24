@@ -45,19 +45,76 @@ This project is indexed by GitNexus as **NotificationService** (333 symbols, 397
 
 ---
 
-# Quy Chuẩn Thông Báo Lỗi Toàn Hệ Thống (Mandatory Error Formatting Rules)
+# QUY CHUẨN VẬN HÀNH DÀNH CHO AI CODING AGENTS (NOTIFICATION SERVICE)
 
-Tất cả các thông báo lỗi (Error Messages, Exceptions, ProblemDetails, Validation Errors, Response Details) trong toàn bộ hệ thống Nexus Microservices và API Gateway **BẮT BUỘC** phải tuân theo 3 nguyên tắc sau:
+---
+
+## 🛑 NGUYÊN TẮC 1: BẮT BUỘC LẬP KẾ HOẠCH TRƯỚC KHI HÀNH ĐỘNG (PLAN-FIRST RULE)
+
+Mọi AI Agent khi nhận nhiệm vụ kỹ thuật tại NotificationService **BẮT BUỘC PHẢI LẬP VÀ TRÌNH BÀY PLAN** trước khi thực hiện bất kỳ hành động sửa đổi mã nguồn, thêm/xóa file, refactor, tạo migration database hay thay đổi cấu hình nào.
+
+Một Plan chuẩn bắt buộc phải có:
+1. **Mục tiêu (Objective)**: Tóm tắt chính xác điều cần làm.
+2. **Context & Files cần đọc**: Liệt kê các file nội bộ của NotificationService cần đọc theo đúng ma trận đọc file tại Nguyên tắc 3.
+3. **Phân tích rủi ro & Phạm vi ảnh hưởng (Impact Analysis)**:
+   - Dùng GitNexus `impact` đánh giá blast radius các symbol bị ảnh hưởng.
+   - Cảnh báo rõ nếu mức độ rủi ro là HIGH hoặc CRITICAL.
+4. **Checklist các bước thực hiện (Step-by-Step Implementation)**: Từng bước logic, chi tiết.
+5. **Kế hoạch kiểm chứng (Verification)**: `dotnet build` và `dotnet test` tương ứng.
+
+---
+
+## 🧭 NGUYÊN TẮC 2: QUY TẮC PHẠM VI NỘI BỘ (INWARD-ONLY / SELF-CONTAINED)
+
+NotificationService là một Git Repository độc lập (`NotificationService.git`):
+- **TUYỆT ĐỐI CHỈ ĐƯỢC trỏ tới các tài nguyên nội bộ của NotificationService**.
+- **TUYỆT ĐỐI KHÔNG ĐƯỢC trỏ ngược ra ngoài Root** (`../../../docs/...`) hay sang các Service khác (`../../Catalog/...`).
+- Toàn bộ tài liệu, hướng dẫn và cấu hình trong repo này phải 100% tự cung tự cấp (Self-contained).
+
+---
+
+## 📚 NGUYÊN TẮC 3: DANH MỤC FILE NỘI BỘ BẮT BUỘC PHẢI ĐỌC TẠI NOTIFICATION SERVICE
+
+Khi bắt đầu làm việc tại NotificationService, AI Agent **BẮT BUỘC PHẢI ĐỌC** các file nội bộ sau theo thứ tự:
+1. `specs/00_AGENT_MISSION_GUARDRAILS.md`: Bounded context thông báo in-app, email SMTP, port `8007`, DB `5439` (`notification_db`).
+2. `specs/01_CLEAN_ARCHITECTURE_LAYERS.md`: Cấu trúc 4 tầng Clean Architecture, No-Repository pattern over EF Core.
+3. `specs/02_API_GRPC_CONTRACTS.md`: Hợp đồng gRPC Server (`NotificationApi`: SendNotification, ListUserNotifications, MarkAsRead).
+4. `specs/03_EVENT_MESSAGING.md`: Lắng nghe RabbitMQ events toàn hệ thống để phát sinh thông báo.
+5. `specs/04_DATA_PERSISTENCE.md`: Schema PostgreSQL (`Notifications`, `NotificationPreferences`).
+6. `specs/05_DEV_VERIFICATION_CHECKLIST.md`: Lệnh build & test kiểm chứng service.
+
+---
+
+## 🔒 NGUYÊN TẮC 4: RÀO CHẮN BẤT BIẾN TẠI NOTIFICATION SERVICE
+
+1. **TUYỆT ĐỐI KHÔNG DÙNG REPOSITORY PATTERN BỌC NGOÀI EF CORE**: Sử dụng trực tiếp `NotificationDbContext` và `DbSet<T>` (hoặc interface `INotificationDbContext`) trong tầng Application. Cấm tạo `INotificationRepository`, `UnitOfWork`.
+2. **GỬI THÔNG BÁO BẤT ĐỒNG BỘ ĐA KÊNH**: In-app notification lưu DB, email gửi qua SMTP/MailKit.
+3. **CẤU HÌNH PORT 8007 VÀ DATABASE 5439 LÀ BẤT BIẾN**.
+4. **HỢP ĐỒNG PROTOBUF ĐỒNG BỘ 100% VỚI GATEWAY**.
+
+---
+
+## 💬 NGUYÊN TẮC 5: QUY CHUẨN THÔNG BÁO LỖI TOÀN HỆ THỐNG (MANDATORY ERROR RULES)
+
+Tất cả các thông báo lỗi (Error Messages, Exceptions, ProblemDetails, Validation Errors, Response Details) **BẮT BUỘC** phải tuân theo 3 nguyên tắc sau:
 1. **Ngôn ngữ (100% English)**: Toàn bộ thông báo lỗi phải được viết bằng tiếng Anh. Tuyệt đối không dùng tiếng Việt trong chuỗi thông báo lỗi trả về cho client.
 2. **Quy cách viết hoa (Sentence case)**: Viết hoa duy nhất chữ cái đầu câu, các từ tiếp theo viết thường (ngoại trừ tên riêng, từ viết tắt hoặc định danh kỹ thuật như `ID`, `OTP`, `JWT`, `URL`, `UUID`, `Email`...).
-   - ✅ Đúng: `"Email is already registered in the system."`
-   - ✅ Đúng: `"OTP code has expired or does not exist."`
-   - ✅ Đúng: `"OTP code is invalid."`
-   - ✅ Đúng: `"This OTP code has already been used."`
-   - ✅ Đúng: `"Username, valid email, and password with at least 8 characters are required."`
-   - ❌ Sai: `"Lỗi mã OTP không hợp lệ"` (Không dùng tiếng Việt)
-   - ❌ Sai: `"invalid email address"` (Chữ cái đầu không viết hoa)
-   - ❌ Sai: `"INVALID EMAIL ADDRESS"` (Cấm viết hoa toàn bộ)
-   - ❌ Sai: `"Invalid Email Address Provided"` (Không dùng Title Case)
+   - ✅ Đúng: `"Notification not found or does not belong to the user."`
+   - ✅ Đúng: `"Recipient email address is invalid."`
+   - ❌ Sai: `"Thông báo không tồn tại"` (Không dùng tiếng Việt)
+   - ❌ Sai: `"notification not found"` (Chữ cái đầu không viết hoa)
+   - ❌ Sai: `"NOTIFICATION NOT FOUND"` (Cấm viết hoa toàn bộ)
+   - ❌ Sai: `"Notification Not Found Provided"` (Không dùng Title Case)
 3. **Mã lỗi (Error Codes — SCREAMING_SNAKE_CASE)**: Mã lỗi luôn viết hoa toàn bộ và nối bằng dấu gạch dưới:
-   - Ví dụ: `EMAIL_ALREADY_EXISTS`, `OTP_EXPIRED`, `OTP_INVALID`, `OTP_ALREADY_USED`, `USER_NOT_FOUND`, `VAL_INVALID_INPUT`, `UNAUTHORIZED`, `FORBIDDEN`.
+   - Ví dụ: `NOTIFICATION_NOT_FOUND`, `INVALID_EMAIL`, `VAL_INVALID_INPUT`, `UNAUTHORIZED`, `FORBIDDEN`.
+
+---
+
+## 🎯 NGUYÊN TẮC 6: ĐIỀU KIỆN HOÀN THÀNH NHIỆM VỤ (DEFINITION OF DONE)
+
+Một task tại NotificationService chỉ hoàn tất khi:
+- [ ] Đã lập Plan chi tiết trước khi thực hiện.
+- [ ] Không chứa bất kỳ liên kết trỏ ngược ra ngoài NotificationService.
+- [ ] `dotnet build NotificationService.sln -c Release` thành công 100% (0 error).
+- [ ] `dotnet test NotificationService.sln -c Release` vượt qua 100% các bài test.
+- [ ] Trạng thái Git sạch, không commit file rác (`bin/`, `obj/`, `.vs/`, `.idea/`).
