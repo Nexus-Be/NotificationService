@@ -1,3 +1,24 @@
+# AGENTS — QUY CHUẨN VẬN HÀNH CHO AI CODING AGENTS (NOTIFICATION SERVICE)
+
+> **Trạng thái triển khai (2026-10-24):** ⚠️ MỘT PHẦN — service chỉ có `GET /health` + **1 consumer** không ghi DB; **0/4 rpc**, **0 controller**, **1/9 event**. Các quy tắc dưới đây là chuẩn bắt buộc, nhiều mục **chưa đạt** trong code hiện tại.
+> **Nguồn sự thật:** code (`Notification.Api/Program.cs:49`, `Notification.Infrastructure/Consumers/SendOtpEmailConsumer.cs:9`, `Notification.Infrastructure/Persistence/AppDbContext.cs:14-23`).
+> **Cập nhật lần cuối:** 2026-10-24.
+
+## 0. HIỆN TRẠNG ĐÃ KIỂM CHỨNG (ĐỌC TRƯỚC KHI LÀM BẤT CỨ GÌ)
+
+| Hạng mục | Hiện trạng | Trạng thái | Bằng chứng (file:line) |
+|:---|:---|:---:|:---|
+| Điểm vào HTTP | Chỉ `GET /health` (trả hằng số, không kiểm tra DB) | ⚠️ MỘT PHẦN | `Notification.Api/Program.cs:49` |
+| gRPC server | Không có `*.proto`, không `Grpc.AspNetCore`, không `MapGrpcService` | ❌ CHƯA CÓ | `Notification.Api.csproj:15-18`; `Program.cs:9-49` |
+| Consumer RabbitMQ | 1/9 sự kiện (`SendOtpEmailIntegrationEvent`) | ⚠️ MỘT PHẦN | `Infrastructure/Consumers/SendOtpEmailConsumer.cs:9` |
+| Ghi DB từ consumer | **Không** — chỉ gọi email sender + log | ❌ CHƯA CÓ | `:11-45` |
+| Kiểm tra preference trước khi gửi | **Không có dòng code nào** | ❌ CHƯA CÓ | 0 truy vấn `NotificationPreferences` |
+| Retry / DLQ | Không cấu hình; outbox có bật nhưng chưa kiểm chứng | ❌ CHƯA CÓ | `Infrastructure/DependencyInjection.cs:37-41,43-58` |
+| Email khi thiếu credential | Log `[EMAIL SIMULATION]` rồi `return true` ⇒ lỗi bị báo thành công | ⚠️ RỦI RO | `Services/Email/MailKitEmailSenderService.cs:34-41` |
+| Test | 2 case, không chạm DB | ⚠️ MỘT PHẦN | `Notification.Tests/EmailSenderTests.cs:18,40` |
+| Port / DB | `8007` HTTP/1.1, `notification_db` @ `5439` | ✅ CÓ | `Dockerfile:4`; `appsettings.json:10` |
+| CI | Chỉ Docker buildx, không build/test .NET | ❌ CHƯA CÓ | `.github/workflows/ci-cd.yml:38-47` |
+
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
@@ -51,46 +72,52 @@ This project is indexed by GitNexus as **NotificationService** (455 symbols, 581
 
 ## 🛑 NGUYÊN TẮC 1: BẮT BUỘC LẬP KẾ HOẠCH TRƯỚC KHI HÀNH ĐỘNG (PLAN-FIRST RULE)
 
-Mọi AI Agent khi nhận nhiệm vụ kỹ thuật tại NotificationService **BẮT BUỘC PHẢI LẬP VÀ TRÌNH BÀY PLAN** trước khi thực hiện bất kỳ hành động sửa đổi mã nguồn, thêm/xóa file, refactor, tạo migration database hay thay đổi cấu hình nào.
+Mọi AI Agent khi nhận nhiệm vụ kỹ thuật tại Notification **BẮT BUỘC PHẢI LẬP VÀ TRÌNH BÀY PLAN** trước khi thực hiện bất kỳ hành động sửa đổi mã nguồn, thêm/xóa file, refactor, tạo migration database hay thay đổi cấu hình nào.
 
 Một Plan chuẩn bắt buộc phải có:
 1. **Mục tiêu (Objective)**: Tóm tắt chính xác điều cần làm.
-2. **Context & Files cần đọc**: Liệt kê các file nội bộ của NotificationService cần đọc theo đúng ma trận đọc file tại Nguyên tắc 3.
+2. **Context & Files cần đọc**: Liệt kê các file nội bộ của Notification cần đọc theo đúng ma trận đọc file tại Nguyên tắc 3.
 3. **Phân tích rủi ro & Phạm vi ảnh hưởng (Impact Analysis)**:
    - Dùng GitNexus `impact` đánh giá blast radius các symbol bị ảnh hưởng.
    - Cảnh báo rõ nếu mức độ rủi ro là HIGH hoặc CRITICAL.
 4. **Checklist các bước thực hiện (Step-by-Step Implementation)**: Từng bước logic, chi tiết.
-5. **Kế hoạch kiểm chứng (Verification)**: `dotnet build` và `dotnet test` tương ứng.
+5. **Kế hoạch kiểm chứng (Verification)**: `dotnet build Notification.sln -c Release` và `dotnet test Notification.sln -c Release`.
 
 ---
 
 ## 🧭 NGUYÊN TẮC 2: QUY TẮC PHẠM VI NỘI BỘ (INWARD-ONLY / SELF-CONTAINED)
 
-NotificationService là một Git Repository độc lập (`NotificationService.git`):
-- **TUYỆT ĐỐI CHỈ ĐƯỢC trỏ tới các tài nguyên nội bộ của NotificationService**.
-- **TUYỆT ĐỐI KHÔNG ĐƯỢC trỏ ngược ra ngoài Root** (`../../../docs/...`) hay sang các Service khác (`../../Catalog/...`).
-- Toàn bộ tài liệu, hướng dẫn và cấu hình trong repo này phải 100% tự cung tự cấp (Self-contained).
+Notification là một Git repository độc lập (submodule của `Nexus-Be`):
+- **TUYỆT ĐỐI CHỈ ĐƯỢC trỏ tới các tài nguyên nội bộ của Notification**.
+- **TUYỆT ĐỐI KHÔNG ĐƯỢC trỏ ngược ra ngoài repo** (thư mục kế hoạch/audit của root) hay sang service khác (Catalog, User, Wallet…).
+- Toàn bộ tài liệu, hướng dẫn và cấu hình trong repo này phải 100% tự cung tự cấp (Self-contained) — kể cả bảng trạng thái: chỉ trích `file:line` **trong repo này**.
 
 ---
 
-## 📚 NGUYÊN TẮC 3: DANH MỤC FILE NỘI BỘ BẮT BUỘC PHẢI ĐỌC TẠI NOTIFICATION SERVICE
+## 📚 NGUYÊN TẮC 3: DANH MỤC FILE NỘI BỘ BẮT BUỘC PHẢI ĐỌC TẠI NOTIFICATION
 
-Khi bắt đầu làm việc tại NotificationService, AI Agent **BẮT BUỘC PHẢI ĐỌC** các file nội bộ sau theo thứ tự:
-1. `specs/00_AGENT_MISSION_GUARDRAILS.md`: Bounded context thông báo in-app, email SMTP, port `8007`, DB `5439` (`notification_db`).
-2. `specs/01_CLEAN_ARCHITECTURE_LAYERS.md`: Cấu trúc 4 tầng Clean Architecture, No-Repository pattern over EF Core.
-3. `specs/02_API_GRPC_CONTRACTS.md`: Hợp đồng gRPC Server (`NotificationApi`: SendNotification, ListUserNotifications, MarkAsRead).
-4. `specs/03_EVENT_MESSAGING.md`: Lắng nghe RabbitMQ events toàn hệ thống để phát sinh thông báo.
-5. `specs/04_DATA_PERSISTENCE.md`: Schema PostgreSQL (`Notifications`, `NotificationPreferences`).
-6. `specs/05_DEV_VERIFICATION_CHECKLIST.md`: Lệnh build & test kiểm chứng service.
+Khi bắt đầu làm việc tại Notification, AI Agent **BẮT BUỘC PHẢI ĐỌC** các file nội bộ sau theo thứ tự:
+
+| # | File | Nội dung cần nắm | Trạng thái | Bằng chứng (file:line) |
+|:--|:---|:---|:---:|:---|
+| 1 | `README.md` | Tổng quan repo, bảng tính năng và trạng thái thật | ⚠️ MỘT PHẦN | `README.md` §2.1 |
+| 2 | `specs/00_AGENT_MISSION_GUARDRAILS.md` | Bounded context thông báo in-app, email SMTP, port `8007`, DB `5439` (`notification_db`) | ⚠️ MỘT PHẦN | 4/6 nhiệm vụ ❌ |
+| 3 | `specs/01_CLEAN_ARCHITECTURE_LAYERS.md` | 4 tầng Clean Architecture, No-Repository pattern over EF Core | ✅ CÓ | `Notification.sln:4-13` |
+| 4 | `specs/02_API_GRPC_CONTRACTS.md` | Hợp đồng đích `NotificationApi`: `ListNotifications`, `MarkNotificationRead`, `GetPreferences`, `UpdatePreferences` — **0/4 đã implement** | ❌ CHƯA CÓ | `Program.cs:49` |
+| 5 | `specs/03_EVENT_MESSAGING.md` | Sự kiện RabbitMQ nhận vào (1/9) — chưa có publisher | ⚠️ MỘT PHẦN | `SendOtpEmailConsumer.cs:9` |
+| 6 | `specs/04_DATA_PERSISTENCE.md` | Schema PostgreSQL: 10 entity ↔ 13 bảng (`Notifications`, `NotificationPreferences`, …) | ⚠️ MỘT PHẦN | `AppDbContext.cs:14-23` |
+| 7 | `specs/05_DEV_VERIFICATION_CHECKLIST.md` | Lệnh build & test kiểm chứng service | ⚠️ MỘT PHẦN | 2 test case |
 
 ---
 
-## 🔒 NGUYÊN TẮC 4: RÀO CHẮN BẤT BIẾN TẠI NOTIFICATION SERVICE
+## 🔒 NGUYÊN TẮC 4: RÀO CHẮN BẤT BIẾN TẠI NOTIFICATION
 
-1. **TUYỆT ĐỐI KHÔNG DÙNG REPOSITORY PATTERN BỌC NGOÀI EF CORE**: Sử dụng trực tiếp `NotificationDbContext` và `DbSet<T>` (hoặc interface `INotificationDbContext`) trong tầng Application. Cấm tạo `INotificationRepository`, `UnitOfWork`.
-2. **GỬI THÔNG BÁO BẤT ĐỒNG BỘ ĐA KÊNH**: In-app notification lưu DB, email gửi qua SMTP/MailKit.
-3. **CẤU HÌNH PORT 8007 VÀ DATABASE 5439 LÀ BẤT BIẾN**.
-4. **HỢP ĐỒNG PROTOBUF ĐỒNG BỘ 100% VỚI GATEWAY**.
+1. **TUYỆT ĐỐI KHÔNG DÙNG REPOSITORY PATTERN BỌC NGOÀI EF CORE**: dùng trực tiếp `AppDbContext` qua interface `INotificationDbContext` (`Application/Interfaces/INotificationDbContext.cs:8-21`) và `DbSet<T>`. Cấm tạo `INotificationRepository`, `UnitOfWork`. (`NotificationDbContext` trong `Persistence/AppDbContext.cs:38-43` là lớp bọc **chết**, không dùng.)
+2. **GỬI THÔNG BÁO BẤT ĐỒNG BỘ ĐA KÊNH**: đích là in-app lưu DB + email qua SMTP/MailKit. **Hiện trạng:** ⚠️ chỉ email được gọi; in-app **không** được ghi; chưa có adapter push/SMS dù enum `ChannelProvider` tồn tại.
+3. **CẤU HÌNH PORT 8007 VÀ DATABASE 5439 LÀ BẤT BIẾN**. Service chỉ mở **HTTP/1.1** (`Dockerfile:4`); muốn gRPC phải thêm HTTP/2 endpoint — việc này cần thay đổi có chủ đích, không tự ý sửa.
+4. **HỢP ĐỒNG PROTOBUF VỚI GATEWAY**: ❌ **chưa tồn tại** — repo không có file `*.proto` nào (kể cả `Contracts/shop.proto`). Khi thêm, file phải được tạo **bên trong repo này** (ví dụ `Notification.Api/Contracts/notification.proto`), không trỏ sang repo khác.
+5. **KHÔNG COI `/health` LÀ BẰNG CHỨNG SERVICE HOẠT ĐỘNG**: handler trả hằng số, không kiểm tra PostgreSQL/RabbitMQ (`Program.cs:49`).
+6. **KHÔNG BỊA TRẠNG THÁI**: mọi tuyên bố về rpc/event/bảng phải kèm `file:line` và nhãn ✅/⚠️/❌ theo quy ước ở `README.md`.
 
 ---
 
@@ -107,14 +134,16 @@ Tất cả các thông báo lỗi (Error Messages, Exceptions, ProblemDetails, V
    - ❌ Sai: `"Notification Not Found Provided"` (Không dùng Title Case)
 3. **Mã lỗi (Error Codes — SCREAMING_SNAKE_CASE)**: Mã lỗi luôn viết hoa toàn bộ và nối bằng dấu gạch dưới:
    - Ví dụ: `NOTIFICATION_NOT_FOUND`, `INVALID_EMAIL`, `VAL_INVALID_INPUT`, `UNAUTHORIZED`, `FORBIDDEN`.
+   - Mã đang có trong code: `NOT_FOUND`, `BUSINESS_RULE_VIOLATION`, `DOMAIN_ERROR`, `VAL_INVALID_ARGUMENT`, `INTERNAL_SERVER_ERROR` (`Notification.Api/Middleware/GlobalExceptionHandlerMiddleware.cs:40,45,50,55,60`).
 
 ---
 
 ## 🎯 NGUYÊN TẮC 6: ĐIỀU KIỆN HOÀN THÀNH NHIỆM VỤ (DEFINITION OF DONE)
 
-Một task tại NotificationService chỉ hoàn tất khi:
+Một task tại Notification chỉ hoàn tất khi:
 - [ ] Đã lập Plan chi tiết trước khi thực hiện.
-- [ ] Không chứa bất kỳ liên kết trỏ ngược ra ngoài NotificationService.
-- [ ] `dotnet build NotificationService.sln -c Release` thành công 100% (0 error).
-- [ ] `dotnet test NotificationService.sln -c Release` vượt qua 100% các bài test.
+- [ ] Không chứa bất kỳ liên kết trỏ ngược ra ngoài Notification.
+- [ ] `dotnet build Notification.sln -c Release` thành công 100% (0 error).
+- [ ] `dotnet test Notification.sln -c Release` vượt qua 100% các bài test.
+- [ ] Không thêm/xóa bảng hay rpc mà chưa cập nhật `specs/02`, `specs/04` và bảng trạng thái trong `README.md`.
 - [ ] Trạng thái Git sạch, không commit file rác (`bin/`, `obj/`, `.vs/`, `.idea/`).
