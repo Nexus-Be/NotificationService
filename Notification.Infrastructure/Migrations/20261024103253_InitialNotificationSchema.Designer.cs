@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Notification.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261024080613_InitialNotificationSchema")]
+    [Migration("20261024103253_InitialNotificationSchema")]
     partial class InitialNotificationSchema
     {
         /// <inheritdoc />
@@ -715,6 +715,25 @@ namespace Notification.Infrastructure.Migrations
                     b.HasIndex("TemplateId");
 
                     b.ToTable("Notifications");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("61000000-0000-0000-0000-000000000001"),
+                            Body = "Đơn hàng SUB-20260101-0001 với số tiền 850.000 đ đã được thanh toán thành công qua Ví Nexus.",
+                            ChannelScope = "All",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            IsDeleted = false,
+                            IsRead = true,
+                            NotificationType = "OrderPaid",
+                            Payload = "{\"subOrderId\":\"02000000-0000-0000-0000-000000000001\",\"amount\":850000}",
+                            ReadAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 5, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Status = "Completed",
+                            TemplateId = new Guid("60000000-0000-0000-0000-000000000001"),
+                            Title = "Thanh toán thành công đơn hàng SUB-20260101-0001",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UserId = new Guid("dddddddd-4444-4444-4444-444444444444")
+                        });
                 });
 
             modelBuilder.Entity("Notification.Domain.Entities.NotificationTemplate", b =>
@@ -782,6 +801,42 @@ namespace Notification.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("NotificationTemplates");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000001"),
+                            BodyTemplate = "Đơn hàng {{OrderNo}} của bạn đã được thanh toán thành công số tiền {{TotalAmount}}.",
+                            ChannelCode = "Email",
+                            Code = "ORDER_PAID_EMAIL",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = "OrderPaid",
+                            SubjectTemplate = "Xác nhận thanh toán đơn hàng {{OrderNo}}",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000002"),
+                            BodyTemplate = "Đơn hàng {{OrderNo}} của bạn đã được đóng gói và bàn giao cho đơn vị vận chuyển.",
+                            ChannelCode = "Email",
+                            Code = "ORDER_SHIPPED_EMAIL",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = "OrderShipped",
+                            SubjectTemplate = "Đơn hàng {{OrderNo}} đang trên đường giao đến bạn",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        });
                 });
 
             modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>

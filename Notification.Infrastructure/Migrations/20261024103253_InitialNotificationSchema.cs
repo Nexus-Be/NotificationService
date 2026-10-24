@@ -373,6 +373,20 @@ namespace Notification.Infrastructure.Migrations
                     { new Guid("40404040-4040-4040-4040-404040404040"), "Sms", null, new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), new Guid("00000000-0000-0000-0000-000000000000"), null, false, false, "Tin nhắn viễn thông (SMS)", null, new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), new Guid("00000000-0000-0000-0000-000000000000") }
                 });
 
+            migrationBuilder.InsertData(
+                table: "NotificationTemplates",
+                columns: new[] { "Id", "BodyTemplate", "ChannelCode", "Code", "CreatedAt", "CreatedBy", "DeletedAt", "IsActive", "IsDeleted", "IsMandatory", "Locale", "NotificationType", "SubjectTemplate", "UpdatedAt", "UpdatedBy" },
+                values: new object[,]
+                {
+                    { new Guid("60000000-0000-0000-0000-000000000001"), "Đơn hàng {{OrderNo}} của bạn đã được thanh toán thành công số tiền {{TotalAmount}}.", "Email", "ORDER_PAID_EMAIL", new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), new Guid("00000000-0000-0000-0000-000000000000"), null, true, false, false, "vi-VN", "OrderPaid", "Xác nhận thanh toán đơn hàng {{OrderNo}}", new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), new Guid("00000000-0000-0000-0000-000000000000") },
+                    { new Guid("60000000-0000-0000-0000-000000000002"), "Đơn hàng {{OrderNo}} của bạn đã được đóng gói và bàn giao cho đơn vị vận chuyển.", "Email", "ORDER_SHIPPED_EMAIL", new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), new Guid("00000000-0000-0000-0000-000000000000"), null, true, false, false, "vi-VN", "OrderShipped", "Đơn hàng {{OrderNo}} đang trên đường giao đến bạn", new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), new Guid("00000000-0000-0000-0000-000000000000") }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Notifications",
+                columns: new[] { "Id", "Body", "ChannelScope", "CreatedAt", "DeletedAt", "IsDeleted", "IsRead", "NotificationType", "Payload", "ReadAt", "SourceEventId", "Status", "TemplateId", "Title", "UpdatedAt", "UserId" },
+                values: new object[] { new Guid("61000000-0000-0000-0000-000000000001"), "Đơn hàng SUB-20260101-0001 với số tiền 850.000 đ đã được thanh toán thành công qua Ví Nexus.", "All", new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), null, false, true, "OrderPaid", "{\"subOrderId\":\"02000000-0000-0000-0000-000000000001\",\"amount\":850000}", new DateTimeOffset(new DateTime(2026, 1, 1, 0, 5, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), null, "Completed", new Guid("60000000-0000-0000-0000-000000000001"), "Thanh toán thành công đơn hàng SUB-20260101-0001", new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), new Guid("dddddddd-4444-4444-4444-444444444444") });
+
             migrationBuilder.CreateIndex(
                 name: "IX_DeviceTokens_Token",
                 table: "DeviceTokens",

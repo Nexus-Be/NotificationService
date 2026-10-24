@@ -26,7 +26,7 @@ public class AppDbContext : DbContext, INotificationDbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
-        Seeds.NotificationSeedData.SeedChannels(modelBuilder);
+        Seeds.NotificationSeedData.SeedAll(modelBuilder);
 
         // MassTransit Transactional Outbox entities
         modelBuilder.AddInboxStateEntity();
