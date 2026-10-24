@@ -10,7 +10,7 @@ using Moq;
 using Nexus.Contracts.Events;
 using Notification.Application.Common.Interfaces;
 using Notification.Infrastructure.Consumers;
-using Notification.Infrastructure.Email;
+using Notification.Infrastructure.Services.Email;
 using Xunit;
 
 public sealed class EmailSenderTests

@@ -1,9 +1,11 @@
 namespace Notification.Infrastructure.Persistence;
 
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Notification.Application.Interfaces;
 using Notification.Domain.Entities;
 
-public class AppDbContext : DbContext
+public class AppDbContext : DbContext, INotificationDbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -24,6 +26,12 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        Seeds.NotificationSeedData.SeedChannels(modelBuilder);
+
+        // MassTransit Transactional Outbox entities
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
     }
 }
 

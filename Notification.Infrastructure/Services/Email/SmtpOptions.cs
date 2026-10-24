@@ -1,4 +1,4 @@
-namespace Notification.Infrastructure.Email;
+namespace Notification.Infrastructure.Services.Email;
 
 public sealed class SmtpOptions
 {

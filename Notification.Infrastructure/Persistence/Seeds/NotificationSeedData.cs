@@ -8,6 +8,8 @@ public static class NotificationSeedData
 {
     public static void SeedChannels(ModelBuilder modelBuilder)
     {
+        var seedDate = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
         modelBuilder.Entity<NotificationChannel>().HasData(
             new NotificationChannel
             {
@@ -16,8 +18,8 @@ public static class NotificationSeedData
                 Name = "Thư điện tử (Email)",
                 Provider = ChannelProvider.Smtp,
                 IsDisabled = false,
-                CreatedAt = DateTimeOffset.UtcNow,
-                UpdatedAt = DateTimeOffset.UtcNow,
+                CreatedAt = seedDate,
+                UpdatedAt = seedDate,
                 IsDeleted = false
             },
             new NotificationChannel
@@ -27,8 +29,8 @@ public static class NotificationSeedData
                 Name = "Thông báo đẩy di động (Push)",
                 Provider = ChannelProvider.Fcm,
                 IsDisabled = false,
-                CreatedAt = DateTimeOffset.UtcNow,
-                UpdatedAt = DateTimeOffset.UtcNow,
+                CreatedAt = seedDate,
+                UpdatedAt = seedDate,
                 IsDeleted = false
             },
             new NotificationChannel
@@ -37,8 +39,8 @@ public static class NotificationSeedData
                 Code = ChannelType.InApp,
                 Name = "Thông báo trung tâm ứng dụng (InApp)",
                 IsDisabled = false,
-                CreatedAt = DateTimeOffset.UtcNow,
-                UpdatedAt = DateTimeOffset.UtcNow,
+                CreatedAt = seedDate,
+                UpdatedAt = seedDate,
                 IsDeleted = false
             },
             new NotificationChannel
@@ -47,8 +49,8 @@ public static class NotificationSeedData
                 Code = ChannelType.Sms,
                 Name = "Tin nhắn viễn thông (SMS)",
                 IsDisabled = false,
-                CreatedAt = DateTimeOffset.UtcNow,
-                UpdatedAt = DateTimeOffset.UtcNow,
+                CreatedAt = seedDate,
+                UpdatedAt = seedDate,
                 IsDeleted = false
             }
         );

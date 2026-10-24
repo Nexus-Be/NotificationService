@@ -1,39 +1,16 @@
-using MassTransit;
-using Notification.Application.Common.Interfaces;
-using Notification.Infrastructure.Consumers;
-using Notification.Infrastructure.Email;
+using Microsoft.EntityFrameworkCore;
+using Notification.Api.Middleware;
+using Notification.Application;
+using Notification.Infrastructure;
+using Notification.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Cấu hình SmtpOptions & EmailSenderService
-builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionName));
-builder.Services.AddSingleton<IEmailSenderService, MailKitEmailSenderService>();
+// 1. Application & Infrastructure Dependency Injection
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
 
-// 2. Cấu hình MassTransit RabbitMQ Consumer
-builder.Services.AddMassTransit(x =>
-{
-    x.AddConsumer<SendOtpEmailConsumer>();
-
-    x.SetKebabCaseEndpointNameFormatter();
-
-    x.UsingRabbitMq((context, cfg) =>
-    {
-        var host = builder.Configuration["RabbitMq:Host"] ?? "localhost";
-        var portStr = builder.Configuration["RabbitMq:Port"] ?? "5672";
-        var port = ushort.TryParse(portStr, out var p) ? p : (ushort)5672;
-        var user = builder.Configuration["RabbitMq:User"] ?? "guest";
-        var pass = builder.Configuration["RabbitMq:Password"] ?? "guest";
-
-        cfg.Host(host, port, "/", h =>
-        {
-            h.Username(user);
-            h.Password(pass);
-        });
-
-        cfg.ConfigureEndpoints(context);
-    });
-});
-
+// 2. Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -43,10 +20,30 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 var app = builder.Build();
 
+// 3. Global Exception Handler Middleware
+app.UseGlobalExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+// Automatically apply database migrations on startup if relational DB is available
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    try
+    {
+        if (db.Database.IsRelational())
+        {
+            db.Database.Migrate();
+        }
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogWarning("Database migration deferred on startup: {Message}", ex.Message);
+    }
 }
 
 app.MapGet("/health", () => Results.Ok(new { status = "Healthy", service = "Notification.Api" }));

@@ -1,10 +1,5 @@
 namespace Notification.Application.Common.Interfaces;
 
-using System.Threading;
-using System.Threading.Tasks;
-
-public interface IEmailSenderService
+public interface IEmailSenderService : Notification.Application.Interfaces.IEmailSenderService
 {
-    Task<bool> SendEmailAsync(string toEmail, string subject, string htmlBody, CancellationToken cancellationToken = default);
-    Task<bool> SendOtpRegistrationEmailAsync(string toEmail, string fullName, string otp, int expiresInMinutes = 5, CancellationToken cancellationToken = default);
 }
