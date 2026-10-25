@@ -9,10 +9,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Notification.Infrastructure.Migrations
+namespace Notification.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261024103253_InitialNotificationSchema")]
+    [Migration("20261024145438_InitialNotificationSchema")]
     partial class InitialNotificationSchema
     {
         /// <inheritdoc />
