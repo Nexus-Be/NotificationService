@@ -15,6 +15,8 @@ public static class DependencyInjection
     {
         var rawConnection = configuration.GetConnectionString("DefaultConnection")
             ?? configuration["CONNECTION_STRING"]
+            ?? configuration["NOTIFICATION_CONNECTION_STRING"]
+            ?? configuration["NOTIFICATION_DB_CONNECTION"]
             ?? "Host=localhost;Port=5439;Database=notification_db;Username=postgres;Password=postgres";
         var connectionString = NormalizeConnectionString(rawConnection);
 
