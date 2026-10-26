@@ -34,10 +34,3 @@ public class AppDbContext : DbContext, INotificationDbContext
         modelBuilder.AddOutboxStateEntity();
     }
 }
-
-public class NotificationDbContext : AppDbContext
-{
-    public NotificationDbContext(DbContextOptions<AppDbContext> options) : base(options)
-    {
-    }
-}
