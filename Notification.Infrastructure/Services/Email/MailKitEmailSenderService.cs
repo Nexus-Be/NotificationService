@@ -31,13 +31,13 @@ public sealed class MailKitEmailSenderService : IEmailService, IEmailSenderServi
     {
         var opts = _smtpOptions.CurrentValue;
 
-        if (string.IsNullOrWhiteSpace(opts.Username) || string.IsNullOrWhiteSpace(opts.Password))
+        if (string.IsNullOrWhiteSpace(opts.Username)
+            || string.IsNullOrWhiteSpace(opts.Password))
         {
-            _logger.LogWarning(
-                "[EMAIL SIMULATION] SMTP credentials are not configured in appsettings. Simulated sending email to '{ToEmail}' with subject '{Subject}'.",
-                toEmail,
-                subject);
-            return true;
+            _logger.LogError(
+                "Email was not sent because SMTP credentials are missing."
+            );
+            return false;
         }
 
         try

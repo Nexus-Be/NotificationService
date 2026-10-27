@@ -13,8 +13,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? "Host=localhost;Port=5439;Database=notification_db;Username=postgres;Password=MatkhaucuaTui123@";
+        var connectionString =
+    configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException(
+        "Missing connection string: DefaultConnection");
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
@@ -30,7 +32,8 @@ public static class DependencyInjection
         // MassTransit RabbitMQ Consumer
         services.AddMassTransit(x =>
         {
-            x.AddConsumer<SendOtpEmailConsumer>();
+            x.AddConsumer<SendOtpEmailConsumer>()
+                .Endpoint(e => e.Name = "send-otp-email");
 
             x.SetKebabCaseEndpointNameFormatter();
 
@@ -54,6 +57,15 @@ public static class DependencyInjection
                     h.Password(pass);
                 });
 
+                cfg.UseMessageRetry(r =>
+                {
+                    r.Handle<InvalidOperationException>();
+                    r.Intervals(
+                        TimeSpan.FromSeconds(2),
+                        TimeSpan.FromSeconds(5),
+                        TimeSpan.FromSeconds(10)
+                    );
+                });
                 cfg.ConfigureEndpoints(context);
             });
         });
