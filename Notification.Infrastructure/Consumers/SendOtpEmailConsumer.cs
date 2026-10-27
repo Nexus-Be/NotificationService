@@ -40,7 +40,13 @@ public sealed class SendOtpEmailConsumer : IConsumer<SendOtpEmailIntegrationEven
         }
         else
         {
-            _logger.LogWarning("Background email worker failed to dispatch OTP email to '{Email}'.", message.Email);
+            _logger.LogWarning(
+                "Failed to send OTP email to '{Email}'.",
+                message.Email
+            );
+            throw new System.InvalidOperationException(
+                "OTP email could not be sent."
+            );
         }
     }
 }
