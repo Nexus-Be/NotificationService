@@ -10,9 +10,7 @@ services:
 
   # 1. Ứng dụng Notification Service gRPC (Port 8007)
   notification-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: oaktree293/notificationservice:latest
     container_name: nexus-notification-service
     ports:
       - "${NOTIFICATION_SERVICE_PORT:-8007}:8007"
