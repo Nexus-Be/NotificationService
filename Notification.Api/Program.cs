@@ -7,6 +7,9 @@ using Notification.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 0. Observability / OpenTelemetry Tracing
+builder.Services.AddServiceObservability(builder.Configuration, "notification-service");
+
 // 1. Application & Infrastructure Dependency Injection
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
