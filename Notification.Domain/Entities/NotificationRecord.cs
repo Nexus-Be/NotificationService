@@ -17,6 +17,16 @@ public class NotificationRecord : BaseEntity<Guid>
     public DateTimeOffset? ReadAt { get; set; }
     public required NotificationStatus Status { get; set; } = NotificationStatus.Pending;
 
+    public void MarkAsRead()
+    {
+        if (IsRead)
+            return;
+        var now = DateTimeOffset.UtcNow;
+        IsRead = true;
+        ReadAt = now;
+        UpdatedAt = now;
+    }
+
     // Navigation
     public NotificationTemplate? Template { get; set; }
     public ICollection<NotificationDelivery> Deliveries { get; set; } = new List<NotificationDelivery>();

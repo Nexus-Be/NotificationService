@@ -3,12 +3,16 @@ using Notification.Api.Middleware;
 using Notification.Application;
 using Notification.Infrastructure;
 using Notification.Infrastructure.Persistence;
+using Notification.Api.Extensions;
+using Notification.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // 1. Application & Infrastructure Dependency Injection
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddGrpc();
+builder.Services.AddNotificationAuthentication(builder.Configuration);
 
 // 2. Swagger / OpenAPI & JSON Serialization
 builder.Services.AddEndpointsApiExplorer();
@@ -26,6 +30,10 @@ var app = builder.Build();
 
 // 3. Global Exception Handler Middleware
 app.UseGlobalExceptionHandler();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapGrpcService<NotificationGrpcService>();
 
 if (app.Environment.IsDevelopment())
 {
