@@ -5,13 +5,11 @@ ENV ASPNETCORE_URLS=http://+:8007
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["Notification.sln", "."]
 COPY ["Notification.Api/Notification.Api.csproj", "Notification.Api/"]
 COPY ["Notification.Application/Notification.Application.csproj", "Notification.Application/"]
 COPY ["Notification.Domain/Notification.Domain.csproj", "Notification.Domain/"]
 COPY ["Notification.Infrastructure/Notification.Infrastructure.csproj", "Notification.Infrastructure/"]
-COPY ["Notification.Tests/Notification.Tests.csproj", "Notification.Tests/"]
-RUN dotnet restore "Notification.sln"
+RUN dotnet restore "Notification.Api/Notification.Api.csproj"
 COPY . .
 RUN dotnet build "Notification.Api/Notification.Api.csproj" -c Release -o /app/build
 
