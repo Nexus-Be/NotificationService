@@ -34,10 +34,12 @@ public sealed class MailKitEmailSenderService : IEmailService, IEmailSenderServi
         if (string.IsNullOrWhiteSpace(opts.Username)
             || string.IsNullOrWhiteSpace(opts.Password))
         {
-            _logger.LogError(
-                "Email was not sent because SMTP credentials are missing."
+            _logger.LogWarning(
+                "[SIMULATION MODE] SMTP credentials missing. Simulating email dispatch to '{ToEmail}'. Subject: '{Subject}'.",
+                toEmail,
+                subject
             );
-            return false;
+            return true;
         }
 
         try

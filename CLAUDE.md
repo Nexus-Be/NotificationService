@@ -115,7 +115,10 @@ Khi bắt đầu làm việc tại Notification, AI Agent **BẮT BUỘC PHẢI 
 1. **TUYỆT ĐỐI KHÔNG DÙNG REPOSITORY PATTERN BỌC NGOÀI EF CORE**: dùng trực tiếp `AppDbContext` qua interface `INotificationDbContext` (`Application/Interfaces/INotificationDbContext.cs:8-21`) và `DbSet<T>`. Cấm tạo `INotificationRepository`, `UnitOfWork`. (`NotificationDbContext` trong `Persistence/AppDbContext.cs:38-43` là lớp bọc **chết**, không dùng.)
 2. **GỬI THÔNG BÁO BẤT ĐỒNG BỘ ĐA KÊNH**: đích là in-app lưu DB + email qua SMTP/MailKit. **Hiện trạng:** ⚠️ chỉ email được gọi; in-app **không** được ghi; chưa có adapter push/SMS dù enum `ChannelProvider` tồn tại.
 3. **CẤU HÌNH PORT 8007 VÀ DATABASE 5439 LÀ BẤT BIẾN**. Service chỉ mở **HTTP/1.1** (`Dockerfile:4`); muốn gRPC phải thêm HTTP/2 endpoint — việc này cần thay đổi có chủ đích, không tự ý sửa.
-4. **HỢP ĐỒNG PROTOBUF VỚI GATEWAY**: ❌ **chưa tồn tại** — repo không có file `*.proto` nào (kể cả `Contracts/shop.proto`). Khi thêm, file phải được tạo **bên trong repo này** (ví dụ `Notification.Api/Contracts/notification.proto`), không trỏ sang repo khác.
+4. **CẤM SỬ DỤNG gRPC CHO CÁC DỊCH VỤ ĐỒNG BỘ - BẮT BUỘC DÙNG 100% RESTFUL API**:
+   - Toàn bộ giao tiếp đồng bộ giữa API Gateway và NotificationService (hoặc giữa các microservices) bắt buộc phải sử dụng chuẩn **RESTful Web API** (JSON qua HTTP/1.1 hoặc HTTP/2).
+   - Tuyệt đối **CẤM** triển khai hoặc sử dụng gRPC Server/Client cho các dịch vụ đồng bộ trong toàn bộ hệ thống.
+   - Bề mặt API chính thức của NotificationService là REST `/api/v1/notifications/*`. Cấm tạo hoặc sử dụng các file Protobuf (`.proto`).
 5. **KHÔNG COI `/health` LÀ BẰNG CHỨNG SERVICE HOẠT ĐỘNG**: handler trả hằng số, không kiểm tra PostgreSQL/RabbitMQ (`Program.cs:49`).
 6. **KHÔNG BỊA TRẠNG THÁI**: mọi tuyên bố về rpc/event/bảng phải kèm `file:line` và nhãn ✅/⚠️/❌ theo quy ước ở `README.md`.
 7. **CẤM TỰ Ý SỬA ĐỔI BIẾN MÔI TRƯỜNG, SECRET VÀ KEY BÍ MẬT (MANDATORY HUMAN-IN-THE-LOOP FOR SECRETS)**:
