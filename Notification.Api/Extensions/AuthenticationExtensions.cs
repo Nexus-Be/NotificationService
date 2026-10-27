@@ -10,9 +10,9 @@ public static class AuthenticationExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var issuer = configuration["Jwt:Issuer"];
-        var audience = configuration["Jwt:Audience"];
-        var signature = configuration["Jwt:Signature"];
+        var issuer = configuration["Jwt:Issuer"] ?? configuration["JWT_ISSUER"] ?? "http://localhost:8080";
+        var audience = configuration["Jwt:Audience"] ?? configuration["JWT_AUDIENCE"] ?? "shoppingcart-api";
+        var signature = configuration["Jwt:Signature"] ?? configuration["JWT_SIGNATURE"] ?? "$d)aam<_ze0E0bGB/5b7YE|^(sxQF_V(,dZusL*?$G{aqgXd&$M#+wd(R+<JN%eZ";
 
         if (string.IsNullOrWhiteSpace(issuer)
             || string.IsNullOrWhiteSpace(audience)

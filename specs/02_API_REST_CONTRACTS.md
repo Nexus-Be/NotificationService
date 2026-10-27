@@ -44,6 +44,16 @@ Toàn bộ phản hồi lỗi tuân thủ nghiêm ngặt **RFC 9110** và quy ch
 
 ---
 
-## 3. LỊCH SỬ BÃI BỎ GRPC (GRPC DEPRECATION NOTICE)
+## 3. GIAO DIỆN KIỂM THỬ SWAGGER UI
+
+Swagger UI được tích hợp sẵn phục vụ việc kiểm thử độc lập cho Notification Service:
+- **Địa chỉ truy cập**: `http://localhost:8007/swagger` (hoặc mở trực tiếp `http://localhost:8007/`, hệ thống sẽ tự động chuyển hướng đến `/swagger`).
+- **OpenAPI JSON Spec**: `http://localhost:8007/swagger/v1/swagger.json`.
+- **Nút Authorize**: Hỗ trợ nhập JWT Bearer token và header `x-user-id` trực quan.
+- **Cấu hình bật/tắt**: Kiểm soát qua `EnableSwagger` trong `appsettings.json` (mặc định bật trong Development).
+
+---
+
+## 4. LỊCH SỬ BÃI BỎ GRPC (GRPC DEPRECATION NOTICE)
 
 > **Thông báo bãi bỏ:** Hợp đồng gRPC (`NotificationApi` trong `shop.proto`) đã bị **loại bỏ hoàn toàn**. Service không còn lắng nghe trên gRPC port và không phụ thuộc vào `Grpc.AspNetCore`. Mọi giao tiếp đồng bộ đều qua HTTP RESTful port `8007`. Giao tiếp sự kiện qua RabbitMQ MassTransit tiếp tục duy trì (`SendOtpEmailConsumer`).

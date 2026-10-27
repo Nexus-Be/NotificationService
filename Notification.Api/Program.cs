@@ -14,8 +14,7 @@ builder.Services.AddNotificationAuthentication(builder.Configuration);
 
 // 2. Swagger / OpenAPI & JSON Serialization
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddNotificationSwagger();
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(new Notification.Api.Common.Converters.PascalCaseJsonStringEnumConverter(allowIntegerValues: false));
@@ -32,10 +31,9 @@ app.UseGlobalExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("EnableSwagger", true))
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseNotificationSwagger();
 }
 
 // Automatically apply database migrations on startup if relational DB is available
