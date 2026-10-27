@@ -26,7 +26,32 @@ public static class DependencyInjection
         services.AddScoped<INotificationDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
         // Email Infrastructure Service
-        services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
+        services.Configure<SmtpOptions>(opts =>
+        {
+            configuration.GetSection(SmtpOptions.SectionName).Bind(opts);
+
+            // Fallback / Override from flat environment variables if provided
+            var envHost = configuration["SMTP_HOST"];
+            if (!string.IsNullOrWhiteSpace(envHost)) opts.Host = envHost;
+
+            var envPort = configuration["SMTP_PORT"];
+            if (int.TryParse(envPort, out var p)) opts.Port = p;
+
+            var envSsl = configuration["SMTP_USE_SSL"];
+            if (bool.TryParse(envSsl, out var ssl)) opts.UseSsl = ssl;
+
+            var envSenderName = configuration["SMTP_SENDER_NAME"];
+            if (!string.IsNullOrWhiteSpace(envSenderName)) opts.SenderName = envSenderName;
+
+            var envSenderEmail = configuration["SMTP_SENDER_EMAIL"];
+            if (!string.IsNullOrWhiteSpace(envSenderEmail)) opts.SenderEmail = envSenderEmail;
+
+            var envUsername = configuration["SMTP_USERNAME"];
+            if (!string.IsNullOrWhiteSpace(envUsername)) opts.Username = envUsername;
+
+            var envPassword = configuration["SMTP_PASSWORD"];
+            if (!string.IsNullOrWhiteSpace(envPassword)) opts.Password = envPassword;
+        });
         services.AddSingleton<IEmailService, MailKitEmailSenderService>();
         services.AddSingleton<IEmailSenderService>(sp => (MailKitEmailSenderService)sp.GetRequiredService<IEmailService>());
         services.AddSingleton<Notification.Application.Common.Interfaces.IEmailSenderService>(sp => (MailKitEmailSenderService)sp.GetRequiredService<IEmailService>());
