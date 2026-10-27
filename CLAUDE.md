@@ -118,6 +118,10 @@ Khi bắt đầu làm việc tại Notification, AI Agent **BẮT BUỘC PHẢI 
 4. **HỢP ĐỒNG PROTOBUF VỚI GATEWAY**: ❌ **chưa tồn tại** — repo không có file `*.proto` nào (kể cả `Contracts/shop.proto`). Khi thêm, file phải được tạo **bên trong repo này** (ví dụ `Notification.Api/Contracts/notification.proto`), không trỏ sang repo khác.
 5. **KHÔNG COI `/health` LÀ BẰNG CHỨNG SERVICE HOẠT ĐỘNG**: handler trả hằng số, không kiểm tra PostgreSQL/RabbitMQ (`Program.cs:49`).
 6. **KHÔNG BỊA TRẠNG THÁI**: mọi tuyên bố về rpc/event/bảng phải kèm `file:line` và nhãn ✅/⚠️/❌ theo quy ước ở `README.md`.
+7. **CẤM TỰ Ý SỬA ĐỔI BIẾN MÔI TRƯỜNG, SECRET VÀ KEY BÍ MẬT (MANDATORY HUMAN-IN-THE-LOOP FOR SECRETS)**:
+   - **Tuyệt đối CẤM mọi AI Coding Agent tự ý sửa đổi, thay thế, xóa hoặc ghi đè các biến môi trường (`.env`, `.env.*`), Connection Strings, API Keys, JWT Secrets, chứng chỉ hoặc bất kỳ thông tin bí mật (credentials/secrets) nào trong toàn bộ hệ thống.**
+   - **Bắt buộc phải xin ý kiến và nhận được sự đồng ý rõ ràng (explicit approval) từ người dùng trước khi thực hiện bất kỳ thay đổi nào liên quan đến biến môi trường hoặc tài khoản bí mật.**
+   - Khi phát hiện cấu hình môi trường, connection string hoặc secret key có vấn đề hoặc cần cập nhật, Agent **CHỈ ĐƯỢC PHÉP báo cáo hiện trạng, đề xuất phương án và chờ người dùng xác nhận**, tuyệt đối không tự ý can thiệp.
 
 ---
 

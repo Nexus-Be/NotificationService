@@ -13,10 +13,12 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString =
-    configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException(
-        "Missing connection string: DefaultConnection");
+        var rawConnection = configuration.GetConnectionString("DefaultConnection")
+            ?? configuration["CONNECTION_STRING"]
+            ?? configuration["NOTIFICATION_CONNECTION_STRING"]
+            ?? configuration["NOTIFICATION_DB_CONNECTION"]
+            ?? "Host=localhost;Port=5439;Database=notification_db;Username=postgres;Password=postgres";
+        var connectionString = NormalizeConnectionString(rawConnection);
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
@@ -71,5 +73,23 @@ public static class DependencyInjection
         });
 
         return services;
+    }
+
+    private static string NormalizeConnectionString(string? connStr)
+    {
+        if (string.IsNullOrWhiteSpace(connStr)) return string.Empty;
+        if (connStr.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) || 
+            connStr.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+        {
+            var uri = new Uri(connStr);
+            var userInfo = uri.UserInfo.Split(':');
+            var user = userInfo.Length > 0 ? Uri.UnescapeDataString(userInfo[0]) : "";
+            var pass = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
+            var host = uri.Host;
+            var port = uri.Port > 0 ? uri.Port : 5432;
+            var db = uri.AbsolutePath.TrimStart('/');
+            return $"Host={host};Port={port};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
+        }
+        return connStr;
     }
 }
