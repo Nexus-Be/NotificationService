@@ -69,5 +69,22 @@ Notification.sln
 | Application không import `Infrastructure` | ✅ | `Application/*.csproj` chỉ reference `Domain` |
 | Infrastructure được phép reference Application + Domain | ✅ | `Infrastructure/*.csproj:4-5` |
 | Không Repository Pattern bọc EF Core | ✅ | Không tồn tại `*Repository.cs`; `Application/Interfaces/INotificationDbContext.cs:8` |
-| Consumer thuộc Application layer | ❌ | `SendOtpEmailConsumer` nằm ở `Infrastructure/Consumers/SendOtpEmailConsumer.cs:1-9` |
+| Contracts thuộc Application, Consumer thuộc Infrastructure | ✅ Đạt chuẩn | Contract nằm ở `Application/Contracts/`, `SendOtpEmailConsumer` nằm ở `Infrastructure/Consumers/SendOtpEmailConsumer.cs` |
 | Api không chứa business logic | ✅ | `Program.cs` chỉ DI + middleware + `/health` (51 dòng) |
+
+---
+
+## 3. QUY CHUẨN CẤU TRÚC CHUẨN HÓA (SERVICE BLUEPRINT)
+1. **Giao tiếp đồng bộ (RESTful)**:
+   - `Notification.Api/Controllers/`: Thin Dispatcher Controller, chỉ nhận request, gọi Service Interface trong Application, trả về `IActionResult`. Tuyệt đối cấm logic nghiệp vụ, cấm map anonymous object, cấm khai báo class DTO trong file controller.
+   - `Notification.Application/Services/{Feature}/`: Mỗi feature (`Notification`, `Template`...) chứa `I{Feature}Service.cs`, `{Feature}Service.cs`, và Request/Response DTOs dùng chung cho Controller.
+2. **Giao tiếp bất đồng bộ (RabbitMQ MassTransit)**:
+   - `Notification.Application/Contracts/`: Chứa các Integration Events nhận hoặc gửi.
+   - `Notification.Infrastructure/Consumers/`: Chứa các MassTransit Consumer triển khai `IConsumer<TEvent>` (ví dụ: `SendOtpEmailConsumer`).
+3. **Quản lý Dependency Injection**:
+   - `Notification.Application/DependencyInjection.cs`: Đăng ký toàn bộ Application Services.
+   - `Notification.Infrastructure/DependencyInjection.cs`: Đăng ký `NotificationDbContext`, Email/SMS Provider, MassTransit Bus, Consumers.
+4. **Validation**:
+   - Input format validation đặt tại Request DTOs qua Data Annotations (`[Required]`, `[EmailAddress]`...).
+   - Business validation đặt tại Application Services hoặc Domain Exceptions.
+
