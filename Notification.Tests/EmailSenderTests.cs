@@ -16,7 +16,7 @@ using Xunit;
 public sealed class EmailSenderTests
 {
     [Fact]
-    public async Task SendOtpRegistrationEmailAsync_simulation_mode_when_credentials_empty()
+    public async Task SendOtpRegistrationEmailAsync_returns_false_when_credentials_empty()
     {
         var optionsMonitor = new FakeOptionsMonitor<SmtpOptions>(new SmtpOptions
         {
@@ -34,7 +34,7 @@ public sealed class EmailSenderTests
             otp: "123456",
             expiresInMinutes: 5);
 
-        Assert.True(result);
+        Assert.False(result);
     }
 
     [Fact]

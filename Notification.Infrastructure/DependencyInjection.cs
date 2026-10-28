@@ -8,6 +8,8 @@ using Notification.Application.Interfaces;
 using Notification.Infrastructure.Consumers;
 using Notification.Infrastructure.Persistence;
 using Notification.Infrastructure.Services.Email;
+using Notification.Application.Services.Notifications;
+using Notification.Infrastructure.Services;
 
 public static class DependencyInjection
 {
@@ -25,6 +27,11 @@ public static class DependencyInjection
 
         services.AddScoped<INotificationDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
+        // RabbitMQ Health Probe - NOTI-16
+        services.AddScoped<
+            IRabbitMqHealthProbe,
+            RabbitMqHealthProbe>();
+
         // Email Infrastructure Service
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
         services.AddSingleton<IEmailService, MailKitEmailSenderService>();
@@ -34,7 +41,8 @@ public static class DependencyInjection
         // MassTransit RabbitMQ Consumer
         services.AddMassTransit(x =>
         {
-            x.AddConsumer<SendOtpEmailConsumer>();
+            x.AddConsumer<SendOtpEmailConsumer>()
+                .Endpoint(e => e.Name = "send-otp-email");
 
             x.SetKebabCaseEndpointNameFormatter();
 
@@ -58,6 +66,15 @@ public static class DependencyInjection
                     h.Password(pass);
                 });
 
+                cfg.UseMessageRetry(r =>
+                {
+                    r.Handle<InvalidOperationException>();
+                    r.Intervals(
+                        TimeSpan.FromSeconds(2),
+                        TimeSpan.FromSeconds(5),
+                        TimeSpan.FromSeconds(10)
+                    );
+                });
                 cfg.ConfigureEndpoints(context);
             });
         });
@@ -68,7 +85,7 @@ public static class DependencyInjection
     private static string NormalizeConnectionString(string? connStr)
     {
         if (string.IsNullOrWhiteSpace(connStr)) return string.Empty;
-        if (connStr.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) || 
+        if (connStr.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
             connStr.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
         {
             var uri = new Uri(connStr);
