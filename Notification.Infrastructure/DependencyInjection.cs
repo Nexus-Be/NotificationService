@@ -8,6 +8,8 @@ using Notification.Application.Interfaces;
 using Notification.Infrastructure.Consumers;
 using Notification.Infrastructure.Persistence;
 using Notification.Infrastructure.Services.Email;
+using Notification.Application.Services.Notifications;
+using Notification.Infrastructure.Services;
 
 public static class DependencyInjection
 {
@@ -24,6 +26,11 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
 
         services.AddScoped<INotificationDbContext>(sp => sp.GetRequiredService<AppDbContext>());
+
+        // RabbitMQ Health Probe - NOTI-16
+        services.AddScoped<
+            IRabbitMqHealthProbe,
+            RabbitMqHealthProbe>();
 
         // Email Infrastructure Service
         services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
@@ -78,7 +85,7 @@ public static class DependencyInjection
     private static string NormalizeConnectionString(string? connStr)
     {
         if (string.IsNullOrWhiteSpace(connStr)) return string.Empty;
-        if (connStr.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) || 
+        if (connStr.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
             connStr.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
         {
             var uri = new Uri(connStr);

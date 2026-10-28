@@ -94,4 +94,93 @@ public sealed class UserNotificationService : IUserNotificationService
         if (userId == Guid.Empty)
             throw new ArgumentException("User ID must not be empty.");
     }
+
+    public async Task<int> GetUnreadCountAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ValidateUserId(userId);
+
+        return await _db.Notifications
+            .AsNoTracking()
+            .CountAsync(
+                n => n.UserId == userId
+                    && !n.IsDeleted
+                    && !n.IsRead,
+                cancellationToken
+            );
+    }
+
+
+    public async Task<int> MarkManyAsReadAsync(
+        Guid userId,
+        IReadOnlyCollection<Guid> notificationIds,
+        CancellationToken cancellationToken = default)
+    {
+        ValidateUserId(userId);
+
+        ArgumentNullException.ThrowIfNull(notificationIds);
+
+        if (notificationIds.Any(id => id == Guid.Empty))
+            throw new ArgumentException(
+                "Notification IDs must not be empty.",
+                nameof(notificationIds));
+
+        if (notificationIds.Count == 0)
+            return 0;
+
+        var ids = notificationIds.Distinct().ToArray();
+
+        var notifications = await _db.Notifications
+            .AsTracking()
+            .Where(n =>
+                n.UserId == userId &&
+                !n.IsDeleted &&
+                !n.IsRead &&
+                ids.Contains(n.Id))
+            .ToListAsync(cancellationToken);
+
+        foreach (var notification in notifications)
+        {
+            notification.MarkAsRead();
+        }
+
+        if (notifications.Count > 0)
+        {
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+
+        return notifications.Count;
+    }
+
+
+
+    public async Task<int> MarkAllAsReadAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default
+    )
+    {
+        ValidateUserId(userId);
+
+        var notifications = await _db.Notifications
+            .AsTracking()
+            .Where(n =>
+                n.UserId == userId &&
+                !n.IsDeleted &&
+                !n.IsRead)
+            .ToListAsync(cancellationToken);
+
+        foreach (var notification in notifications)
+        {
+            notification.MarkAsRead();
+        }
+
+        if (notifications.Count > 0)
+        {
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+
+        return notifications.Count;
+    }
 }
