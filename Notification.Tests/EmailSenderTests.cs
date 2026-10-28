@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Nexus.Contracts.Events;
 using Notification.Application.Common.Interfaces;
-using Notification.Infrastructure.Consumers;
+using Notification.Application.Consumers.User;
 using Notification.Infrastructure.Services.Email;
 using Xunit;
 

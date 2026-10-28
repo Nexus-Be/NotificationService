@@ -1,8 +1,8 @@
 # 01 — PHÂN TẦNG CLEAN ARCHITECTURE & QUY TẮC PHỤ THUỘC (NOTIFICATION SERVICE)
 
-> **Trạng thái triển khai (2026-10-24):** ⚠️ MỘT PHẦN — 5 project và luồng phụ thuộc đúng Clean Architecture, nhưng tầng Application chỉ có **104 dòng** (chưa có use case thông báo), consumer nằm ở **Infrastructure** thay vì Application, và `NotificationDbContext` là lớp bọc chết.
-> **Nguồn sự thật:** code (`Notification.sln:4-13`, `Notification.Application/Notification.Application.csproj:10`, `Notification.Infrastructure/Consumers/SendOtpEmailConsumer.cs:9`).
-> **Cập nhật lần cuối:** 2026-10-24.
+> **Trạng thái triển khai (2026-10-29):** ✅ ĐÃ CHUẨN HÓA — 4 tầng Clean Architecture chuẩn hóa: Inbound Consumer đã chuyển từ Infrastructure về đúng tầng Application tại `Notification.Application/Consumers/User/SendOtpEmailConsumer.cs`, đóng gói DI qua `ConsumerExtensions.cs`, Feature Co-location cho Notification và Email Services, 100% RESTful HTTP/JSON (CẤM gRPC).
+> **Nguồn sự thật:** code (`Notification.sln`, `Notification.Application/Consumers/`, `Notification.Infrastructure/DependencyInjection.cs`, `Notification.Api/Controllers/`).
+> **Cập nhật lần cuối:** 2026-10-29.
 
 > **Lệch format so với 7 repo còn lại:**
 > - Domain đặt `using` **trước** `namespace` (`Domain/Entities/NotificationRecord.cs:1-4`).

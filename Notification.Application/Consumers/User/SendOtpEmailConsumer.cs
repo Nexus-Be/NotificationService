@@ -1,4 +1,4 @@
-namespace Notification.Infrastructure.Consumers;
+namespace Notification.Application.Consumers.User;
 
 using System.Threading.Tasks;
 using MassTransit;

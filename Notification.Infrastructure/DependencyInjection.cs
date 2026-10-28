@@ -4,8 +4,8 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Notification.Application.Consumers;
 using Notification.Application.Interfaces;
-using Notification.Infrastructure.Consumers;
 using Notification.Infrastructure.Persistence;
 using Notification.Infrastructure.Services.Email;
 
@@ -59,8 +59,7 @@ public static class DependencyInjection
         // MassTransit RabbitMQ Consumer
         services.AddMassTransit(x =>
         {
-            x.AddConsumer<SendOtpEmailConsumer>()
-                .Endpoint(e => e.Name = "send-otp-email");
+            x.AddApplicationConsumers();
 
             x.SetKebabCaseEndpointNameFormatter();
 

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Nexus.Contracts.Events;
 using Notification.Application.Common.Interfaces;
-using Notification.Infrastructure.Consumers;
+using Notification.Application.Consumers.User;
 using Xunit;
 
 public sealed class OtpEmailConsumerTests
