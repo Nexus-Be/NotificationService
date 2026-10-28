@@ -9,10 +9,8 @@ public class NotificationChannelConfiguration : IEntityTypeConfiguration<Notific
     public void Configure(EntityTypeBuilder<NotificationChannel> builder)
     {
         builder.HasKey(x => x.Id);
-        builder.Property(x => x.Code).HasConversion<string>().HasMaxLength(50);
         builder.HasIndex(x => x.Code).IsUnique();
         builder.Property(x => x.Name).HasMaxLength(150).IsRequired();
-        builder.Property(x => x.Provider).HasConversion<string>();
         builder.Property(x => x.Config).HasColumnType("jsonb");
 
         builder.HasMany(c => c.Templates)

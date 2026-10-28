@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Notification.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261026105458_InitialNotificationSchema")]
-    partial class InitialNotificationSchema
+    [Migration("20261028093535_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -199,9 +199,8 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Action")
+                        .HasColumnType("integer");
 
                     b.Property<string>("ChangedColumns")
                         .HasColumnType("jsonb");
@@ -291,9 +290,8 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.Property<int?>("QueueDepth")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -324,9 +322,8 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset?>("LastSeenAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Platform")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Platform")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Token")
                         .IsRequired()
@@ -405,10 +402,8 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                    b.Property<int>("Code")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Config")
                         .HasColumnType("jsonb");
@@ -433,8 +428,8 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
-                    b.Property<string>("Provider")
-                        .HasColumnType("text");
+                    b.Property<int?>("Provider")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -453,33 +448,33 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = new Guid("10101010-1010-1010-1010-101010101010"),
-                            Code = "Email",
+                            Code = 0,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             IsDeleted = false,
                             IsDisabled = false,
                             Name = "Thư điện tử (Email)",
-                            Provider = "Smtp",
+                            Provider = 0,
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
                             Id = new Guid("20202020-2020-2020-2020-202020202020"),
-                            Code = "Push",
+                            Code = 1,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             IsDeleted = false,
                             IsDisabled = false,
                             Name = "Thông báo đẩy di động (Push)",
-                            Provider = "Fcm",
+                            Provider = 2,
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         },
                         new
                         {
                             Id = new Guid("30303030-3030-3030-3030-303030303030"),
-                            Code = "InApp",
+                            Code = 2,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             IsDeleted = false,
@@ -491,7 +486,7 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = new Guid("40404040-4040-4040-4040-404040404040"),
-                            Code = "Sms",
+                            Code = 3,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             IsDeleted = false,
@@ -511,10 +506,8 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.Property<int>("AttemptCount")
                         .HasColumnType("integer");
 
-                    b.Property<string>("ChannelCode")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                    b.Property<int>("ChannelCode")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -551,9 +544,8 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("bigint");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -573,9 +565,8 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Action")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -589,9 +580,8 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Level")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Level")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Message")
                         .HasMaxLength(2000)
@@ -621,10 +611,8 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ChannelCode")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                    b.Property<int>("ChannelCode")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -638,9 +626,8 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsDisabled")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("NotificationType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("NotificationType")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -665,9 +652,8 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         .HasMaxLength(4000)
                         .HasColumnType("character varying(4000)");
 
-                    b.Property<string>("ChannelScope")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("ChannelScope")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -681,8 +667,8 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsRead")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("NotificationType")
-                        .HasColumnType("text");
+                    b.Property<int?>("NotificationType")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Payload")
                         .HasColumnType("jsonb");
@@ -693,9 +679,8 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("SourceEventId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<Guid?>("TemplateId")
                         .HasColumnType("uuid");
@@ -721,14 +706,14 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("61000000-0000-0000-0000-000000000001"),
                             Body = "Đơn hàng SUB-20260101-0001 với số tiền 850.000 đ đã được thanh toán thành công qua Ví Nexus.",
-                            ChannelScope = "All",
+                            ChannelScope = 0,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsDeleted = false,
                             IsRead = true,
-                            NotificationType = "OrderPaid",
+                            NotificationType = 0,
                             Payload = "{\"subOrderId\":\"02000000-0000-0000-0000-000000000001\",\"amount\":850000}",
                             ReadAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 5, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Status = "Completed",
+                            Status = 1,
                             TemplateId = new Guid("60000000-0000-0000-0000-000000000001"),
                             Title = "Thanh toán thành công đơn hàng SUB-20260101-0001",
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
@@ -746,10 +731,8 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         .HasMaxLength(4000)
                         .HasColumnType("character varying(4000)");
 
-                    b.Property<string>("ChannelCode")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                    b.Property<int>("ChannelCode")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Code")
                         .IsRequired()
@@ -779,9 +762,8 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<string>("NotificationType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("NotificationType")
+                        .HasColumnType("integer");
 
                     b.Property<string>("SubjectTemplate")
                         .HasMaxLength(500)
@@ -807,7 +789,7 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("60000000-0000-0000-0000-000000000001"),
                             BodyTemplate = "Đơn hàng {{OrderNo}} của bạn đã được thanh toán thành công số tiền {{TotalAmount}}.",
-                            ChannelCode = "Email",
+                            ChannelCode = 0,
                             Code = "ORDER_PAID_EMAIL",
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
@@ -815,7 +797,7 @@ namespace Notification.Infrastructure.Persistence.Migrations
                             IsDeleted = false,
                             IsMandatory = false,
                             Locale = "vi-VN",
-                            NotificationType = "OrderPaid",
+                            NotificationType = 0,
                             SubjectTemplate = "Xác nhận thanh toán đơn hàng {{OrderNo}}",
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
@@ -824,7 +806,7 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("60000000-0000-0000-0000-000000000002"),
                             BodyTemplate = "Đơn hàng {{OrderNo}} của bạn đã được đóng gói và bàn giao cho đơn vị vận chuyển.",
-                            ChannelCode = "Email",
+                            ChannelCode = 0,
                             Code = "ORDER_SHIPPED_EMAIL",
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
@@ -832,7 +814,7 @@ namespace Notification.Infrastructure.Persistence.Migrations
                             IsDeleted = false,
                             IsMandatory = false,
                             Locale = "vi-VN",
-                            NotificationType = "OrderShipped",
+                            NotificationType = 1,
                             SubjectTemplate = "Đơn hàng {{OrderNo}} đang trên đường giao đến bạn",
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
