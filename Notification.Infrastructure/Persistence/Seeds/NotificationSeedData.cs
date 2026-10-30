@@ -95,10 +95,11 @@ public static class NotificationSeedData
         );
 
         // 3. Notification Record (Linked to Buyer User and SubOrder)
+        var notificationRecordId = Guid.Parse("61000000-0000-0000-0000-000000000001");
         modelBuilder.Entity<NotificationRecord>().HasData(
             new NotificationRecord
             {
-                Id = Guid.Parse("61000000-0000-0000-0000-000000000001"),
+                Id = notificationRecordId,
                 UserId = buyerUserId,
                 TemplateId = templateOrderPaidId,
                 NotificationType = NotificationType.OrderPaid,
@@ -112,6 +113,149 @@ public static class NotificationSeedData
                 CreatedAt = seedDate,
                 UpdatedAt = seedDate,
                 IsDeleted = false
+            }
+        );
+
+        // 4. Notification Preferences
+        modelBuilder.Entity<NotificationPreference>().HasData(
+            new NotificationPreference
+            {
+                Id = Guid.Parse("62000000-0000-0000-0000-000000000001"),
+                UserId = buyerUserId,
+                NotificationType = NotificationType.OrderPaid,
+                ChannelCode = ChannelType.Email,
+                IsDisabled = false,
+                CreatedAt = seedDate,
+                UpdatedAt = seedDate,
+                IsDeleted = false
+            },
+            new NotificationPreference
+            {
+                Id = Guid.Parse("62000000-0000-0000-0000-000000000002"),
+                UserId = buyerUserId,
+                NotificationType = NotificationType.OrderPaid,
+                ChannelCode = ChannelType.InApp,
+                IsDisabled = false,
+                CreatedAt = seedDate,
+                UpdatedAt = seedDate,
+                IsDeleted = false
+            },
+            new NotificationPreference
+            {
+                Id = Guid.Parse("62000000-0000-0000-0000-000000000003"),
+                UserId = buyerUserId,
+                NotificationType = NotificationType.OrderShipped,
+                ChannelCode = ChannelType.Email,
+                IsDisabled = false,
+                CreatedAt = seedDate,
+                UpdatedAt = seedDate,
+                IsDeleted = false
+            }
+        );
+
+        // 5. Device Tokens
+        modelBuilder.Entity<DeviceToken>().HasData(
+            new DeviceToken
+            {
+                Id = Guid.Parse("63000000-0000-0000-0000-000000000001"),
+                UserId = buyerUserId,
+                Platform = DevicePlatform.Android,
+                Token = "fcm_token_buyer_android_nexus_2026",
+                IsActive = true,
+                LastSeenAt = seedDate,
+                CreatedAt = seedDate,
+                UpdatedAt = seedDate,
+                IsDeleted = false
+            },
+            new DeviceToken
+            {
+                Id = Guid.Parse("63000000-0000-0000-0000-000000000002"),
+                UserId = buyerUserId,
+                Platform = DevicePlatform.Web,
+                Token = "web_push_token_buyer_chrome_nexus_2026",
+                IsActive = true,
+                LastSeenAt = seedDate,
+                CreatedAt = seedDate,
+                UpdatedAt = seedDate,
+                IsDeleted = false
+            }
+        );
+
+        // 6. Notification Deliveries
+        var deliveryEmailId = Guid.Parse("64000000-0000-0000-0000-000000000001");
+        modelBuilder.Entity<NotificationDelivery>().HasData(
+            new NotificationDelivery
+            {
+                Id = deliveryEmailId,
+                NotificationId = notificationRecordId,
+                ChannelCode = ChannelType.Email,
+                Destination = "buyer@nexus.com",
+                Status = DeliveryStatus.Sent,
+                AttemptCount = 1,
+                LastAttemptAt = seedDate.AddSeconds(10),
+                NextRetryAt = null,
+                ErrorCode = null,
+                ErrorMessage = null,
+                RowVersion = 1,
+                CreatedAt = seedDate,
+                UpdatedAt = seedDate.AddSeconds(10),
+                IsDeleted = false
+            },
+            new NotificationDelivery
+            {
+                Id = Guid.Parse("64000000-0000-0000-0000-000000000002"),
+                NotificationId = notificationRecordId,
+                ChannelCode = ChannelType.InApp,
+                Destination = buyerUserId.ToString(),
+                Status = DeliveryStatus.Sent,
+                AttemptCount = 1,
+                LastAttemptAt = seedDate,
+                NextRetryAt = null,
+                ErrorCode = null,
+                ErrorMessage = null,
+                RowVersion = 1,
+                CreatedAt = seedDate,
+                UpdatedAt = seedDate,
+                IsDeleted = false
+            }
+        );
+
+        // 7. Notification Logs
+        modelBuilder.Entity<NotificationLog>().HasData(
+            new NotificationLog
+            {
+                Id = Guid.Parse("65000000-0000-0000-0000-000000000001"),
+                NotificationId = notificationRecordId,
+                DeliveryId = deliveryEmailId,
+                Action = LogAction.Sent,
+                Level = LogLevel.Info,
+                Message = "Email thông báo thanh toán đơn hàng đã được gửi thành công qua SMTP",
+                Metadata = "{\"provider\":\"Smtp\",\"recipient\":\"buyer@nexus.com\"}",
+                CreatedAt = seedDate.AddSeconds(10),
+                UpdatedAt = seedDate.AddSeconds(10),
+                IsDeleted = false
+            }
+        );
+
+        // 8. Audit Log
+        modelBuilder.Entity<AuditLog>().HasData(
+            new AuditLog
+            {
+                Id = Guid.Parse("66000000-0000-0000-0000-000000000001"),
+                ServiceName = "Notification",
+                TraceId = "trace-notif-pref-001",
+                UserId = buyerUserId.ToString(),
+                UserName = "buyer@nexus.com",
+                Action = AuditAction.PreferenceUpdate,
+                EntityName = "NotificationPreference",
+                EntityId = "62000000-0000-0000-0000-000000000001",
+                OldValues = null,
+                NewValues = "{\"ChannelCode\":\"Email\",\"NotificationType\":\"OrderPaid\",\"IsDisabled\":false}",
+                ChangedColumns = "[\"IsDisabled\"]",
+                IpAddress = "127.0.0.1",
+                UserAgent = "NexusClient/1.0",
+                CreatedAt = seedDate,
+                IsSynced = true
             }
         );
     }

@@ -1,11 +1,10 @@
 namespace Notification.Infrastructure;
 
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Notification.Application.Consumers;
 using Notification.Application.Interfaces;
+using Notification.Infrastructure.BackgroundWorkers;
 using Notification.Infrastructure.Persistence;
 using Notification.Infrastructure.Services.Email;
 
@@ -54,47 +53,10 @@ public static class DependencyInjection
         });
         services.AddSingleton<IEmailService, MailKitEmailSenderService>();
         services.AddSingleton<IEmailSenderService>(sp => (MailKitEmailSenderService)sp.GetRequiredService<IEmailService>());
-        services.AddSingleton<Notification.Application.Common.Interfaces.IEmailSenderService>(sp => (MailKitEmailSenderService)sp.GetRequiredService<IEmailService>());
 
-        // MassTransit RabbitMQ Consumer
-        services.AddMassTransit(x =>
-        {
-            x.AddApplicationConsumers();
-
-            x.SetKebabCaseEndpointNameFormatter();
-
-            x.AddEntityFrameworkOutbox<AppDbContext>(o =>
-            {
-                o.UsePostgres();
-                o.UseBusOutbox();
-            });
-
-            x.UsingRabbitMq((context, cfg) =>
-            {
-                var host = configuration["RabbitMq:Host"] ?? "localhost";
-                var portStr = configuration["RabbitMq:Port"] ?? "5672";
-                var port = ushort.TryParse(portStr, out var p) ? p : (ushort)5672;
-                var user = configuration["RabbitMq:User"] ?? "guest";
-                var pass = configuration["RabbitMq:Password"] ?? "guest";
-
-                cfg.Host(host, port, "/", h =>
-                {
-                    h.Username(user);
-                    h.Password(pass);
-                });
-
-                cfg.UseMessageRetry(r =>
-                {
-                    r.Handle<InvalidOperationException>();
-                    r.Intervals(
-                        TimeSpan.FromSeconds(2),
-                        TimeSpan.FromSeconds(5),
-                        TimeSpan.FromSeconds(10)
-                    );
-                });
-                cfg.ConfigureEndpoints(context);
-            });
-        });
+        // Non-blocking in-memory background email queue & worker
+        services.AddSingleton<IEmailBackgroundQueue, EmailBackgroundQueue>();
+        services.AddHostedService<EmailBackgroundWorker>();
 
         return services;
     }

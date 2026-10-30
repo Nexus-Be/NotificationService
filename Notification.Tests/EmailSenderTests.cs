@@ -1,15 +1,9 @@
 namespace Notification.Tests;
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
-using MassTransit;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Moq;
-using Nexus.Contracts.Events;
-using Notification.Application.Common.Interfaces;
-using Notification.Application.Consumers.User;
 using Notification.Infrastructure.Services.Email;
 using Xunit;
 
@@ -35,36 +29,6 @@ public sealed class EmailSenderTests
             expiresInMinutes: 5);
 
         Assert.True(result);
-    }
-
-    [Fact]
-    public async Task SendOtpEmailConsumer_consumes_message_and_calls_email_sender()
-    {
-        var mockSender = new Mock<IEmailSenderService>();
-        mockSender
-            .Setup(s => s.SendOtpRegistrationEmailAsync(
-                "buyer@nexus.local",
-                "Nguyen Van A",
-                "888999",
-                5,
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
-
-        var consumer = new SendOtpEmailConsumer(mockSender.Object, NullLogger<SendOtpEmailConsumer>.Instance);
-
-        var message = new SendOtpEmailIntegrationEvent("buyer@nexus.local", "Nguyen Van A", "888999", 5);
-        var mockContext = new Mock<ConsumeContext<SendOtpEmailIntegrationEvent>>();
-        mockContext.SetupGet(c => c.Message).Returns(message);
-        mockContext.SetupGet(c => c.CancellationToken).Returns(CancellationToken.None);
-
-        await consumer.Consume(mockContext.Object);
-
-        mockSender.Verify(s => s.SendOtpRegistrationEmailAsync(
-            "buyer@nexus.local",
-            "Nguyen Van A",
-            "888999",
-            5,
-            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private sealed class FakeOptionsMonitor<T> : IOptionsMonitor<T>

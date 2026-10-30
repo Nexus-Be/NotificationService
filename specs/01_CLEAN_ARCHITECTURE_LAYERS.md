@@ -78,12 +78,12 @@ Notification.sln
 1. **Giao tiếp đồng bộ (RESTful)**:
    - `Notification.Api/Controllers/`: Thin Dispatcher Controller, chỉ nhận request, gọi Service Interface trong Application, trả về `IActionResult`. Tuyệt đối cấm logic nghiệp vụ, cấm map anonymous object, cấm khai báo class DTO trong file controller.
    - `Notification.Application/Services/{Feature}/`: Mỗi feature (`Notification`, `Template`...) chứa `I{Feature}Service.cs`, `{Feature}Service.cs`, và Request/Response DTOs dùng chung cho Controller.
-2. **Giao tiếp bất đồng bộ (RabbitMQ MassTransit)**:
-   - `Notification.Application/Contracts/`: Chứa các Integration Events nhận hoặc gửi.
-   - `Notification.Infrastructure/Consumers/`: Chứa các MassTransit Consumer triển khai `IConsumer<TEvent>` (ví dụ: `SendOtpEmailConsumer`).
+2. **Bãi bỏ hoàn toàn gRPC & Message Broker**:
+   - Không sử dụng RabbitMQ, MassTransit hay Outbox tables.
+   - Nhận yêu cầu gửi email và tạo thông báo trực tiếp qua RESTful Web API (`EmailController.cs`, `NotificationsController.cs`).
 3. **Quản lý Dependency Injection**:
    - `Notification.Application/DependencyInjection.cs`: Đăng ký toàn bộ Application Services.
-   - `Notification.Infrastructure/DependencyInjection.cs`: Đăng ký `NotificationDbContext`, Email/SMS Provider, MassTransit Bus, Consumers.
+   - `Notification.Infrastructure/DependencyInjection.cs`: Đăng ký `AppDbContext` (hiện thực `INotificationDbContext`) và Email Providers.
 4. **Validation**:
    - Input format validation đặt tại Request DTOs qua Data Annotations (`[Required]`, `[EmailAddress]`...).
    - Business validation đặt tại Application Services hoặc Domain Exceptions.

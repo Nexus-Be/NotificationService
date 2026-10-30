@@ -24,9 +24,7 @@ public sealed class EmailController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
-    /// Gửi email chứa mã OTP xác thực đăng ký hoặc đặt lại mật khẩu qua RESTful đồng bộ.
-    /// </summary>
+    /// <summary>Sends OTP verification email synchronously.</summary>
     [HttpPost("otp")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -93,9 +91,7 @@ public sealed class EmailController : ControllerBase
         });
     }
 
-    /// <summary>
-    /// Gửi email HTML tổng quát qua RESTful đồng bộ.
-    /// </summary>
+    /// <summary>Sends a general HTML email synchronously.</summary>
     [HttpPost("send")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

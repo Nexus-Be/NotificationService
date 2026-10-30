@@ -23,6 +23,7 @@ bld/
 ## Rider / JetBrains
 .idea/
 *.sln.iml
+*.DotSettings.user
 
 ## User-specific files
 *.rsuser

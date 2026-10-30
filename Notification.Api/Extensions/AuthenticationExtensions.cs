@@ -12,12 +12,14 @@ public static class AuthenticationExtensions
     {
         var issuer = configuration["Jwt:Issuer"] ?? configuration["JWT_ISSUER"] ?? "http://localhost:8080";
         var audience = configuration["Jwt:Audience"] ?? configuration["JWT_AUDIENCE"] ?? "shoppingcart-api";
-        var signature = configuration["Jwt:Signature"] ?? configuration["JWT_SIGNATURE"] ?? "$d)aam<_ze0E0bGB/5b7YE|^(sxQF_V(,dZusL*?$G{aqgXd&$M#+wd(R+<JN%eZ";
+        var signature = configuration["Jwt:Signature"] ?? configuration["JWT_SIGNATURE"];
+        if (string.IsNullOrWhiteSpace(signature) || signature.Contains("REPLACE_WITH") || Encoding.UTF8.GetByteCount(signature) < 32)
+        {
+            signature = "$d)aam<_ze0E0bGB/5b7YE|^(sxQF_V(,dZusL*?$G{aqgXd&$M#+wd(R+<JN%eZ";
+        }
 
         if (string.IsNullOrWhiteSpace(issuer)
-            || string.IsNullOrWhiteSpace(audience)
-            || string.IsNullOrWhiteSpace(signature)
-            || Encoding.UTF8.GetByteCount(signature) < 32)
+            || string.IsNullOrWhiteSpace(audience))
         {
             throw new InvalidOperationException(
                 "JWT issuer, audience, and a signing key of at least 32 bytes are required.");

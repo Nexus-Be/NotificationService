@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 using MimeKit;
 using Notification.Application.Interfaces;
 
-public sealed class MailKitEmailSenderService : IEmailService, IEmailSenderService, Notification.Application.Common.Interfaces.IEmailSenderService
+public sealed class MailKitEmailSenderService : IEmailService, IEmailSenderService
 {
     private readonly IOptionsMonitor<SmtpOptions> _smtpOptions;
     private readonly ILogger<MailKitEmailSenderService> _logger;

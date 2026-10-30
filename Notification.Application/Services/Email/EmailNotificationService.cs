@@ -7,15 +7,25 @@ using Notification.Application.Interfaces;
 public sealed class EmailNotificationService : IEmailNotificationService
 {
     private readonly IEmailSenderService _emailSender;
+    private readonly IEmailBackgroundQueue? _backgroundQueue;
 
-    public EmailNotificationService(IEmailSenderService emailSender)
+    public EmailNotificationService(
+        IEmailSenderService emailSender,
+        IEmailBackgroundQueue? backgroundQueue = null)
     {
         _emailSender = emailSender;
+        _backgroundQueue = backgroundQueue;
     }
 
-    public Task<bool> SendOtpEmailAsync(SendOtpEmailDto dto, CancellationToken cancellationToken = default)
+    public async Task<bool> SendOtpEmailAsync(SendOtpEmailDto dto, CancellationToken cancellationToken = default)
     {
-        return _emailSender.SendOtpRegistrationEmailAsync(dto.Email, dto.FullName, dto.OtpCode, dto.ExpiresInMinutes, cancellationToken);
+        if (_backgroundQueue != null)
+        {
+            await _backgroundQueue.QueueOtpEmailAsync(dto, cancellationToken);
+            return true;
+        }
+
+        return await _emailSender.SendOtpRegistrationEmailAsync(dto.Email, dto.FullName, dto.OtpCode, dto.ExpiresInMinutes, cancellationToken);
     }
 
     public Task<bool> SendEmailAsync(SendGeneralEmailDto dto, CancellationToken cancellationToken = default)
