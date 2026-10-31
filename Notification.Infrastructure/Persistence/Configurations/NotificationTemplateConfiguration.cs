@@ -10,8 +10,6 @@ public class NotificationTemplateConfiguration : IEntityTypeConfiguration<Notifi
     {
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Code).HasMaxLength(150).IsRequired();
-        builder.Property(x => x.NotificationType).HasConversion<string>();
-        builder.Property(x => x.ChannelCode).HasConversion<string>().HasMaxLength(50);
         builder.Property(x => x.SubjectTemplate).HasMaxLength(500);
         builder.Property(x => x.BodyTemplate).HasMaxLength(4000);
         builder.Property(x => x.Locale).HasMaxLength(20);

@@ -1,11 +1,10 @@
 namespace Notification.Infrastructure;
 
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Notification.Application.Interfaces;
-using Notification.Infrastructure.Consumers;
+using Notification.Infrastructure.BackgroundWorkers;
 using Notification.Infrastructure.Persistence;
 using Notification.Infrastructure.Services.Email;
 
@@ -17,7 +16,13 @@ public static class DependencyInjection
             ?? configuration["CONNECTION_STRING"]
             ?? configuration["NOTIFICATION_CONNECTION_STRING"]
             ?? configuration["NOTIFICATION_DB_CONNECTION"]
-            ?? "Host=localhost;Port=5439;Database=notification_db;Username=postgres;Password=postgres";
+            ?? Environment.GetEnvironmentVariable("NOTIFICATION_CONNECTION_STRING")
+            ?? Environment.GetEnvironmentVariable("CONNECTION_STRING");
+
+        if (string.IsNullOrWhiteSpace(rawConnection) || rawConnection.Contains("REPLACE_WITH"))
+        {
+            throw new InvalidOperationException("Database connection string for NotificationService is not configured. Set 'ConnectionStrings:DefaultConnection' or environment variable 'NOTIFICATION_CONNECTION_STRING'.");
+        }
         var connectionString = NormalizeConnectionString(rawConnection);
 
         services.AddDbContext<AppDbContext>(options =>
@@ -26,41 +31,38 @@ public static class DependencyInjection
         services.AddScoped<INotificationDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
         // Email Infrastructure Service
-        services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
+        services.Configure<SmtpOptions>(opts =>
+        {
+            configuration.GetSection(SmtpOptions.SectionName).Bind(opts);
+
+            // Fallback / Override from flat environment variables if provided
+            var envHost = configuration["SMTP_HOST"];
+            if (!string.IsNullOrWhiteSpace(envHost)) opts.Host = envHost;
+
+            var envPort = configuration["SMTP_PORT"];
+            if (int.TryParse(envPort, out var p)) opts.Port = p;
+
+            var envSsl = configuration["SMTP_USE_SSL"];
+            if (bool.TryParse(envSsl, out var ssl)) opts.UseSsl = ssl;
+
+            var envSenderName = configuration["SMTP_SENDER_NAME"];
+            if (!string.IsNullOrWhiteSpace(envSenderName)) opts.SenderName = envSenderName;
+
+            var envSenderEmail = configuration["SMTP_SENDER_EMAIL"];
+            if (!string.IsNullOrWhiteSpace(envSenderEmail)) opts.SenderEmail = envSenderEmail;
+
+            var envUsername = configuration["SMTP_USERNAME"];
+            if (!string.IsNullOrWhiteSpace(envUsername)) opts.Username = envUsername;
+
+            var envPassword = configuration["SMTP_PASSWORD"];
+            if (!string.IsNullOrWhiteSpace(envPassword)) opts.Password = envPassword;
+        });
         services.AddSingleton<IEmailService, MailKitEmailSenderService>();
         services.AddSingleton<IEmailSenderService>(sp => (MailKitEmailSenderService)sp.GetRequiredService<IEmailService>());
-        services.AddSingleton<Notification.Application.Common.Interfaces.IEmailSenderService>(sp => (MailKitEmailSenderService)sp.GetRequiredService<IEmailService>());
 
-        // MassTransit RabbitMQ Consumer
-        services.AddMassTransit(x =>
-        {
-            x.AddConsumer<SendOtpEmailConsumer>();
-
-            x.SetKebabCaseEndpointNameFormatter();
-
-            x.AddEntityFrameworkOutbox<AppDbContext>(o =>
-            {
-                o.UsePostgres();
-                o.UseBusOutbox();
-            });
-
-            x.UsingRabbitMq((context, cfg) =>
-            {
-                var host = configuration["RabbitMq:Host"] ?? "localhost";
-                var portStr = configuration["RabbitMq:Port"] ?? "5672";
-                var port = ushort.TryParse(portStr, out var p) ? p : (ushort)5672;
-                var user = configuration["RabbitMq:User"] ?? "guest";
-                var pass = configuration["RabbitMq:Password"] ?? "guest";
-
-                cfg.Host(host, port, "/", h =>
-                {
-                    h.Username(user);
-                    h.Password(pass);
-                });
-
-                cfg.ConfigureEndpoints(context);
-            });
-        });
+        // Non-blocking in-memory background email queue & worker
+        services.AddSingleton<IEmailBackgroundQueue, EmailBackgroundQueue>();
+        services.AddHostedService<EmailBackgroundWorker>();
 
         return services;
     }

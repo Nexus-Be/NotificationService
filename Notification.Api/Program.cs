@@ -1,37 +1,30 @@
 using Microsoft.EntityFrameworkCore;
-using Notification.Api.Middleware;
+using Notification.Api.Common;
+using Notification.Api.Extensions;
 using Notification.Application;
 using Notification.Infrastructure;
 using Notification.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Application & Infrastructure Dependency Injection
+// 1. Service Defaults (Observability, Swagger, JSON options, exception handling)
+builder.Services.AddServiceDefaults(builder.Configuration, "notification-service");
+
+// 2. Application & Infrastructure Dependency Injection
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
-// 2. Swagger / OpenAPI & JSON Serialization
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.ConfigureHttpJsonOptions(options =>
-{
-    options.SerializerOptions.Converters.Add(new Notification.Api.Common.Converters.PascalCaseJsonStringEnumConverter(allowIntegerValues: false));
-});
-builder.Services.Configure<Microsoft.AspNetCore.Mvc.JsonOptions>(options =>
-{
-    options.JsonSerializerOptions.Converters.Add(new Notification.Api.Common.Converters.PascalCaseJsonStringEnumConverter(allowIntegerValues: false));
-});
+// 3. REST Services
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = ApiValidationProblemFactory.Create;
+    });
 
 var app = builder.Build();
 
-// 3. Global Exception Handler Middleware
-app.UseGlobalExceptionHandler();
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// 4. Default Middleware Pipeline (Exception Handler, Internal auth, Swagger UI)
+app.UseServiceDefaults();
 
 // Automatically apply database migrations on startup if relational DB is available
 using (var scope = app.Services.CreateScope())
@@ -50,6 +43,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.MapGet("/health", () => Results.Ok(new { status = "Healthy", service = "Notification.Api" }));
+app.MapControllers();
+app.MapGet("/health", () => Results.Ok(new { status = "Healthy", service = "notification-service" }));
 
 app.Run();

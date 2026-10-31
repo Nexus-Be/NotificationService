@@ -9,9 +9,7 @@ public class NotificationDeliveryConfiguration : IEntityTypeConfiguration<Notifi
     public void Configure(EntityTypeBuilder<NotificationDelivery> builder)
     {
         builder.HasKey(x => x.Id);
-        builder.Property(x => x.ChannelCode).HasConversion<string>().HasMaxLength(50);
         builder.Property(x => x.Destination).HasMaxLength(500).IsRequired();
-        builder.Property(x => x.Status).HasConversion<string>();
         builder.Property(x => x.ErrorCode).HasMaxLength(100);
         builder.Property(x => x.ErrorMessage).HasMaxLength(1000);
         builder.Property(x => x.RowVersion).IsConcurrencyToken();

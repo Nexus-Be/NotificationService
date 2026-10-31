@@ -10,7 +10,6 @@ public class BrokerHealthCheckConfiguration : IEntityTypeConfiguration<BrokerHea
     {
         builder.HasKey(x => x.Id);
         builder.Property(x => x.BrokerName).HasMaxLength(100).IsRequired();
-        builder.Property(x => x.Status).HasConversion<string>();
         builder.Property(x => x.Detail).HasMaxLength(1000);
     }
 }

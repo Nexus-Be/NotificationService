@@ -1,34 +1,34 @@
 # =============================================================================
 # NEXUS NOTIFICATION SERVICE - DOCKER COMPOSE
 # =============================================================================
-# Khởi chạy độc lập Notification Service:
-#   CSDL chính lưu trên Neon Cloud (PostgreSQL)
-#   docker compose up -d
+# Chạy độc lập service này. Database dùng Neon Cloud, hạ tầng dùng chung nexus-network.
+# Lệnh: docker compose up -d --build
 # =============================================================================
 
-services:
+name: nexus-notification
 
-  # 1. Ứng dụng Notification Service gRPC (Port 8007)
+services:
   notification-service:
     image: oaktree293/notificationservice:latest
     container_name: nexus-notification-service
     environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
-      - ConnectionStrings__DefaultConnection=${CONNECTION_STRING}
-      - RabbitMq__Host=${RABBITMQ_HOST:-rabbitmq}
-      - RabbitMq__Port=${RABBITMQ_PORT:-5672}
-      - RabbitMq__User=${RABBITMQ_USER:-guest}
-      - RabbitMq__Password=${RABBITMQ_PASSWORD:-guest}
-      - Smtp__Host=${SMTP_HOST:-smtp.gmail.com}
-      - Smtp__Port=${SMTP_PORT:-587}
-      - Smtp__UseSsl=${SMTP_USE_SSL:-false}
-      - Smtp__SenderName=${SMTP_SENDER_NAME:-Nexus Ecosystem}
-      - Smtp__SenderEmail=${SMTP_SENDER_EMAIL:-}
-      - Smtp__Username=${SMTP_USERNAME:-}
-      - Smtp__Password=${SMTP_PASSWORD:-}
-      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-http://tempo:4317}
+      ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT:-Development}"
+      ConnectionStrings__DefaultConnection: "${NOTIFICATION_DB_CONNECTION:?NOTIFICATION_DB_CONNECTION is required}"
+      Jwt__Issuer: "${JWT_ISSUER:-http://localhost:8001}"
+      Jwt__Audience: "${JWT_AUDIENCE:-shoppingcart-api}"
+      Jwt__Signature: "${JWT_SIGNATURE:?JWT_SIGNATURE is required}"
+      Smtp__Host: "${SMTP_HOST:-smtp.gmail.com}"
+      Smtp__Port: "${SMTP_PORT:-587}"
+      Smtp__UseSsl: "${SMTP_USE_SSL:-false}"
+      Smtp__SenderName: "${SMTP_SENDER_NAME:-Nexus Ecosystem}"
+      Smtp__SenderEmail: "${SMTP_SENDER_EMAIL:-}"
+      Smtp__Username: "${SMTP_USERNAME:-}"
+      Smtp__Password: "${SMTP_PASSWORD:-}"
+      InternalSecurity__ServiceKey: "${INTERNAL_SERVICE_SECRET:-eaT0Ombups70WJzd85CBBpp8rAno55SxKn1qvYBGH9e}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://tempo:4317}"
     restart: unless-stopped
 
 networks:
   default:
     name: nexus-network
+    external: true

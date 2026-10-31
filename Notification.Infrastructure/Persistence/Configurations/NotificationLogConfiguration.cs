@@ -9,8 +9,6 @@ public class NotificationLogConfiguration : IEntityTypeConfiguration<Notificatio
     public void Configure(EntityTypeBuilder<NotificationLog> builder)
     {
         builder.HasKey(x => x.Id);
-        builder.Property(x => x.Action).HasConversion<string>();
-        builder.Property(x => x.Level).HasConversion<string>();
         builder.Property(x => x.Message).HasMaxLength(2000);
         builder.Property(x => x.Metadata).HasColumnType("jsonb");
 

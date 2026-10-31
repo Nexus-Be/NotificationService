@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 using MimeKit;
 using Notification.Application.Interfaces;
 
-public sealed class MailKitEmailSenderService : IEmailService, IEmailSenderService, Notification.Application.Common.Interfaces.IEmailSenderService
+public sealed class MailKitEmailSenderService : IEmailService, IEmailSenderService
 {
     private readonly IOptionsMonitor<SmtpOptions> _smtpOptions;
     private readonly ILogger<MailKitEmailSenderService> _logger;
@@ -31,12 +31,14 @@ public sealed class MailKitEmailSenderService : IEmailService, IEmailSenderServi
     {
         var opts = _smtpOptions.CurrentValue;
 
-        if (string.IsNullOrWhiteSpace(opts.Username) || string.IsNullOrWhiteSpace(opts.Password))
+        if (string.IsNullOrWhiteSpace(opts.Username)
+            || string.IsNullOrWhiteSpace(opts.Password))
         {
             _logger.LogWarning(
-                "[EMAIL SIMULATION] SMTP credentials are not configured in appsettings. Simulated sending email to '{ToEmail}' with subject '{Subject}'.",
+                "[SIMULATION MODE] SMTP credentials missing. Simulating email dispatch to '{ToEmail}'. Subject: '{Subject}'.",
                 toEmail,
-                subject);
+                subject
+            );
             return true;
         }
 

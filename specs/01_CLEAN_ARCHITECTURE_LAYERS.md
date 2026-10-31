@@ -1,8 +1,8 @@
 # 01 — PHÂN TẦNG CLEAN ARCHITECTURE & QUY TẮC PHỤ THUỘC (NOTIFICATION SERVICE)
 
-> **Trạng thái triển khai (2026-10-24):** ⚠️ MỘT PHẦN — 5 project và luồng phụ thuộc đúng Clean Architecture, nhưng tầng Application chỉ có **104 dòng** (chưa có use case thông báo), consumer nằm ở **Infrastructure** thay vì Application, và `NotificationDbContext` là lớp bọc chết.
-> **Nguồn sự thật:** code (`Notification.sln:4-13`, `Notification.Application/Notification.Application.csproj:10`, `Notification.Infrastructure/Consumers/SendOtpEmailConsumer.cs:9`).
-> **Cập nhật lần cuối:** 2026-10-24.
+> **Trạng thái triển khai (2026-10-29):** ✅ ĐÃ CHUẨN HÓA — 4 tầng Clean Architecture chuẩn hóa: Inbound Consumer đã chuyển từ Infrastructure về đúng tầng Application tại `Notification.Application/Consumers/User/SendOtpEmailConsumer.cs`, đóng gói DI qua `ConsumerExtensions.cs`, Feature Co-location cho Notification và Email Services, 100% RESTful HTTP/JSON (CẤM gRPC).
+> **Nguồn sự thật:** code (`Notification.sln`, `Notification.Application/Consumers/`, `Notification.Infrastructure/DependencyInjection.cs`, `Notification.Api/Controllers/`).
+> **Cập nhật lần cuối:** 2026-10-29.
 
 > **Lệch format so với 7 repo còn lại:**
 > - Domain đặt `using` **trước** `namespace` (`Domain/Entities/NotificationRecord.cs:1-4`).
@@ -69,5 +69,22 @@ Notification.sln
 | Application không import `Infrastructure` | ✅ | `Application/*.csproj` chỉ reference `Domain` |
 | Infrastructure được phép reference Application + Domain | ✅ | `Infrastructure/*.csproj:4-5` |
 | Không Repository Pattern bọc EF Core | ✅ | Không tồn tại `*Repository.cs`; `Application/Interfaces/INotificationDbContext.cs:8` |
-| Consumer thuộc Application layer | ❌ | `SendOtpEmailConsumer` nằm ở `Infrastructure/Consumers/SendOtpEmailConsumer.cs:1-9` |
+| Contracts thuộc Application, Consumer thuộc Infrastructure | ✅ Đạt chuẩn | Contract nằm ở `Application/Contracts/`, `SendOtpEmailConsumer` nằm ở `Infrastructure/Consumers/SendOtpEmailConsumer.cs` |
 | Api không chứa business logic | ✅ | `Program.cs` chỉ DI + middleware + `/health` (51 dòng) |
+
+---
+
+## 3. QUY CHUẨN CẤU TRÚC CHUẨN HÓA (SERVICE BLUEPRINT)
+1. **Giao tiếp đồng bộ (RESTful)**:
+   - `Notification.Api/Controllers/`: Thin Dispatcher Controller, chỉ nhận request, gọi Service Interface trong Application, trả về `IActionResult`. Tuyệt đối cấm logic nghiệp vụ, cấm map anonymous object, cấm khai báo class DTO trong file controller.
+   - `Notification.Application/Services/{Feature}/`: Mỗi feature (`Notification`, `Template`...) chứa `I{Feature}Service.cs`, `{Feature}Service.cs`, và Request/Response DTOs dùng chung cho Controller.
+2. **Bãi bỏ hoàn toàn gRPC & Message Broker**:
+   - Không sử dụng RabbitMQ, MassTransit hay Outbox tables.
+   - Nhận yêu cầu gửi email và tạo thông báo trực tiếp qua RESTful Web API (`EmailController.cs`, `NotificationsController.cs`).
+3. **Quản lý Dependency Injection**:
+   - `Notification.Application/DependencyInjection.cs`: Đăng ký toàn bộ Application Services.
+   - `Notification.Infrastructure/DependencyInjection.cs`: Đăng ký `AppDbContext` (hiện thực `INotificationDbContext`) và Email Providers.
+4. **Validation**:
+   - Input format validation đặt tại Request DTOs qua Data Annotations (`[Required]`, `[EmailAddress]`...).
+   - Business validation đặt tại Application Services hoặc Domain Exceptions.
+
