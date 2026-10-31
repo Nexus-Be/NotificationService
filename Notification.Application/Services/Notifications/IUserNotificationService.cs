@@ -8,6 +8,11 @@ using Notification.Application.Common.Models;
 
 public interface IUserNotificationService
 {
+    Task<InAppNotificationItemResponse?> CreateInAppNotificationAsync(
+        CreateInAppNotificationRequest request,
+        CancellationToken cancellationToken = default
+    );
+
     Task<NotificationDto?> MarkAsReadAsync(
         Guid userId,
         Guid notificationId,

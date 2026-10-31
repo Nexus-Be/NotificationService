@@ -21,6 +21,126 @@ public sealed class UserNotificationService : IUserNotificationService
         _db = db;
     }
 
+    public async Task<InAppNotificationItemResponse?> CreateInAppNotificationAsync(
+        CreateInAppNotificationRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (request is null)
+            throw new ArgumentException("Notification request cannot be null.");
+
+        ValidateUserId(request.UserId);
+
+        if (string.IsNullOrWhiteSpace(request.Title))
+            throw new ArgumentException("Notification title is required.");
+
+        if (string.IsNullOrWhiteSpace(request.Body))
+            throw new ArgumentException("Notification body is required.");
+
+        NotificationType? parsedType = null;
+        if (!string.IsNullOrWhiteSpace(request.NotificationType) &&
+            Enum.TryParse<NotificationType>(request.NotificationType, true, out var notiType))
+        {
+            parsedType = notiType;
+        }
+
+        if (request.SourceEventId.HasValue && request.SourceEventId.Value != Guid.Empty)
+        {
+            var existing = await _db.Notifications
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    n => n.SourceEventId == request.SourceEventId.Value
+                        && n.UserId == request.UserId
+                        && !n.IsDeleted,
+                    cancellationToken);
+
+            if (existing is not null)
+            {
+                return new InAppNotificationItemResponse(
+                    existing.Id,
+                    existing.UserId,
+                    existing.Title,
+                    existing.Body,
+                    existing.Payload,
+                    existing.IsRead,
+                    existing.ReadAt,
+                    existing.NotificationType?.ToString(),
+                    existing.Status.ToString(),
+                    existing.CreatedAt
+                );
+            }
+        }
+
+        if (parsedType.HasValue)
+        {
+            var isDisabled = await _db.NotificationPreferences
+                .AsNoTracking()
+                .AnyAsync(
+                    p => p.UserId == request.UserId
+                        && p.NotificationType == parsedType.Value
+                        && p.ChannelCode == ChannelType.InApp
+                        && p.IsDisabled
+                        && !p.IsDeleted,
+                    cancellationToken);
+
+            if (isDisabled)
+            {
+                return null;
+            }
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        var notificationId = Guid.NewGuid();
+
+        var record = new NotificationRecord
+        {
+            Id = notificationId,
+            UserId = request.UserId,
+            SourceEventId = request.SourceEventId,
+            NotificationType = parsedType,
+            Title = request.Title.Trim(),
+            Body = request.Body.Trim(),
+            Payload = string.IsNullOrWhiteSpace(request.Payload) ? null : request.Payload.Trim(),
+            IsRead = false,
+            ReadAt = null,
+            Status = NotificationStatus.Completed,
+            CreatedAt = now,
+            UpdatedAt = now,
+            IsDeleted = false
+        };
+
+        var delivery = new NotificationDelivery
+        {
+            Id = Guid.NewGuid(),
+            NotificationId = notificationId,
+            ChannelCode = ChannelType.InApp,
+            Destination = request.UserId.ToString(),
+            Status = DeliveryStatus.Sent,
+            AttemptCount = 1,
+            LastAttemptAt = now,
+            RowVersion = 1,
+            CreatedAt = now,
+            UpdatedAt = now,
+            IsDeleted = false
+        };
+
+        _db.Notifications.Add(record);
+        _db.NotificationDeliveries.Add(delivery);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return new InAppNotificationItemResponse(
+            record.Id,
+            record.UserId,
+            record.Title,
+            record.Body,
+            record.Payload,
+            record.IsRead,
+            record.ReadAt,
+            record.NotificationType?.ToString(),
+            record.Status.ToString(),
+            record.CreatedAt
+        );
+    }
+
     public async Task<NotificationDto?> MarkAsReadAsync(
         Guid userId,
         Guid notificationId,
@@ -68,7 +188,7 @@ public sealed class UserNotificationService : IUserNotificationService
             throw new ArgumentException("Device token cannot be empty.");
 
         if (!Enum.TryParse<DevicePlatform>(request.Platform, true, out var platform))
-            throw new ArgumentException("Platform must be WEB, IOS, or ANDROID.");
+            throw new ArgumentException("Platform must be Web, iOS, or Android.");
 
         var existing = await _db.DeviceTokens
             .FirstOrDefaultAsync(d => d.Token == request.Token, cancellationToken);
@@ -101,7 +221,7 @@ public sealed class UserNotificationService : IUserNotificationService
         await _db.SaveChangesAsync(cancellationToken);
 
         return new DeviceRegisteredResponse(
-            platform.ToString().ToUpperInvariant(),
+            platform.ToString(),
             request.Token,
             now
         );
@@ -320,7 +440,7 @@ public sealed class UserNotificationService : IUserNotificationService
                 n.Body,
                 n.Payload,
                 n.IsRead,
-                null,
+                n.ReadAt,
                 n.NotificationType != null ? n.NotificationType.ToString() : null,
                 n.Status.ToString(),
                 n.CreatedAt

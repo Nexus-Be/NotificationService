@@ -25,7 +25,7 @@ public sealed class EmailNotificationService : IEmailNotificationService
             return true;
         }
 
-        return await _emailSender.SendOtpRegistrationEmailAsync(dto.Email, dto.FullName, dto.OtpCode, dto.ExpiresInMinutes, cancellationToken);
+        return await _emailSender.SendOtpEmailAsync(dto, cancellationToken);
     }
 
     public Task<bool> SendEmailAsync(SendGeneralEmailDto dto, CancellationToken cancellationToken = default)
