@@ -53,17 +53,20 @@ public sealed class InternalEmailController : ControllerBase
 
         var expiresInMinutes = request.ExpiresInMinutes > 0 ? request.ExpiresInMinutes : 5;
         var fullName = string.IsNullOrWhiteSpace(request.FullName) ? "Customer" : request.FullName.Trim();
+        var purpose = string.IsNullOrWhiteSpace(request.Purpose) ? "registration" : request.Purpose.Trim();
 
         _logger.LogInformation(
-            "[REST Email] Dispatching OTP email to '{Email}' for user '{FullName}'.",
+            "[REST Email] Dispatching OTP email to '{Email}' for user '{FullName}' with purpose '{Purpose}'.",
             request.Email,
-            fullName);
+            fullName,
+            purpose);
 
         var dto = new SendOtpEmailDto(
             request.Email.Trim(),
             fullName,
             request.OtpCode.Trim(),
-            expiresInMinutes);
+            expiresInMinutes,
+            purpose);
 
         var sent = await _emailNotificationService.SendOtpEmailAsync(dto, cancellationToken);
 
@@ -86,6 +89,7 @@ public sealed class InternalEmailController : ControllerBase
                 recipient = request.Email.Trim(),
                 fullName,
                 expiresInMinutes,
+                purpose,
                 dispatchedAt = DateTimeOffset.UtcNow
             }
         });
@@ -239,6 +243,8 @@ public sealed record SendOtpEmailApiRequest
     public string OtpCode { get; init; } = string.Empty;
 
     public int ExpiresInMinutes { get; init; } = 5;
+
+    public string? Purpose { get; init; } = "registration";
 }
 
 public sealed record SendGeneralEmailApiRequest
