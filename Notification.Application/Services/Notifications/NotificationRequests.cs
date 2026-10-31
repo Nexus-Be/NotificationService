@@ -50,3 +50,12 @@ public sealed record SearchNotificationHistoryRequest(
     int PageIndex = 1,
     int PageSize = 20
 );
+
+public sealed record CreateInAppNotificationRequest(
+    Guid UserId,
+    string Title,
+    string Body,
+    string? NotificationType = null,
+    string? Payload = null,
+    Guid? SourceEventId = null
+);
