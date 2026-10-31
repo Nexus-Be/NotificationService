@@ -25,6 +25,12 @@ This project is indexed by GitNexus as **NotificationService** (455 symbols, 581
 
 ---
 
+## Endpoint Workflow
+
+Before adding or changing any REST endpoint, follow the local checklist at `.agents/skills/new-feature-endpoint/SKILL.md`. It covers contract, persistence, Application, Api, tests, documentation handoff, and verification. This repository is Inward-Only, so the checklist is self-contained.
+
+---
+
 ## 🛑 NGUYÊN TẮC 1: BẮT BUỘC LẬP KẾ HOẠCH TRƯỚC KHI HÀNH ĐỘNG (PLAN-FIRST RULE)
 
 Mọi AI Agent khi nhận nhiệm vụ kỹ thuật tại Notification **BẮT BUỘC PHẢI LẬP VÀ TRÌNH BÀY PLAN** trước khi thực hiện bất kỳ hành động sửa đổi mã nguồn, thêm/xóa file, refactor, tạo migration database hay thay đổi cấu hình nào.
@@ -73,10 +79,9 @@ Khi bắt đầu làm việc tại Notification, AI Agent **BẮT BUỘC PHẢI 
    - Toàn bộ thao tác phân trang thông báo in-app bắt buộc thực hiện trực tiếp tại Database qua `.Skip((page - 1) * pageSize).Take(pageSize)` và `.CountAsync()`.
    - Đóng gói dữ liệu trả về theo cấu trúc phân trang chuẩn `PagedData<T>` (`items` và metadata `pagination: { pageIndex, pageSize, totalCount, totalPages, hasPreviousPage, hasNextPage }`) hoặc DTO phân trang tương đương.
    - TUYỆT ĐỐI CẤM trả về danh sách thô lớn không giới hạn để Gateway tự phân trang.
-6. **QUY CHUẨN PHÂN TÁCH PUBLIC VÀ INTERNAL REST API (INTERNAL API SEGREGATION)**:
-   - Cấu trúc thư mục Controller tại `Notification.Api/Controllers/` bắt buộc chia thành `Controllers/Public/` (`/api/v1/notifications/*`) và `Controllers/Internal/` (`/api/v1/internal/notifications/email/*`).
-   - Mọi endpoint gửi email OTP hoặc email hệ thống đặt tại `InternalEmailController` bắt buộc qua `InternalServiceAuthMiddleware` kiểm tra header `X-Internal-Service-Key`.
-   - TUYỆT ĐỐI CẤM mở endpoint gửi email trực tiếp ra ngoài API Gateway để tránh nguy cơ bị spam hoặc lạm dụng gửi mail.
+6. **INTERNAL API ĐANG TẠM KHÓA (2026-10-31)**:
+   - Route liên service dùng đường dẫn công khai, không còn `/api/v1/internal`.
+   - `InternalServiceAuthMiddleware` và `InternalServiceAuthHandler` đã comment đăng ký; không yêu cầu `X-Internal-Service-Key`.
 7. **QUY CHUẨN BẢO VỆ QUYỀN SỞ HỮU TÀI NGUYÊN (RESOURCE OWNERSHIP GOVERNANCE)**:
    - Thông báo cá nhân (`/api/v1/notifications/me`) và cấu hình nhận tin (`/api/v1/notifications/preferences`) bắt buộc gắn với `x-user-id` của chính người dùng đó. Cấm truy cập thông báo của người khác.
 

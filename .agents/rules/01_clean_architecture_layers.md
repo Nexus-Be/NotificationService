@@ -9,7 +9,7 @@
 * `Notification.Domain`: Entities (`NotificationRecord`, `NotificationPreference`, `DeviceToken`), Enums (`NotificationType`, `NotificationStatus`).
 * `Notification.Application`: Use cases in `Services/{Feature}/`, interface `INotificationDbContext`, request/response records.
 * `Notification.Infrastructure`: `AppDbContext`, EF Core configurations, migrations, SMTP email sender.
-* `Notification.Api`: Thin controllers in `Controllers/Public/` and `Controllers/Internal/`, middlewares, extensions, composition root (`Program.cs`).
+* `Notification.Api`: Thin controllers in `Controllers/Public/`, middlewares, extensions, composition root (`Program.cs`).
 
 ## 3. Feature Co-Location (Mandatory)
 * `Services/Notifications/`: `IUserNotificationService.cs`, `UserNotificationService.cs`, `NotificationRequests.cs`, `NotificationResponses.cs`.
@@ -17,7 +17,7 @@
 
 ## 4. Thin 1-to-1 Controller Pairing
 * `NotificationsController.cs` -> injects `IUserNotificationService`.
-* `InternalEmailController.cs` -> injects `IEmailNotificationService`.
+* `EmailController.cs` -> injects `IEmailNotificationService`.
 
 ## 5. Absolute Architectural Prohibitions
 * 🛑 Prohibit Repository Pattern over EF Core (inject `INotificationDbContext` directly).
