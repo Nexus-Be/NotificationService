@@ -68,7 +68,7 @@ public sealed class UserNotificationService : IUserNotificationService
             throw new ArgumentException("Device token cannot be empty.");
 
         if (!Enum.TryParse<DevicePlatform>(request.Platform, true, out var platform))
-            throw new ArgumentException("Platform must be WEB, IOS, or ANDROID.");
+            throw new ArgumentException("Platform must be Web, iOS, or Android.");
 
         var existing = await _db.DeviceTokens
             .FirstOrDefaultAsync(d => d.Token == request.Token, cancellationToken);
@@ -101,7 +101,7 @@ public sealed class UserNotificationService : IUserNotificationService
         await _db.SaveChangesAsync(cancellationToken);
 
         return new DeviceRegisteredResponse(
-            platform.ToString().ToUpperInvariant(),
+            platform.ToString(),
             request.Token,
             now
         );
@@ -320,7 +320,7 @@ public sealed class UserNotificationService : IUserNotificationService
                 n.Body,
                 n.Payload,
                 n.IsRead,
-                null,
+                n.ReadAt,
                 n.NotificationType != null ? n.NotificationType.ToString() : null,
                 n.Status.ToString(),
                 n.CreatedAt
