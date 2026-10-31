@@ -7,21 +7,21 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using Notification.Api.Controllers;
+using Notification.Api.Controllers.Internal;
 using Notification.Application.Services.Email;
 using Xunit;
 
 public sealed class EmailControllerTests
 {
     private readonly Mock<IEmailNotificationService> _mockNotificationService;
-    private readonly EmailController _controller;
+    private readonly InternalEmailController _controller;
 
     public EmailControllerTests()
     {
         _mockNotificationService = new Mock<IEmailNotificationService>();
-        _controller = new EmailController(
+        _controller = new InternalEmailController(
             _mockNotificationService.Object,
-            NullLogger<EmailController>.Instance);
+            NullLogger<InternalEmailController>.Instance);
     }
 
     [Theory]

@@ -6,6 +6,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Notification.Application.Common;
+using Notification.Application.Common.Models;
 using Notification.Application.Interfaces;
 using Notification.Domain.Entities;
 using Notification.Domain.Enums;
@@ -17,47 +19,6 @@ public sealed class UserNotificationService : IUserNotificationService
     public UserNotificationService(INotificationDbContext db)
     {
         _db = db;
-    }
-
-    public async Task<NotificationPageDto> ListAsync(
-        Guid userId,
-        int pageIndex,
-        int pageSize,
-        CancellationToken cancellationToken = default)
-    {
-        ValidateUserId(userId);
-
-        if (pageIndex < 1)
-            throw new ArgumentException("Page index must be at least 1.");
-
-        if (pageSize < 1 || pageSize > 100)
-            throw new ArgumentException("Page size must be between 1 and 100.");
-
-        var offset = ((long)pageIndex - 1) * pageSize;
-        if (offset > int.MaxValue)
-            throw new ArgumentException("Requested page exceeds the supported range.");
-
-        var query = _db.Notifications
-            .AsNoTracking()
-            .Where(n => n.UserId == userId && !n.IsDeleted);
-
-        var total = await query.CountAsync(cancellationToken);
-
-        var items = await query
-            .OrderByDescending(n => n.CreatedAt)
-            .ThenByDescending(n => n.Id)
-            .Skip((int)offset)
-            .Take(pageSize)
-            .Select(n => new NotificationDto(
-                n.Id,
-                n.Title,
-                n.Body,
-                n.IsRead,
-                n.CreatedAt,
-                n.ReadAt))
-            .ToListAsync(cancellationToken);
-
-        return new NotificationPageDto(items, total, pageIndex, pageSize);
     }
 
     public async Task<NotificationDto?> MarkAsReadAsync(
@@ -103,7 +64,7 @@ public sealed class UserNotificationService : IUserNotificationService
     {
         ValidateUserId(userId);
 
-        if (string.IsNullOrWhiteSpace(request.Token))
+        if (request == null || string.IsNullOrWhiteSpace(request.Token))
             throw new ArgumentException("Device token cannot be empty.");
 
         if (!Enum.TryParse<DevicePlatform>(request.Platform, true, out var platform))
@@ -239,15 +200,14 @@ public sealed class UserNotificationService : IUserNotificationService
         return new UpdatePreferencesResult(updatedCount);
     }
 
-    public async Task<PagedInAppNotificationResponse> GetMyNotificationsAsync(
+    public async Task<PagedData<InAppNotificationItemResponse>> GetMyNotificationsAsync(
         Guid userId,
         GetMyNotificationsRequest request,
         CancellationToken cancellationToken = default)
     {
         ValidateUserId(userId);
 
-        var pageIndex = request.PageIndex < 1 ? 1 : request.PageIndex;
-        var pageSize = request.PageSize < 1 || request.PageSize > 100 ? 20 : request.PageSize;
+        var (pageIndex, pageSize) = PaginationConstants.Normalize(request.PageIndex, request.PageSize);
 
         var query = _db.Notifications
             .AsNoTracking()
@@ -284,14 +244,9 @@ public sealed class UserNotificationService : IUserNotificationService
             ))
             .ToListAsync(cancellationToken);
 
-        var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
-
-        return new PagedInAppNotificationResponse(
-            pageIndex,
-            pageSize,
-            totalItems,
-            totalPages,
-            items
+        return new PagedData<InAppNotificationItemResponse>(
+            items,
+            PaginationMetadata.Create(pageIndex, pageSize, totalItems)
         );
     }
 
@@ -325,12 +280,11 @@ public sealed class UserNotificationService : IUserNotificationService
         return new BatchMarkReadResult(notificationsToUpdate.Count);
     }
 
-    public async Task<PagedInAppNotificationResponse> SearchNotificationHistoryAsync(
+    public async Task<PagedData<InAppNotificationItemResponse>> SearchNotificationHistoryAsync(
         SearchNotificationHistoryRequest request,
         CancellationToken cancellationToken = default)
     {
-        var pageIndex = request.PageIndex < 1 ? 1 : request.PageIndex;
-        var pageSize = request.PageSize < 1 || request.PageSize > 100 ? 20 : request.PageSize;
+        var (pageIndex, pageSize) = PaginationConstants.Normalize(request.PageIndex, request.PageSize);
 
         var query = _db.Notifications
             .AsNoTracking()
@@ -373,14 +327,9 @@ public sealed class UserNotificationService : IUserNotificationService
             ))
             .ToListAsync(cancellationToken);
 
-        var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
-
-        return new PagedInAppNotificationResponse(
-            pageIndex,
-            pageSize,
-            totalItems,
-            totalPages,
-            items
+        return new PagedData<InAppNotificationItemResponse>(
+            items,
+            PaginationMetadata.Create(pageIndex, pageSize, totalItems)
         );
     }
 

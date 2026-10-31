@@ -1,4 +1,4 @@
-namespace Notification.Api.Controllers;
+namespace Notification.Api.Controllers.Internal;
 
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -10,15 +10,15 @@ using Microsoft.Extensions.Logging;
 using Notification.Application.Services.Email;
 
 [ApiController]
-[Route("api/v1/notifications/email")]
-public sealed class EmailController : ControllerBase
+[Route("api/v1/internal/notifications/email")]
+public sealed class InternalEmailController : ControllerBase
 {
     private readonly IEmailNotificationService _emailNotificationService;
-    private readonly ILogger<EmailController> _logger;
+    private readonly ILogger<InternalEmailController> _logger;
 
-    public EmailController(
+    public InternalEmailController(
         IEmailNotificationService emailNotificationService,
-        ILogger<EmailController> logger)
+        ILogger<InternalEmailController> logger)
     {
         _emailNotificationService = emailNotificationService;
         _logger = logger;
@@ -27,8 +27,6 @@ public sealed class EmailController : ControllerBase
     /// <summary>Sends OTP verification email synchronously.</summary>
     [HttpPost("otp")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> SendOtpEmail(
         [FromBody] SendOtpEmailApiRequest request,
         CancellationToken cancellationToken)
@@ -94,8 +92,6 @@ public sealed class EmailController : ControllerBase
     /// <summary>Sends a general HTML email synchronously.</summary>
     [HttpPost("send")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> SendGeneralEmail(
         [FromBody] SendGeneralEmailApiRequest request,
         CancellationToken cancellationToken)

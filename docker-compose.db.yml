@@ -1,3 +1,5 @@
+name: nexus-db-notification
+
 services:
   postgres-notification:
     image: postgres:16-alpine

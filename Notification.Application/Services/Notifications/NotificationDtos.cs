@@ -8,10 +8,3 @@ public sealed record NotificationDto(
     DateTimeOffset CreatedAt,
     DateTimeOffset? ReadAt
 );
-
-public sealed record NotificationPageDto(
-    IReadOnlyList<NotificationDto> Items,
-    int Total,
-    int PageIndex,
-    int PageSize
-);

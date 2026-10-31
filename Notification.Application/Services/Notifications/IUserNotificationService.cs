@@ -4,16 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Notification.Application.Common.Models;
 
 public interface IUserNotificationService
 {
-    Task<NotificationPageDto> ListAsync(
-        Guid userId,
-        int pageIndex,
-        int pageSize,
-        CancellationToken cancellationToken = default
-    );
-
     Task<NotificationDto?> MarkAsReadAsync(
         Guid userId,
         Guid notificationId,
@@ -42,7 +36,7 @@ public interface IUserNotificationService
         CancellationToken cancellationToken = default
     );
 
-    Task<PagedInAppNotificationResponse> GetMyNotificationsAsync(
+    Task<PagedData<InAppNotificationItemResponse>> GetMyNotificationsAsync(
         Guid userId,
         GetMyNotificationsRequest request,
         CancellationToken cancellationToken = default
@@ -54,7 +48,7 @@ public interface IUserNotificationService
         CancellationToken cancellationToken = default
     );
 
-    Task<PagedInAppNotificationResponse> SearchNotificationHistoryAsync(
+    Task<PagedData<InAppNotificationItemResponse>> SearchNotificationHistoryAsync(
         SearchNotificationHistoryRequest request,
         CancellationToken cancellationToken = default
     );

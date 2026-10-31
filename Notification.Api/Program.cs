@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Notification.Api.Common;
 using Notification.Api.Extensions;
 using Notification.Application;
 using Notification.Infrastructure;
@@ -6,7 +7,7 @@ using Notification.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Auxiliary Service Defaults (Observability, Auth, Swagger, JSON options)
+// 1. Service Defaults (Observability, Swagger, JSON options, exception handling)
 builder.Services.AddServiceDefaults(builder.Configuration, "notification-service");
 
 // 2. Application & Infrastructure Dependency Injection
@@ -14,11 +15,15 @@ builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
 // 3. REST Services
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = ApiValidationProblemFactory.Create;
+    });
 
 var app = builder.Build();
 
-// 4. Default Middleware Pipeline (Exception Handler, Auth, Swagger UI)
+// 4. Default Middleware Pipeline (Exception Handler, Internal auth, Swagger UI)
 app.UseServiceDefaults();
 
 // Automatically apply database migrations on startup if relational DB is available

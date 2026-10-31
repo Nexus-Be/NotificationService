@@ -12,13 +12,6 @@ public sealed record NotificationResponse(
     DateTimeOffset? ReadAt
 );
 
-public sealed record NotificationPageResponse(
-    IReadOnlyList<NotificationResponse> Items,
-    int Total,
-    int PageIndex,
-    int PageSize
-);
-
 public sealed record DeviceRegisteredResponse(
     string Platform,
     string Token,
@@ -51,14 +44,6 @@ public sealed record InAppNotificationItemResponse(
     string? NotificationType,
     string Status,
     DateTimeOffset CreatedAt
-);
-
-public sealed record PagedInAppNotificationResponse(
-    int PageIndex,
-    int PageSize,
-    int TotalItems,
-    int TotalPages,
-    IReadOnlyList<InAppNotificationItemResponse> Items
 );
 
 public sealed record BrokerHealthCheckResponse(

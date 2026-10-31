@@ -16,7 +16,13 @@ public static class DependencyInjection
             ?? configuration["CONNECTION_STRING"]
             ?? configuration["NOTIFICATION_CONNECTION_STRING"]
             ?? configuration["NOTIFICATION_DB_CONNECTION"]
-            ?? "Host=localhost;Port=5439;Database=notification_db;Username=postgres;Password=postgres";
+            ?? Environment.GetEnvironmentVariable("NOTIFICATION_CONNECTION_STRING")
+            ?? Environment.GetEnvironmentVariable("CONNECTION_STRING");
+
+        if (string.IsNullOrWhiteSpace(rawConnection) || rawConnection.Contains("REPLACE_WITH"))
+        {
+            throw new InvalidOperationException("Database connection string for NotificationService is not configured. Set 'ConnectionStrings:DefaultConnection' or environment variable 'NOTIFICATION_CONNECTION_STRING'.");
+        }
         var connectionString = NormalizeConnectionString(rawConnection);
 
         services.AddDbContext<AppDbContext>(options =>
