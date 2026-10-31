@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using Notification.Application.Interfaces;
+using Notification.Application.Services.Email;
 
 public sealed class MailKitEmailSenderService : IEmailService, IEmailSenderService
 {
@@ -70,6 +71,7 @@ public sealed class MailKitEmailSenderService : IEmailService, IEmailSenderServi
         }
     }
 
+    // Giữ lại phương thức cũ để tương thích ngược nếu cần
     public async Task<bool> SendOtpRegistrationEmailAsync(
         string toEmail,
         string fullName,
@@ -77,8 +79,44 @@ public sealed class MailKitEmailSenderService : IEmailService, IEmailSenderServi
         int expiresInMinutes = 5,
         CancellationToken cancellationToken = default)
     {
-        var subject = "Nexus - Your Verification Code (OTP)";
+        return await SendOtpEmailAsync(toEmail, fullName, otp, expiresInMinutes, "registration", cancellationToken);
+    }
+
+
+    // Phương thức mới hỗ trợ tùy biến theo purpose (password_reset, seller_registration, registration)
+    public async Task<bool> SendOtpEmailAsync(
+        string toEmail,
+        string fullName,
+        string otp,
+        int expiresInMinutes,
+        string purpose,
+        CancellationToken cancellationToken = default)
+    {
         var displayName = string.IsNullOrWhiteSpace(fullName) ? "Customer" : fullName.Trim();
+        var normalizedPurpose = string.IsNullOrWhiteSpace(purpose) ? "registration" : purpose.ToLowerInvariant();
+
+        // Tùy biến tiêu đề và nội dung thông điệp theo purpose yêu cầu
+        string subject;
+        string actionMessage;
+
+        switch (normalizedPurpose)
+        {
+            case "password_reset":
+                subject = "Nexus - Password Reset Verification Code";
+                actionMessage = "We received a request to reset your password. Use the OTP code below to proceed...";
+                break;
+
+            case "seller_registration":
+                subject = "Nexus - Seller Account Verification Code";
+                actionMessage = "Please use this verification code to complete your Seller onboarding...";
+                break;
+
+            case "registration":
+            default:
+                subject = "Nexus - Your Verification Code (OTP)";
+                actionMessage = "Thank you for registering an account on the Nexus Platform. Please use the verification code below to activate your account:";
+                break;
+        }
 
         var htmlBody = $$"""
             <!DOCTYPE html>
@@ -102,10 +140,10 @@ public sealed class MailKitEmailSenderService : IEmailService, IEmailSenderServi
                     </div>
                     <div class="content">
                         <p>Hello <strong>{{displayName}}</strong>,</p>
-                        <p>Thank you for registering an account on the Nexus Platform. Please use the verification code below to activate your account:</p>
+                        <p>{{actionMessage}}</p>
                         <div class="otp-box">{{otp}}</div>
                         <p>This code will expire in <strong>{{expiresInMinutes}} minutes</strong>. For security reasons, please do not share this code with anyone.</p>
-                        <p>If you did not request this registration, please ignore this email.</p>
+                        <p>If you did not request this, please ignore this email.</p>
                     </div>
                     <div class="footer">
                         <p>&copy; {{DateTime.UtcNow.Year}} Nexus E-Commerce & Auction Ecosystem. All rights reserved.</p>
@@ -116,5 +154,18 @@ public sealed class MailKitEmailSenderService : IEmailService, IEmailSenderServi
             """;
 
         return await SendEmailAsync(toEmail, subject, htmlBody, cancellationToken);
+    }
+
+    public async Task<bool> SendOtpEmailAsync(
+        SendOtpEmailDto request,
+        CancellationToken cancellationToken = default)
+    {
+        return await SendOtpEmailAsync(
+            request.Email,
+            request.FullName,
+            request.OtpCode,
+            request.ExpiresInMinutes,
+            request.Purpose,
+            cancellationToken);
     }
 }
