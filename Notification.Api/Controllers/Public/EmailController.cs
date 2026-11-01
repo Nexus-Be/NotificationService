@@ -1,4 +1,4 @@
-namespace Notification.Api.Controllers.Internal;
+namespace Notification.Api.Controllers.Public;
 
 using System;
 using System.ComponentModel.DataAnnotations;
@@ -13,14 +13,14 @@ using Notification.Application.Services.Email;
 [ApiController]
 [Route("api/v1/internal/notifications/email")]
 [Route("api/v1/notifications/email")]
-public sealed class InternalEmailController : ControllerBase
+public sealed class EmailController : ControllerBase
 {
     private readonly IEmailNotificationService _emailNotificationService;
-    private readonly ILogger<InternalEmailController> _logger;
+    private readonly ILogger<EmailController> _logger;
 
-    public InternalEmailController(
+    public EmailController(
         IEmailNotificationService emailNotificationService,
-        ILogger<InternalEmailController> logger)
+        ILogger<EmailController> logger)
     {
         _emailNotificationService = emailNotificationService;
         _logger = logger;

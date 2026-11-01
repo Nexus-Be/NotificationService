@@ -28,6 +28,9 @@ public sealed class ApiValidationProblemFactoryTests
         Assert.Equal("VAL_INVALID_INPUT", root.GetProperty("errorCode").GetString());
         Assert.Equal(StatusCodes.Status400BadRequest, root.GetProperty("status").GetInt32());
         Assert.Contains("The Amount field is required.", root.GetProperty("detail").GetString());
+        Assert.True(root.TryGetProperty("timestamp", out _));
+        Assert.True(root.TryGetProperty("errors", out var errorsElement));
+        Assert.Equal("The Amount field is required.", errorsElement.GetProperty("Amount")[0].GetString());
     }
 
     [Fact]
