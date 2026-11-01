@@ -164,6 +164,63 @@ public sealed class EmailController : ControllerBase
         });
     }
 
+    /// <summary>Sends seller registration approval email (Flow 2 - Approval Step).</summary>
+    [HttpPost("seller-approval")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> SendSellerApprovalEmail(
+        [FromBody] SendSellerApprovalEmailApiRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (request == null || string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains('@'))
+        {
+            return BadRequest(new
+            {
+                errorCode = "VAL_INVALID_EMAIL",
+                message = "Recipient email is required and must be a valid email address."
+            });
+        }
+
+        var fullName = string.IsNullOrWhiteSpace(request.FullName) ? "Customer" : WebUtility.HtmlEncode(request.FullName.Trim());
+        var shopName = string.IsNullOrWhiteSpace(request.ShopName) ? "Your Shop" : WebUtility.HtmlEncode(request.ShopName.Trim());
+
+        var subject = $"[Nexus] Congratulations! Your seller registration for {shopName} is approved";
+        var htmlBody = $"<p>Hello {fullName},</p>" +
+                       $"<p>Great news! Your seller registration application for <strong>{shopName}</strong> has been successfully approved.</p>" +
+                       $"<p>You can now log in to your seller dashboard and start setting up your store and products.</p>" +
+                       "<p>Welcome to the Nexus seller community!</p>";
+
+        _logger.LogInformation(
+            "[REST Email] Dispatching seller approval email to '{Email}' for shop '{ShopName}'.",
+            request.Email,
+            shopName);
+
+        var dto = new SendGeneralEmailDto(request.Email.Trim(), subject, htmlBody);
+        var sent = await _emailNotificationService.SendEmailAsync(dto, cancellationToken);
+
+        if (!sent)
+        {
+            _logger.LogWarning("[REST Email] Failed to send seller approval email to '{Email}'.", request.Email);
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                errorCode = "EMAIL_SEND_FAILED",
+                message = "Failed to deliver seller approval email via notification provider."
+            });
+        }
+
+        return Ok(new
+        {
+            success = true,
+            message = "Seller approval email dispatched successfully.",
+            data = new
+            {
+                recipient = request.Email.Trim(),
+                shopName = request.ShopName?.Trim(),
+                dispatchedAt = DateTimeOffset.UtcNow
+            }
+        });
+    }
+
+
     /// <summary>Sends seller registration rejection email with specific reason (Flow 2 - Step 4B).</summary>
     [HttpPost("seller-rejection")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -257,6 +314,16 @@ public sealed record SendGeneralEmailApiRequest
 
     [Required]
     public string HtmlBody { get; init; } = string.Empty;
+}
+
+public sealed record SendSellerApprovalEmailApiRequest
+{
+    [Required]
+    public string Email { get; init; } = string.Empty;
+
+    public string? FullName { get; init; }
+
+    public string? ShopName { get; init; }
 }
 
 public sealed record SendSellerRejectionEmailApiRequest

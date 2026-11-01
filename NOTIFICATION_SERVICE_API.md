@@ -31,6 +31,7 @@ Notification Service chịu trách nhiệm **duy nhất** cho:
 | **Email (OTP)** | Gửi email xác minh OTP theo purpose (đăng ký, reset mật khẩu, seller) |
 | **Email (General)** | Gửi email HTML tùy ý từ các service backend |
 | **Email (Seller rejection)** | Gửi email thông báo từ chối đơn đăng ký seller |
+| **Email (Seller approval)** | Gửi email chúc mừng thông báo phê duyệt đơn đăng ký seller |
 | **Device Token** | Đăng ký / thu hồi token thiết bị phục vụ Push Notification |
 | **Notification Preferences** | Cho phép user tắt/bật từng loại thông báo theo từng kênh |
 
@@ -539,6 +540,44 @@ POST /api/v1/internal/notifications/email/seller-rejection
 
 ---
 
+### 5.4 Gửi email phê duyệt seller registration (Approval)
+
+```
+POST /api/v1/internal/notifications/email/seller-approval
+```
+
+**Request Body:**
+
+```json
+{
+  "email": "seller@example.com",
+  "fullName": "Nguyen Van B",
+  "shopName": "Shop ABC",
+}
+```
+
+| Field | Kiểu | Bắt buộc | Mô tả |
+|-------|------|----------|-------|
+| `email` | `string` | ✅ | Email seller |
+| `fullName` | `string?` | ❌ | Tên seller (`"Customer"` nếu không có) |
+| `shopName` | `string?` | ❌ | Tên shop (`"Your Shop"` nếu không có) |
+
+**Response `200 OK`:**
+
+```json
+{
+  "success": true,
+  "message": "Seller approval email dispatched successfully.",
+  "data": {
+    "recipient": "seller@example.com",
+    "shopName": "Shop ABC",
+    "dispatchedAt": "2026-11-01T10:00:00+00:00"
+  }
+}
+```
+
+---
+
 ## 6. API Admin — Quản Trị
 
 Base path: `/api/v1/admin/notifications`  
@@ -678,15 +717,22 @@ GET /api/v1/admin/notifications
    Body: { "email": "...", "otpCode": "...", "purpose": "password_reset" }
 ```
 
-### Luồng 4 — SellerService: Từ chối seller registration
+### Luồng 4 — SellerService: Phê duyệt hoặc từ chối seller registration
 
 ```
-1. Admin từ chối đơn đăng ký seller
-2. SellerService gọi:
+1. Admin phê duyệt đơn đăng ký seller:
+   SellerService gọi:
+   POST /api/v1/internal/notifications/email/seller-approval
+   Header: X-Internal-Service-Key: <secret>
+   Body:   { "email": "...", "fullName": "...", "shopName": "..." }
+   → Notification Service gửi email chúc mừng thành công.
+
+2. Hoặc Admin từ chối đơn đăng ký seller:
+   SellerService gọi:
    POST /api/v1/internal/notifications/email/seller-rejection
    Header: X-Internal-Service-Key: <secret>
    Body:   { "email": "...", "fullName": "...", "shopName": "...", "rejectReason": "..." }
-3. Notification Service gửi email thông báo từ chối
+   → Notification Service gửi email thông báo từ chối.
 ```
 
 ### Luồng 5 — OrderService: Thông báo in-app sau thanh toán
