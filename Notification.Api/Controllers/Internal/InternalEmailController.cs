@@ -12,7 +12,6 @@ using Notification.Application.Services.Email;
 
 [ApiController]
 [Route("api/v1/internal/notifications/email")]
-[Route("api/v1/notifications/email")]
 public sealed class InternalEmailController : ControllerBase
 {
     private readonly IEmailNotificationService _emailNotificationService;
@@ -26,11 +25,11 @@ public sealed class InternalEmailController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>Sends OTP verification email synchronously.</summary>
+    /// <summary>Sends OTP verification email with purpose synchronously for internal services.</summary>
     [HttpPost("otp")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> SendOtpEmail(
-        [FromBody] SendOtpEmailApiRequest request,
+        [FromBody] InternalSendOtpEmailApiRequest request,
         CancellationToken cancellationToken)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains('@'))
@@ -56,7 +55,7 @@ public sealed class InternalEmailController : ControllerBase
         var purpose = string.IsNullOrWhiteSpace(request.Purpose) ? "registration" : request.Purpose.Trim();
 
         _logger.LogInformation(
-            "[REST Email] Dispatching OTP email to '{Email}' for user '{FullName}' with purpose '{Purpose}'.",
+            "[Internal REST Email] Dispatching OTP email to '{Email}' for user '{FullName}' with purpose '{Purpose}'.",
             request.Email,
             fullName,
             purpose);
@@ -66,14 +65,13 @@ public sealed class InternalEmailController : ControllerBase
             fullName,
             request.OtpCode.Trim(),
             expiresInMinutes,
-            purpose
-        );
+            purpose);
 
         var sent = await _emailNotificationService.SendOtpEmailAsync(dto, cancellationToken);
 
         if (!sent)
         {
-            _logger.LogWarning("[REST Email] Failed to send OTP email to '{Email}'.", request.Email);
+            _logger.LogWarning("[Internal REST Email] Failed to send OTP email to '{Email}'.", request.Email);
             return StatusCode(StatusCodes.Status500InternalServerError, new
             {
                 errorCode = "EMAIL_SEND_FAILED",
@@ -96,11 +94,11 @@ public sealed class InternalEmailController : ControllerBase
         });
     }
 
-    /// <summary>Sends a general HTML email synchronously.</summary>
+    /// <summary>Sends a general HTML email synchronously for internal services.</summary>
     [HttpPost("send")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> SendGeneralEmail(
-        [FromBody] SendGeneralEmailApiRequest request,
+        [FromBody] InternalSendGeneralEmailApiRequest request,
         CancellationToken cancellationToken)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.ToEmail) || !request.ToEmail.Contains('@'))
@@ -131,7 +129,7 @@ public sealed class InternalEmailController : ControllerBase
         }
 
         _logger.LogInformation(
-            "[REST Email] Dispatching general email to '{ToEmail}' with subject '{Subject}'.",
+            "[Internal REST Email] Dispatching general email to '{ToEmail}' with subject '{Subject}'.",
             request.ToEmail,
             request.Subject);
 
@@ -144,7 +142,7 @@ public sealed class InternalEmailController : ControllerBase
 
         if (!sent)
         {
-            _logger.LogWarning("[REST Email] Failed to send general email to '{ToEmail}'.", request.ToEmail);
+            _logger.LogWarning("[Internal REST Email] Failed to send general email to '{ToEmail}'.", request.ToEmail);
             return StatusCode(StatusCodes.Status500InternalServerError, new
             {
                 errorCode = "EMAIL_SEND_FAILED",
@@ -165,11 +163,11 @@ public sealed class InternalEmailController : ControllerBase
         });
     }
 
-    /// <summary>Sends seller registration rejection email with specific reason (Flow 2 - Step 4B).</summary>
+    /// <summary>Sends seller registration rejection email with specific reason for internal services.</summary>
     [HttpPost("seller-rejection")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> SendSellerRejectionEmail(
-        [FromBody] SendSellerRejectionEmailApiRequest request,
+        [FromBody] InternalSendSellerRejectionEmailApiRequest request,
         CancellationToken cancellationToken)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains('@'))
@@ -201,7 +199,7 @@ public sealed class InternalEmailController : ControllerBase
                        "<p>Please update your registration profile and submit your application again.</p>";
 
         _logger.LogInformation(
-            "[REST Email] Dispatching seller rejection email to '{Email}' for shop '{ShopName}'.",
+            "[Internal REST Email] Dispatching seller rejection email to '{Email}' for shop '{ShopName}'.",
             request.Email,
             shopName);
 
@@ -210,7 +208,7 @@ public sealed class InternalEmailController : ControllerBase
 
         if (!sent)
         {
-            _logger.LogWarning("[REST Email] Failed to send seller rejection email to '{Email}'.", request.Email);
+            _logger.LogWarning("[Internal REST Email] Failed to send seller rejection email to '{Email}'.", request.Email);
             return StatusCode(StatusCodes.Status500InternalServerError, new
             {
                 errorCode = "EMAIL_SEND_FAILED",
@@ -233,7 +231,7 @@ public sealed class InternalEmailController : ControllerBase
     }
 }
 
-public sealed record SendOtpEmailApiRequest
+public sealed record InternalSendOtpEmailApiRequest
 {
     [Required]
     public string Email { get; init; } = string.Empty;
@@ -248,7 +246,7 @@ public sealed record SendOtpEmailApiRequest
     public string? Purpose { get; init; } = "registration";
 }
 
-public sealed record SendGeneralEmailApiRequest
+public sealed record InternalSendGeneralEmailApiRequest
 {
     [Required]
     public string ToEmail { get; init; } = string.Empty;
@@ -260,7 +258,7 @@ public sealed record SendGeneralEmailApiRequest
     public string HtmlBody { get; init; } = string.Empty;
 }
 
-public sealed record SendSellerRejectionEmailApiRequest
+public sealed record InternalSendSellerRejectionEmailApiRequest
 {
     [Required]
     public string Email { get; init; } = string.Empty;

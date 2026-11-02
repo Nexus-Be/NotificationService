@@ -73,13 +73,45 @@ public sealed class EmailControllerTests
                 d.Email == "buyer@nexus.local" &&
                 d.FullName == "Nguyen Van A" &&
                 d.OtpCode == "998877" &&
-                d.ExpiresInMinutes == 5), It.IsAny<CancellationToken>()))
+                d.ExpiresInMinutes == 5 &&
+                d.Purpose == "registration"), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         var response = await _controller.SendOtpEmail(request, CancellationToken.None);
 
         var okResult = Assert.IsType<OkObjectResult>(response);
         Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task SendOtpEmail_PassesDefaultRegistrationPurposeToDto()
+    {
+        var request = new SendOtpEmailApiRequest
+        {
+            Email = "user@nexus.local",
+            FullName = "Alex Rider",
+            OtpCode = "889900",
+            ExpiresInMinutes = 10
+        };
+
+        _mockNotificationService
+            .Setup(s => s.SendOtpEmailAsync(
+                It.Is<SendOtpEmailDto>(d =>
+                    d.Email == "user@nexus.local" &&
+                    d.FullName == "Alex Rider" &&
+                    d.OtpCode == "889900" &&
+                    d.ExpiresInMinutes == 10 &&
+                    d.Purpose == "registration"),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var response = await _controller.SendOtpEmail(request, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(response);
+        Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+        _mockNotificationService.Verify(s => s.SendOtpEmailAsync(
+            It.Is<SendOtpEmailDto>(d => d.Purpose == "registration"),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -135,5 +167,81 @@ public sealed class EmailControllerTests
 
         var okResult = Assert.IsType<OkObjectResult>(response);
         Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task SendSellerRejectionEmail_WithValidRequest_ReturnsOkResult()
+    {
+        var request = new SendSellerRejectionEmailApiRequest
+        {
+            Email = "seller@example.com",
+            FullName = "Seller Name",
+            ShopName = "My Shop",
+            RejectReason = "Incomplete business documents."
+        };
+
+        _mockNotificationService
+            .Setup(s => s.SendEmailAsync(It.IsAny<SendGeneralEmailDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var result = await _controller.SendSellerRejectionEmail(request, CancellationToken.None);
+
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.NotNull(okResult.Value);
+        Assert.Equal(StatusCodes.Status200OK, okResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task SendSellerRejectionEmail_WhenServiceFails_Returns500InternalServerError()
+    {
+        var request = new SendSellerRejectionEmailApiRequest
+        {
+            Email = "seller@example.com",
+            FullName = "Seller Name",
+            ShopName = "My Shop",
+            RejectReason = "Incomplete business documents."
+        };
+
+        _mockNotificationService
+            .Setup(s => s.SendEmailAsync(It.IsAny<SendGeneralEmailDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var result = await _controller.SendSellerRejectionEmail(request, CancellationToken.None);
+
+        var statusResult = Assert.IsType<ObjectResult>(result);
+        Assert.Equal(StatusCodes.Status500InternalServerError, statusResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task SendSellerRejectionEmail_WithEmptyReason_ReturnsBadRequest()
+    {
+        var request = new SendSellerRejectionEmailApiRequest
+        {
+            Email = "seller@example.com",
+            RejectReason = string.Empty
+        };
+
+        var result = await _controller.SendSellerRejectionEmail(request, CancellationToken.None);
+
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("not-an-email")]
+    [InlineData("   ")]
+    public async Task SendSellerRejectionEmail_WithInvalidEmail_ReturnsBadRequest(string invalidEmail)
+    {
+        var request = new SendSellerRejectionEmailApiRequest
+        {
+            Email = invalidEmail,
+            RejectReason = "Invalid documents"
+        };
+
+        var result = await _controller.SendSellerRejectionEmail(request, CancellationToken.None);
+
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
     }
 }

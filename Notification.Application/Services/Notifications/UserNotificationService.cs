@@ -320,7 +320,7 @@ public sealed class UserNotificationService : IUserNotificationService
                 n.Body,
                 n.Payload,
                 n.IsRead,
-                null,
+                n.ReadAt,
                 n.NotificationType != null ? n.NotificationType.ToString() : null,
                 n.Status.ToString(),
                 n.CreatedAt
