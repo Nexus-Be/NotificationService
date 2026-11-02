@@ -1,8 +1,8 @@
 # 00 — NHIỆM VỤ CỐT LÕI & RÀO CHẮN CHỐNG ẢO GIÁC (NOTIFICATION SERVICE)
 
-> **Trạng thái triển khai (2026-10-27):** ✅ ĐÃ HOÀN TẤT & ĐỘC LẬP HOẠT ĐỘNG — Đầy đủ **9 endpoint RESTful** (2 controllers `NotificationsController` và `EmailController`), xử lý gửi OTP email trực tiếp qua REST và nhận bất đồng bộ qua `SendOtpEmailIntegrationEvent`. Đã bãi bỏ hoàn toàn gRPC. Đã pass 100% test độc lập (`Notification.Tests`).
-> **Nguồn sự thật:** code (`Notification.Api/Controllers/NotificationsController.cs`, `Notification.Api/Controllers/EmailController.cs`, `Notification.Infrastructure/Consumers/SendOtpEmailConsumer.cs`, `Notification.Infrastructure/Services/MailKitEmailSenderService.cs`).
-> **Cập nhật lần cuối:** 2026-10-27.
+> **Trạng thái triển khai (2026-11-02):** ✅ ĐÃ HOÀN TẤT & ĐỘC LẬP HOẠT ĐỘNG — Đầy đủ **9 endpoint RESTful công khai** (2 controllers `NotificationsController` và `EmailController`), xử lý gửi OTP email và thông báo trực tiếp qua REST. Đã bãi bỏ hoàn toàn gRPC và RabbitMQ MassTransit. Đã pass 100% test độc lập (`Notification.Tests`).
+> **Nguồn sự thật:** code (`Notification.Api/Controllers/Public/NotificationsController.cs`, `Notification.Api/Controllers/Public/EmailController.cs`, `Notification.Infrastructure/Services/MailKitEmailSenderService.cs`).
+> **Cập nhật lần cuối:** 2026-11-02.
 
 ---
 
@@ -16,8 +16,8 @@
 | 2 | Đánh dấu thông báo đã đọc (`MarkNotificationRead`) | ✅ HOẠT ĐỘNG | `Notification.Api/Controllers/NotificationsController.cs:77-88` |
 | 3 | Quản lý tùy chọn nhận thông báo (`NotificationPreferences`) | ✅ HOẠT ĐỘNG | `Notification.Api/Controllers/NotificationsController.cs:46-62` |
 | 4 | Quản lý thiết bị nhận push (`RegisterDeviceRequest` / `Unregister`) | ✅ HOẠT ĐỘNG | `Notification.Api/Controllers/NotificationsController.cs:25-44` |
-| 5 | Dịch vụ gửi email OTP và thông báo trực tiếp qua RESTful API | ✅ HOẠT ĐỘNG | `Notification.Api/Controllers/EmailController.cs:20-55`, `MailKitEmailSenderService.cs` |
-| 6 | Subscriber nhận sự kiện bất đồng bộ qua RabbitMQ | ✅ HOẠT ĐỘNG | `Infrastructure/Consumers/SendOtpEmailConsumer.cs:9` (`SendOtpEmailIntegrationEvent`) |
+| 5 | Dịch vụ gửi email OTP và thông báo trực tiếp qua RESTful API | ✅ HOẠT ĐỘNG | `Notification.Api/Controllers/Public/EmailController.cs:20-55`, `MailKitEmailSenderService.cs` |
+| 6 | Giao tiếp liên dịch vụ 100% qua RESTful HTTP (Bãi bỏ RabbitMQ / MassTransit) | ✅ HOẠT ĐỘNG | `Notification.Api/Program.cs`, `specs/03_EVENT_MESSAGING.md` |
 | 7 | Cung cấp giao diện RESTful HTTP/JSON tại cổng `8007` (CẤM gRPC) | ✅ HOẠT ĐỘNG | `Notification.Api/Program.cs`, `Dockerfile:3-4` |
 
 ---
