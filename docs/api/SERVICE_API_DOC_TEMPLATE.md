@@ -15,7 +15,7 @@
 - **Controller:** `Notification.Api/Controllers/Public/{Feature}Controller.cs`
 - **Application Contract:** `Notification.Application/Services/{Feature}/I{Feature}Service.cs`
 
----
+---  .
 
 ## 2. Đầu vào & Quy chuẩn Validation (Input & Validation Schema)
 ### 2.1 Route Parameters & Query Parameters
