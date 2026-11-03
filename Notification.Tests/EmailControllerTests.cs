@@ -181,7 +181,7 @@ public sealed class EmailControllerTests
         };
 
         _mockNotificationService
-            .Setup(s => s.SendEmailAsync(It.IsAny<SendGeneralEmailDto>(), It.IsAny<CancellationToken>()))
+            .Setup(s => s.SendSellerRejectionEmailAsync(It.IsAny<SendSellerRejectionEmailDto>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
         var result = await _controller.SendSellerRejectionEmail(request, CancellationToken.None);
@@ -203,7 +203,7 @@ public sealed class EmailControllerTests
         };
 
         _mockNotificationService
-            .Setup(s => s.SendEmailAsync(It.IsAny<SendGeneralEmailDto>(), It.IsAny<CancellationToken>()))
+            .Setup(s => s.SendSellerRejectionEmailAsync(It.IsAny<SendSellerRejectionEmailDto>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
 
         var result = await _controller.SendSellerRejectionEmail(request, CancellationToken.None);

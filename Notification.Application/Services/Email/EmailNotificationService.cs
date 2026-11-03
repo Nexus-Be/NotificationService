@@ -32,4 +32,22 @@ public sealed class EmailNotificationService : IEmailNotificationService
     {
         return _emailSender.SendEmailAsync(dto.ToEmail, dto.Subject, dto.HtmlBody, cancellationToken);
     }
+
+    public async Task<bool> SendSellerApprovalEmailAsync(SendSellerApprovalEmailDto dto, CancellationToken cancellationToken = default)
+    {
+        var subject = "Thông báo phê duyệt tài khoản Seller";
+        var htmlBody = $"<p>Xin chào <strong>{dto.FullName}</strong>,</p><p>Cửa hàng <strong>{dto.ShopName}</strong> của bạn đã được phê duyệt thành công trên hệ thống Nexus!</p>";
+
+        var generalDto = new SendGeneralEmailDto(dto.Email, subject, htmlBody);
+        return await SendEmailAsync(generalDto, cancellationToken);
+    }
+
+    public async Task<bool> SendSellerRejectionEmailAsync(SendSellerRejectionEmailDto dto, CancellationToken cancellationToken = default)
+    {
+        var subject = "Thông báo từ chối tài khoản Seller";
+        var htmlBody = $"<p>Xin chào <strong>{dto.FullName}</strong>,</p><p>Rất tiếc, cửa hàng <strong>{dto.ShopName}</strong> của bạn chưa được phê duyệt.</p><p><strong>Lý do:</strong> {dto.RejectReason}</p>";
+
+        var generalDto = new SendGeneralEmailDto(dto.Email, subject, htmlBody);
+        return await SendEmailAsync(generalDto, cancellationToken);
+    }
 }

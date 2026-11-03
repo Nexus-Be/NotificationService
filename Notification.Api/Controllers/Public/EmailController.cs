@@ -213,16 +213,3 @@ public sealed record SendSellerApprovalEmailApiRequest
 
     public string? ShopName { get; init; }
 }
-
-public sealed record SendSellerRejectionEmailApiRequest
-{
-    [Required]
-    public string Email { get; init; } = string.Empty;
-
-    public string? FullName { get; init; }
-
-    public string? ShopName { get; init; }
-
-    [Required]
-    public string RejectReason { get; init; } = string.Empty;
-}
