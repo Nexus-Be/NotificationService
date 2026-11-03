@@ -24,6 +24,7 @@ description: Add or modify outbound typed REST clients in NotificationService (p
 2. **Strict Project Isolation:** Never reference external assemblies or query other microservice databases directly.
 3. **No Internal API Key:** Inter-service routes use standard public endpoints. Do not send `X-Internal-Service-Key`.
 4. **Timeout & Fallback:** Outbound lookups must enforce a strict timeout ($\le 5$s) and never cause in-app notification creation or background worker queues to crash.
+5. **W3C Distributed Tracing:** Preserve the incoming `traceparent` context when querying external services or dispatching email receipts to prevent broken waterfall traces in Grafana Tempo.
 
 ## Implementation Steps
 
