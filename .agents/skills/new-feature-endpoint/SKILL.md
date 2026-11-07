@@ -74,7 +74,10 @@ description: Add or change a REST endpoint in NotificationService (port 8007). U
 - [ ] Controller lives in `Notification.Api/Controllers/` and is named `{Feature}Controller`.
 - [ ] `[ApiController]`, one `[Route]`, one route attribute per action, one-line XML `<summary>`.
 - [ ] Only `I{Feature}Service` is injected.
-- [ ] Identity comes from `this.TryGetUserId(...)`, ownership from `this.EnsureOwnership(...)`.
+- [ ] Caller identity and roles: `UserContextMiddleware` automatically decodes gateway headers into `HttpContext.User`.
+  - Extract caller ID via `this.TryGetUserId(out var userId, out var authError)` (returns HTTP 401 ProblemDetails if unauthenticated).
+  - Enforce role restrictions via `[RequireRole(...)]` or `this.HasRole(...)` (returns HTTP 403 ProblemDetails if unauthorized).
+  - Enforce ownership on personal notifications and device tokens.
 - [ ] DTOs are returned directly; delete returns `NoContent()`.
 - [ ] No `ResultFilter`, no manual envelope, no business branching in the controller.
 
