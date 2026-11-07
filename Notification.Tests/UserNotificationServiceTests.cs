@@ -217,7 +217,7 @@ public sealed class UserNotificationServiceTests
         var result = await service.RegisterDeviceAsync(userId, request, CancellationToken.None);
 
         Assert.NotNull(result);
-        Assert.Equal("ANDROID", result.Platform);
+        Assert.Equal("Android", result.Platform);
         Assert.Equal(token, result.Token);
 
         var deviceInDb = await db.DeviceTokens.FirstOrDefaultAsync(d => d.Token == token);
@@ -230,7 +230,7 @@ public sealed class UserNotificationServiceTests
         var updateRequest = new RegisterDeviceRequest(token, "IOS");
         var updateResult = await service.RegisterDeviceAsync(newUserId, updateRequest, CancellationToken.None);
 
-        Assert.Equal("IOS", updateResult.Platform);
+        Assert.Equal("Ios", updateResult.Platform);
         var updatedInDb = await db.DeviceTokens.FirstOrDefaultAsync(d => d.Token == token);
         Assert.Equal(newUserId, updatedInDb!.UserId);
         Assert.Equal(DevicePlatform.Ios, updatedInDb.Platform);
