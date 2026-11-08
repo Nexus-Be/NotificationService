@@ -1,100 +1,13 @@
-# NOTIFICATION SERVICE - POST /api/v1/notifications/email/otp
+# POST /api/v1/notifications/email/otp
 
-> **Feature / Use Case:** Email / Send OTP Verification Email
-> **Trạng thái:** ✅ VERIFIED
-> **Ngày tạo:** 2026-11-02
-> **Tác giả:** AI Coding Agent
+Status: VERIFIED — local automated tests,2026-11-08. This replaces the earlier RAM-only contract. Full contract and handoff: [OTP delivery](../Otp/OTP_DELIVERY.md).
 
----
+Requires trusted Gateway service/admin role; anonymous401, buyer/seller/staff403. Frontend calls User Service. Body16KiB, no-store. Existing email/fullName/otpCode/expiresInMinutes/purpose retained; optional requestId/userId/issuedAt/expiresAt/traceId added. Issued/expiry supplied together; supported purposes registration/password_reset/seller_registration. Same ID/body replays; changed409; new challenge must have later issuedAt in email+purpose group. User Service must invalidate the previous OTP when resending.
 
-## 1. Thông tin Định tuyến & RBAC (Routing & Authorization)
-- **HTTP Method:** `POST`
-- **Route Endpoint:** `/api/v1/notifications/email/otp`
-- **Quyền hạn (RBAC Policy):** Công khai / Liên dịch vụ (gọi từ `UserService` hoặc các client đăng ký/đăng nhập)
-- **Quy tắc Sở hữu (Resource Ownership):** Gửi email chứa mã OTP đến địa chỉ người nhận được cung cấp.
-- **Controller:** `Notification.Api/Controllers/Public/EmailController.cs` -> `SendOtpEmail()`
-- **Application Contract:** `Notification.Application/Services/Email/IEmailNotificationService.cs` -> `SendOtpEmailAsync()`
+HTTP200 pure OtpEmailDispatchResponse: recipient/fullName/expiresInMinutes/purpose/status/acceptedAt/requestId/expiresAt/isReplay. Runtime Queued means committed encrypted DB queue; ProviderAccepted means SMTP accepted, never account verification. Other states Sending/Failed/Expired/Superseded. GET /api/v1/notifications/otp-dispatches/{id} same roles returns masked metadata/status. No OTP/ciphertext/fingerprint echo.
 
----
+DurableOtpWorker uses strict SMTP sender, bounded retry/timeout/expiry and lease/fencing, atomic secret-free audit. Missing SMTP config fails asynchronously, never simulated success. Terminal payload is erased; proof remains protected for replay. Old standalone constructors retain legacy RAM/direct behavior for compatibility only, production DI uses the durable service.
 
-## 2. Đầu vào & Quy chuẩn Validation (Input & Validation Schema)
-### 2.1 Route Parameters & Query Parameters
-*Không có tham số route hoặc query.*
+Errors:400 VAL_INVALID_INPUT/OTP_EXPIRED,401 UNAUTHORIZED,403 FORBIDDEN,404 OTP_DISPATCH_NOT_FOUND (GET),409 OTP_REQUEST_CONFLICT/OTP_REQUEST_OBSOLETE,503 OTP_PROTECTION_UNAVAILABLE for unreadable replay proof; request size uses global413 handling. Audit enum additions8..10 do not change existing ints.
 
-### 2.2 Request Body Record DTO
-- **Vị trí file:** `Notification.Api/Controllers/Public/EmailController.cs`
-- **Tên C# Record:** `SendOtpEmailApiRequest`
-- **Khai báo C# & DataAnnotations:**
-```csharp
-public sealed record SendOtpEmailApiRequest
-{
-    [Required]
-    public string Email { get; init; } = string.Empty;
-
-    public string? FullName { get; init; }
-
-    [Required]
-    public string OtpCode { get; init; } = string.Empty;
-
-    public int ExpiresInMinutes { get; init; } = 5;
-}
-```
-- **JSON Request Body mẫu (camelCase):**
-```json
-{
-  "email": "buyer@example.com",
-  "fullName": "Nguyen Van A",
-  "otpCode": "123456",
-  "expiresInMinutes": 5
-}
-```
-
----
-
-## 3. Đầu ra & Hợp đồng DTO thuần (Response Contract - Pure DTO)
-> **LƯU Ý:** NotificationService trả về payload JSON trực tiếp biểu thị kết quả gửi email.
-
-- **Mã HTTP thành công:** `200 OK`
-- **JSON Response Body mẫu (camelCase):**
-```json
-{
-  "success": true,
-  "message": "OTP verification email dispatched successfully.",
-  "data": {
-    "recipient": "buyer@example.com",
-    "fullName": "Nguyen Van A",
-    "expiresInMinutes": 5,
-    "dispatchedAt": "2026-11-02T02:30:00Z"
-  }
-}
-```
-
----
-
-## 4. Ma trận Mã lỗi RFC 9110 (Error Matrix)
-> **Quy chuẩn:** 100% tiếng Anh, Sentence case cho `message`, SCREAMING_SNAKE_CASE cho `errorCode` (không dùng tiền tố `ERR_`).
-
-| HTTP Status | Error Code | Message (Sentence case) | Điều kiện kích hoạt (Trigger Condition) |
-| :---: | :--- | :--- | :--- |
-| `400 Bad Request` | `VAL_INVALID_EMAIL` | `Recipient email is required and must be a valid email address.` | `Email` rỗng, thiếu hoặc không chứa ký tự `@` |
-| `400 Bad Request` | `VAL_INVALID_OTP` | `OTP code cannot be empty.` | `OtpCode` rỗng hoặc null |
-| `500 Internal Error` | `EMAIL_SEND_FAILED` | `Failed to deliver OTP email via notification provider.` | SMTP provider gặp lỗi không gửi được mail |
-| `500 Internal Error` | `INTERNAL_SERVER_ERROR` | `An unexpected error occurred while processing the request.` | Ngoại lệ chưa được xử lý |
-
----
-
-## 5. Kế hoạch Thực thi & Checklist Kiểm chứng (Pre-Code Plan & Checklist)
-### 5.1 Các bước thực thi nghiệp vụ (Execution Flow Plan)
-1. **Bước 1:** Validate `request.Email` (phải chứa `@`) và `request.OtpCode` (không được rỗng).
-2. **Bước 2:** Chuẩn hóa `fullName` (default "Customer"), `purpose` (default "registration"), và `expiresInMinutes` (default 5).
-3. **Bước 3:** Chuyển đổi sang `SendOtpEmailDto` và gọi `_emailNotificationService.SendOtpEmailAsync()`.
-4. **Bước 4:** Nếu gửi thất bại, log warning và trả `500 EMAIL_SEND_FAILED`.
-5. **Bước 5:** Nếu thành công, trả `200 OK` kèm thông tin dispatched.
-
-### 5.2 Checklist hoàn thành
-- [x] **Pre-Code:** Đã đối soát code có sẵn trong NotificationService để tái sử dụng DTO/Enum/Naming.
-- [x] **Pre-Code:** Lưu tại `docs/api/Email/POST_EMAIL_OTP.md`.
-- [x] **Public Route:** Đạt chuẩn route công khai không dùng prefix `/internal`.
-- [x] **Api:** `EmailController.SendOtpEmail` hoạt động chính xác.
-- [x] **Tests:** Đã kiểm thử tự động đạt 100% pass.
-- [x] **Verify:** `dotnet build` và `dotnet test` vượt qua 100%.
+Migration20261108095031_AddProtectedOtpDispatches and persistent/shared Data Protection key ring required before rollout. Build Release0 warnings/errors;257 tests pass,0fail/skip. Project DB not migrated; User Service and real SMTP integration pending. Password-change confirmation is a separate next step.

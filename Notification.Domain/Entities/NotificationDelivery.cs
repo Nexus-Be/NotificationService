@@ -14,6 +14,8 @@ public class NotificationDelivery : BaseEntity<Guid>
     public DateTimeOffset? NextRetryAt { get; set; }
     public string? ErrorCode { get; set; }
     public string? ErrorMessage { get; set; }
+    public string? SubjectOverride { get; set; }
+    public string? BodyOverride { get; set; }
     public long RowVersion { get; set; }
 
     // Navigation

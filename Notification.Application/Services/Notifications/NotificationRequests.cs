@@ -16,19 +16,31 @@ public sealed record MarkNotificationReadRequest(
     Guid NotificationId
 );
 
-public sealed record RegisterDeviceRequest(
-    [property: Required(ErrorMessage = "Device token is required.")]
-    string Token,
-    string Platform = "WEB"
-);
+public sealed record RegisterDeviceRequest
+{
+    [Required(ErrorMessage = "Device token is required."), StringLength(1000, ErrorMessage = "Device token must not exceed 1000 characters.")]
+    public string Token { get; init; } = string.Empty;
+    [Required(ErrorMessage = "Platform is required."), StringLength(20)]
+    public string Platform { get; init; } = "Web";
+    [StringLength(1000, ErrorMessage = "Previous token must not exceed 1000 characters.")]
+    public string? PreviousToken { get; init; }
+
+    [System.Text.Json.Serialization.JsonConstructor]
+    public RegisterDeviceRequest() { }
+    public RegisterDeviceRequest(string Token, string Platform = "Web", string? PreviousToken = null)
+    { this.Token = Token; this.Platform = Platform; this.PreviousToken = PreviousToken; }
+}
 
 public sealed record UpdatePreferenceItemRequest(
-    string NotificationType,
-    string ChannelCode,
-    bool IsDisabled
+    [Required(ErrorMessage = "Notification type is required.")] string NotificationType,
+    [Required(ErrorMessage = "Channel code is required.")] string ChannelCode,
+    [Required(ErrorMessage = "Disabled setting is required.")] bool? IsDisabled
 );
 
 public sealed record UpdatePreferencesRequest(
+    [Required(ErrorMessage = "Preferences are required.")]
+    [MinLength(1, ErrorMessage = "At least one preference is required.")]
+    [MaxLength(100, ErrorMessage = "Preferences must not exceed 100 items.")]
     IReadOnlyList<UpdatePreferenceItemRequest> Preferences
 );
 
@@ -50,3 +62,13 @@ public sealed record SearchNotificationHistoryRequest(
     int PageIndex = 1,
     int PageSize = 20
 );
+
+public sealed record CreateInAppNotificationRequest(
+    Guid UserId,
+    string Title,
+    string Body,
+    string? NotificationType = null,
+    string? Payload = null,
+    Guid? SourceEventId = null
+);
+public sealed record SetNotificationReadStateRequest([Required(ErrorMessage = "Read state is required.")] bool? IsRead);

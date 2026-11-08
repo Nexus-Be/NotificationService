@@ -12,6 +12,8 @@ public class NotificationDeliveryConfiguration : IEntityTypeConfiguration<Notifi
         builder.Property(x => x.Destination).HasMaxLength(500).IsRequired();
         builder.Property(x => x.ErrorCode).HasMaxLength(100);
         builder.Property(x => x.ErrorMessage).HasMaxLength(1000);
+        builder.Property(x => x.SubjectOverride).HasMaxLength(500);
+        builder.Property(x => x.BodyOverride).HasMaxLength(4000);
         builder.Property(x => x.RowVersion).IsConcurrencyToken();
 
         builder.HasOne(d => d.Notification)

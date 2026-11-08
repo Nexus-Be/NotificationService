@@ -35,6 +35,11 @@ public sealed class GlobalExceptionHandlerMiddleware
 
         var (statusCode, errorCode, title, detail) = exception switch
         {
+            BadHttpRequestException { StatusCode: StatusCodes.Status413PayloadTooLarge } => (
+                StatusCodes.Status413PayloadTooLarge,
+                "REQUEST_BODY_TOO_LARGE",
+                "Content too large",
+                "Request body exceeds the allowed size."),
             BusinessRuleValidationException bve => (
                 bve.StatusCode,
                 bve.ErrorCode,
@@ -95,6 +100,7 @@ public sealed class GlobalExceptionHandlerMiddleware
         StatusCodes.Status403Forbidden => "https://tools.ietf.org/html/rfc9110#section-15.5.4",
         StatusCodes.Status404NotFound => "https://tools.ietf.org/html/rfc9110#section-15.5.5",
         StatusCodes.Status409Conflict => "https://tools.ietf.org/html/rfc9110#section-15.5.10",
+        StatusCodes.Status413PayloadTooLarge => "https://tools.ietf.org/html/rfc9110#section-15.5.14",
         StatusCodes.Status429TooManyRequests => "https://tools.ietf.org/html/rfc9110#section-15.5.21",
         _ => "https://tools.ietf.org/html/rfc9110#section-15.6.1"
     };

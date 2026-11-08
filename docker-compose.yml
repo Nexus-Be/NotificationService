@@ -32,7 +32,34 @@ services:
       Smtp__Password: "${SMTP_PASSWORD:-}"
       InternalSecurity__ServiceKey: "${INTERNAL_SERVICE_SECRET:-eaT0Ombups70WJzd85CBBpp8rAno55SxKn1qvYBGH9e}"
       OTEL_EXPORTER_OTLP_ENDPOINT: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://tempo:4317}"
+      DeliveryWorker__Enabled: "${NOTIFICATION_DELIVERY_WORKER_ENABLED:-true}"
+      NOTIFICATION_RETRY_LIMIT: "${NOTIFICATION_RETRY_LIMIT:-3}"
+      DeliveryWorker__BaseDelaySeconds: "${NOTIFICATION_DELIVERY_BASE_DELAY_SECONDS:-10}"
+      DeliveryWorker__PollIntervalSeconds: "${NOTIFICATION_DELIVERY_POLL_SECONDS:-5}"
+      DeliveryWorker__AttemptTimeoutSeconds: "${NOTIFICATION_DELIVERY_TIMEOUT_SECONDS:-30}"
+      DeliveryWorker__LeaseSeconds: "${NOTIFICATION_DELIVERY_LEASE_SECONDS:-120}"
+      EventLogRetention__Enabled: "${NOTIFICATION_EVENT_LOG_RETENTION_ENABLED:-false}"
+      EventLogRetention__BatchSize: "${NOTIFICATION_EVENT_LOG_RETENTION_BATCH_SIZE:-500}"
+      EventLogRetention__MaxBatchesPerRun: "${NOTIFICATION_EVENT_LOG_RETENTION_MAX_BATCHES:-20}"
+      EventLogRetention__IntervalSeconds: "${NOTIFICATION_EVENT_LOG_RETENTION_INTERVAL_SECONDS:-3600}"
+      EventLogRetention__RunTimeoutSeconds: "${NOTIFICATION_EVENT_LOG_RETENTION_TIMEOUT_SECONDS:-120}"
+      Health__DatabaseTimeoutSeconds: "${NOTIFICATION_HEALTH_DB_TIMEOUT_SECONDS:-3}"
+      Health__WorkerGraceSeconds: "${NOTIFICATION_HEALTH_WORKER_GRACE_SECONDS:-30}"
+      Health__OtpStallSeconds: "${NOTIFICATION_HEALTH_OTP_STALL_SECONDS:-120}"
+      OtpWorker__PollIntervalSeconds: "${NOTIFICATION_OTP_POLL_SECONDS:-1}"
+      OtpWorker__SendTimeoutSeconds: "${NOTIFICATION_OTP_TIMEOUT_SECONDS:-30}"
+      OtpWorker__LeaseSeconds: "${NOTIFICATION_OTP_LEASE_SECONDS:-120}"
+      OtpWorker__MaxAttempts: "${NOTIFICATION_OTP_MAX_ATTEMPTS:-3}"
+      OtpWorker__BaseDelaySeconds: "${NOTIFICATION_OTP_BASE_DELAY_SECONDS:-5}"
+      OtpProtection__KeyRingPath: "/var/lib/notification/otp-keys"
+      FCM_PROJECT_ID: "${FCM_PROJECT_ID:-}"
+      GOOGLE_APPLICATION_CREDENTIALS: "${FCM_CREDENTIALS_CONTAINER_PATH:-}"
+    volumes:
+      - notification-otp-keys:/var/lib/notification/otp-keys
     restart: unless-stopped
+
+volumes:
+  notification-otp-keys:
 
 networks:
   default:

@@ -66,15 +66,17 @@ public sealed class NotificationsControllerTests
     [Fact]
     public async Task RevokeDevice_ReturnsNoContent()
     {
+        var userId = Guid.NewGuid();
+        SetUserContext(userId);
         var token = "token-to-revoke";
         _mockNotificationService
-            .Setup(s => s.RevokeDeviceAsync(token, It.IsAny<CancellationToken>()))
+            .Setup(s => s.RevokeDeviceAsync(userId, token, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
 
         var result = await _controller.RevokeDevice(token, CancellationToken.None);
 
         Assert.IsType<NoContentResult>(result);
-        _mockNotificationService.Verify(s => s.RevokeDeviceAsync(token, It.IsAny<CancellationToken>()), Times.Once);
+        _mockNotificationService.Verify(s => s.RevokeDeviceAsync(userId, token, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

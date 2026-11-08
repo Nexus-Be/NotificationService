@@ -64,13 +64,125 @@ public static class NotificationSeedData
         modelBuilder.Entity<NotificationTemplate>().HasData(
             new NotificationTemplate
             {
+                Id = Guid.Parse("60000000-0000-0000-0000-00000000000f"), Code = "AUCTION_WINNER_EMAIL", NotificationType = NotificationType.AuctionWon, ChannelCode = ChannelType.Email,
+                SubjectTemplate = "Kết quả thắng đấu giá và hướng dẫn thanh toán",
+                BodyTemplate = "<p>Xin chào {{FullName}},</p><p>Bạn đã thắng phiên {{AuctionTitle}}, kết quả chốt lúc {{SettledAtUtc}}.</p><p>Giá thắng: {{WinningAmount}} VND. Hạn thanh toán: {{PaymentDeadlineUtc}}.</p><p>Tham chiếu đơn: {{OrderReference}}</p><p>Hãy mở chi tiết phiên và đơn đấu giá liên quan trong ứng dụng Nexus. Kiểm tra số tiền cuối cùng và chỉ thanh toán khi hệ thống xác nhận đơn còn hiệu lực. Thông báo này không xác nhận đã thanh toán.</p>",
+                IsMandatory = true, Locale = "vi-VN", IsActive = true, CreatedAt = seedDate, UpdatedAt = seedDate
+            },
+            new NotificationTemplate
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-000000000010"), Code = "AUCTION_WINNER_PUSH", NotificationType = NotificationType.AuctionWon, ChannelCode = ChannelType.Push,
+                SubjectTemplate = "Bạn đã thắng đấu giá",
+                BodyTemplate = "Bạn đã thắng phiên {{AuctionTitle}} với giá {{WinningAmount}} VND, chốt lúc {{SettledAtUtc}}. Hạn thanh toán: {{PaymentDeadlineUtc}}. Kiểm tra đơn còn hiệu lực trong ứng dụng Nexus trước khi thanh toán.",
+                IsMandatory = false, Locale = "vi-VN", IsActive = true, CreatedAt = seedDate, UpdatedAt = seedDate
+            },
+            new NotificationTemplate
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-00000000000e"), Code = "AUCTION_BID_OUTBID_PUSH",
+                NotificationType = NotificationType.AuctionOutbid, ChannelCode = ChannelType.Push,
+                SubjectTemplate = "Bạn đã bị vượt giá",
+                BodyTemplate = "Bạn đã bị vượt giá tại phiên {{AuctionTitle}}. Mức giá mới ghi nhận lúc {{OccurredAtUtc}}: {{NewAmount}} VND.",
+                IsMandatory = false, Locale = "vi-VN", IsActive = true, CreatedAt = seedDate, UpdatedAt = seedDate
+            },
+            new NotificationTemplate
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-00000000000c"), Code = "ORDER_PAID_BUYER_PUSH",
+                NotificationType = NotificationType.OrderPaid, ChannelCode = ChannelType.Push,
+                SubjectTemplate = "Thanh toán đơn hàng thành công", BodyTemplate = "Bạn đã thanh toán thành công đơn hàng {{OrderNo}}. Tổng thanh toán: {{TotalAmount}} VND.",
+                IsMandatory = true, Locale = "vi-VN", IsActive = true, CreatedAt = seedDate, UpdatedAt = seedDate
+            },
+            new NotificationTemplate
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-00000000000d"), Code = "ORDER_PAID_SELLER_PUSH",
+                NotificationType = NotificationType.OrderPaid, ChannelCode = ChannelType.Push,
+                SubjectTemplate = "Bạn có đơn hàng mới", BodyTemplate = "Bạn có đơn hàng mới {{OrderNo}} đã được thanh toán. Vui lòng xác nhận trước {{AcceptDeadlineUtc}}.",
+                IsMandatory = true, Locale = "vi-VN", IsActive = true, CreatedAt = seedDate, UpdatedAt = seedDate
+            },
+            new NotificationTemplate
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-00000000000a"), Code = "ACCOUNT_BANNED_EMAIL",
+                NotificationType = NotificationType.SecurityAlert, ChannelCode = ChannelType.Email,
+                SubjectTemplate = "Thông báo tạm khóa tài khoản do vi phạm",
+                BodyTemplate = "<p>Xin chào {{FullName}},</p><p>Vào lúc {{ChangedAtUtc}}, tài khoản Nexus của bạn đã được tạm khóa do vi phạm quy định.</p><p><strong>Lý do:</strong> {{Reason}}</p><p>Tài khoản bị đình chỉ hoạt động cho đến khi được mở khóa. Nếu cần hỗ trợ, hãy liên hệ bộ phận hỗ trợ Nexus.</p>",
+                IsMandatory = true, Locale = "vi-VN", IsActive = true, CreatedAt = seedDate, UpdatedAt = seedDate
+            },
+            new NotificationTemplate
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-00000000000b"), Code = "ACCOUNT_UNBANNED_EMAIL",
+                NotificationType = NotificationType.SecurityAlert, ChannelCode = ChannelType.Email,
+                SubjectTemplate = "Thông báo mở khóa tài khoản",
+                BodyTemplate = "<p>Xin chào {{FullName}},</p><p>Vào lúc {{ChangedAtUtc}}, tài khoản Nexus của bạn đã được mở khóa về trạng thái hoạt động.</p><p><strong>Lý do:</strong> {{Reason}}</p><p>Thông báo này xác nhận việc khôi phục quyền sử dụng tài khoản tại thời điểm nêu trên.</p>",
+                IsMandatory = true, Locale = "vi-VN", IsActive = true, CreatedAt = seedDate, UpdatedAt = seedDate
+            },
+            new NotificationTemplate
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-000000000008"), Code = "SELLER_APPROVED_EMAIL",
+                NotificationType = NotificationType.SecurityAlert, ChannelCode = ChannelType.Email,
+                SubjectTemplate = "Yêu cầu trở thành Seller đã được chấp thuận",
+                BodyTemplate = "<p>Xin chào {{FullName}},</p><p>Yêu cầu trở thành Seller cho gian hàng {{ShopName}} đã được chấp thuận lúc {{DecidedAtUtc}}.</p><p>Tài khoản hiện tại của bạn đã được cấp thêm quyền Seller. Bạn có thể truy cập Portal Người bán để bắt đầu bán hàng.</p>",
+                IsMandatory = true, Locale = "vi-VN", IsActive = true, CreatedAt = seedDate, UpdatedAt = seedDate
+            },
+            new NotificationTemplate
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-000000000009"), Code = "SELLER_REJECTED_EMAIL",
+                NotificationType = NotificationType.SecurityAlert, ChannelCode = ChannelType.Email,
+                SubjectTemplate = "Kết quả xét duyệt yêu cầu trở thành Seller",
+                BodyTemplate = "<p>Xin chào {{FullName}},</p><p>Yêu cầu trở thành Seller cho gian hàng {{ShopName}} đã bị từ chối lúc {{DecidedAtUtc}}.</p><p><strong>Lý do:</strong> {{RejectionReason}}</p>",
+                IsMandatory = true, Locale = "vi-VN", IsActive = true, CreatedAt = seedDate, UpdatedAt = seedDate
+            },
+            new NotificationTemplate
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-000000000006"),
+                Code = "PASSWORD_CHANGED_EMAIL",
+                NotificationType = NotificationType.SecurityAlert, ChannelCode = ChannelType.Email,
+                SubjectTemplate = "Mật khẩu của bạn đã được thay đổi",
+                BodyTemplate = "<p>Xin chào {{FullName}},</p><p>Mật khẩu tài khoản Nexus của bạn đã được thay đổi thành công lúc {{ChangedAtUtc}}.</p><p>Nếu bạn không thực hiện thao tác này, hãy liên hệ bộ phận hỗ trợ Nexus ngay.</p>",
+                IsMandatory = true, Locale = "vi-VN", IsActive = true, CreatedAt = seedDate, UpdatedAt = seedDate
+            },
+            new NotificationTemplate
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-000000000007"),
+                Code = "PASSWORD_RESET_SUCCEEDED_EMAIL",
+                NotificationType = NotificationType.SecurityAlert, ChannelCode = ChannelType.Email,
+                SubjectTemplate = "Mật khẩu của bạn đã được đặt lại",
+                BodyTemplate = "<p>Xin chào {{FullName}},</p><p>Mật khẩu tài khoản Nexus của bạn đã được đặt lại thành công lúc {{ChangedAtUtc}}.</p><p>Nếu bạn không thực hiện thao tác này, hãy liên hệ bộ phận hỗ trợ Nexus ngay.</p>",
+                IsMandatory = true, Locale = "vi-VN", IsActive = true, CreatedAt = seedDate, UpdatedAt = seedDate
+            },
+            new NotificationTemplate
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-000000000004"), Code = "ORDER_PAID_PUSH",
+                NotificationType = NotificationType.OrderPaid, ChannelCode = ChannelType.Push,
+                SubjectTemplate = "Đơn hàng {{OrderNo}} đã thanh toán",
+                BodyTemplate = "Đơn hàng {{OrderNo}} đã thanh toán {{TotalAmount}}.", IsMandatory = true,
+                Locale = "vi-VN", IsActive = true, CreatedAt = seedDate, UpdatedAt = seedDate
+            },
+            new NotificationTemplate
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-000000000005"), Code = "AUCTION_OUTBID_PUSH",
+                NotificationType = NotificationType.AuctionOutbid, ChannelCode = ChannelType.Push,
+                SubjectTemplate = "Bạn đã bị vượt giá",
+                BodyTemplate = "{{AuctionTitle}} đã có mức giá mới {{BidAmount}}.", IsMandatory = false,
+                Locale = "vi-VN", IsActive = true, CreatedAt = seedDate, UpdatedAt = seedDate
+            },
+            new NotificationTemplate
+            {
+                Id = Guid.Parse("60000000-0000-0000-0000-000000000003"),
+                Code = "ORDER_PAID_IN_APP", NotificationType = NotificationType.OrderPaid,
+                ChannelCode = ChannelType.InApp,
+                SubjectTemplate = "Đơn hàng {{OrderNo}} đã thanh toán",
+                BodyTemplate = "Bạn có đơn hàng {{OrderNo}} đã thanh toán số tiền {{TotalAmount}}.",
+                IsMandatory = true, Locale = "vi-VN", IsActive = true,
+                CreatedAt = seedDate, UpdatedAt = seedDate, IsDeleted = false
+            },
+            new NotificationTemplate
+            {
                 Id = templateOrderPaidId,
                 Code = "ORDER_PAID_EMAIL",
                 NotificationType = NotificationType.OrderPaid,
                 ChannelCode = ChannelType.Email,
                 SubjectTemplate = "Xác nhận thanh toán đơn hàng {{OrderNo}}",
                 BodyTemplate = "Đơn hàng {{OrderNo}} của bạn đã được thanh toán thành công số tiền {{TotalAmount}}.",
-                IsMandatory = false,
+                IsMandatory = true,
                 Locale = "vi-VN",
                 IsActive = true,
                 CreatedAt = seedDate,

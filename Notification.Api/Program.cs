@@ -44,6 +44,6 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.MapControllers();
-app.MapGet("/health", () => Results.Ok(new { status = "Healthy", service = "notification-service" }));
+app.MapNotificationHealth();
 
 app.Run();

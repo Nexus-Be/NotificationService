@@ -19,10 +19,13 @@ public sealed record DeviceRegisteredResponse(
 );
 
 public sealed record NotificationPreferenceResponse(
-    Guid Id,
+    Guid? Id,
     string NotificationType,
     string ChannelCode,
-    bool IsDisabled
+    bool IsDisabled,
+    bool IsMandatory = false,
+    bool IsDefault = false,
+    bool IsChannelDisabled = false
 );
 
 public sealed record UpdatePreferencesResult(

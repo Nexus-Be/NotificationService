@@ -9,6 +9,10 @@ public class NotificationRecordConfiguration : IEntityTypeConfiguration<Notifica
     public void Configure(EntityTypeBuilder<NotificationRecord> builder)
     {
         builder.HasKey(x => x.Id);
+        builder.Property(x => x.IsInboxVisible).HasDefaultValue(true).ValueGeneratedNever();
+        builder.HasIndex(x => new { x.SourceEventId, x.UserId, x.TemplateId })
+            .IsUnique()
+            .HasFilter("\"SourceEventId\" IS NOT NULL AND \"TemplateId\" IS NOT NULL");
         builder.Property(x => x.Title).HasMaxLength(500);
         builder.Property(x => x.Body).HasMaxLength(4000);
         builder.Property(x => x.Payload).HasColumnType("jsonb");

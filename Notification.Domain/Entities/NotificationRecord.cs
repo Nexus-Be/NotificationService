@@ -13,6 +13,7 @@ public class NotificationRecord : BaseEntity<Guid>
     public string? Title { get; set; }
     public string? Body { get; set; }
     public string? Payload { get; set; }
+    public bool IsInboxVisible { get; set; } = true;
     public bool IsRead { get; set; }
     public DateTimeOffset? ReadAt { get; set; }
     public required NotificationStatus Status { get; set; } = NotificationStatus.Pending;

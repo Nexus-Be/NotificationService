@@ -17,11 +17,8 @@ public sealed class EmailNotificationServiceTests
         // Arrange
         var mockSender = new Mock<IEmailSenderService>();
         mockSender
-            .Setup(s => s.SendOtpRegistrationEmailAsync(
-                "tester@nexus.local",
-                "Tester",
-                "654321",
-                10,
+            .Setup(s => s.SendOtpEmailAsync(
+                It.IsAny<SendOtpEmailDto>(),
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
@@ -34,11 +31,8 @@ public sealed class EmailNotificationServiceTests
 
         // Assert
         Assert.True(result);
-        mockSender.Verify(s => s.SendOtpRegistrationEmailAsync(
-            "tester@nexus.local",
-            "Tester",
-            "654321",
-            10,
+        mockSender.Verify(s => s.SendOtpEmailAsync(
+            It.IsAny<SendOtpEmailDto>(),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -90,6 +84,6 @@ public sealed class EmailNotificationServiceTests
         // Assert
         Assert.True(result);
         mockQueue.Verify(q => q.QueueOtpEmailAsync(dto, It.IsAny<CancellationToken>()), Times.Once);
-        mockSender.Verify(s => s.SendOtpRegistrationEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+        mockSender.Verify(s => s.SendOtpEmailAsync(It.IsAny<SendOtpEmailDto>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

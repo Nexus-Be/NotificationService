@@ -217,7 +217,7 @@ public sealed class UserNotificationServiceTests
         var result = await service.RegisterDeviceAsync(userId, request, CancellationToken.None);
 
         Assert.NotNull(result);
-        Assert.Equal("ANDROID", result.Platform);
+        Assert.Equal("Android", result.Platform);
         Assert.Equal(token, result.Token);
 
         var deviceInDb = await db.DeviceTokens.FirstOrDefaultAsync(d => d.Token == token);
@@ -225,12 +225,14 @@ public sealed class UserNotificationServiceTests
         Assert.Equal(userId, deviceInDb.UserId);
         Assert.True(deviceInDb.IsActive);
 
+        // Revoke before switching accounts; active registration cannot be stolen.
+        await service.RevokeDeviceAsync(userId, token, CancellationToken.None);
         // Update existing device with new user
         var newUserId = Guid.NewGuid();
         var updateRequest = new RegisterDeviceRequest(token, "IOS");
         var updateResult = await service.RegisterDeviceAsync(newUserId, updateRequest, CancellationToken.None);
 
-        Assert.Equal("IOS", updateResult.Platform);
+        Assert.Equal("Ios", updateResult.Platform);
         var updatedInDb = await db.DeviceTokens.FirstOrDefaultAsync(d => d.Token == token);
         Assert.Equal(newUserId, updatedInDb!.UserId);
         Assert.Equal(DevicePlatform.Ios, updatedInDb.Platform);
@@ -242,11 +244,12 @@ public sealed class UserNotificationServiceTests
         await using var db = CreateInMemoryDbContext();
         var service = new UserNotificationService(db);
 
+        var userId = Guid.NewGuid();
         var token = "token-to-revoke";
         db.DeviceTokens.Add(new DeviceToken
         {
             Id = Guid.NewGuid(),
-            UserId = Guid.NewGuid(),
+            UserId = userId,
             Platform = DevicePlatform.Web,
             Token = token,
             IsActive = true,
@@ -254,7 +257,7 @@ public sealed class UserNotificationServiceTests
         });
         await db.SaveChangesAsync();
 
-        await service.RevokeDeviceAsync(token, CancellationToken.None);
+        await service.RevokeDeviceAsync(userId, token, CancellationToken.None);
 
         var revoked = await db.DeviceTokens.FirstOrDefaultAsync(d => d.Token == token);
         Assert.NotNull(revoked);
@@ -265,23 +268,25 @@ public sealed class UserNotificationServiceTests
     public async Task UpdatePreferencesAsync_And_GetPreferencesAsync_WorksCorrectly()
     {
         await using var db = CreateInMemoryDbContext();
+        await db.Database.EnsureCreatedAsync();
         var service = new UserNotificationService(db);
 
         var userId = Guid.NewGuid();
 
         var updateRequest = new UpdatePreferencesRequest(new List<UpdatePreferenceItemRequest>
         {
-            new("OrderPaid", "Email", true),
-            new("OrderShipped", "Push", false)
+            new("OrderShipped", "Email", true),
+            new("AuctionOutbid", "Push", false)
         });
 
         var updateResult = await service.UpdatePreferencesAsync(userId, updateRequest, CancellationToken.None);
         Assert.Equal(2, updateResult.UpdatedCount);
 
         var prefs = await service.GetPreferencesAsync(userId, CancellationToken.None);
-        Assert.Equal(2, prefs.Count);
-        Assert.Contains(prefs, p => p.NotificationType == "OrderPaid" && p.IsDisabled);
-        Assert.Contains(prefs, p => p.NotificationType == "OrderShipped" && !p.IsDisabled);
+        Assert.Equal(24, prefs.Count);
+        Assert.Equal(2, prefs.Count(p => !p.IsDefault));
+        Assert.Contains(prefs, p => p.NotificationType == "OrderShipped" && p.ChannelCode == "Email" && p.IsDisabled);
+        Assert.Contains(prefs, p => p.NotificationType == "AuctionOutbid" && p.ChannelCode == "Push" && !p.IsDisabled);
     }
 
     [Fact]
@@ -307,5 +312,46 @@ public sealed class UserNotificationServiceTests
         Assert.Equal("RabbitMQ Cluster", health[0].BrokerName);
         Assert.Equal("Up", health[0].Status);
         Assert.Equal(12L, health[0].LatencyMs);
+    }
+
+    [Fact]
+    public async Task RevokeDeviceAsync_RejectsOtherOwner_AndAuditsOwnRevocationOnce()
+    {
+        await using var db = CreateInMemoryDbContext();
+        var owner = Guid.NewGuid();
+        var device = new DeviceToken { Id = Guid.NewGuid(), UserId = owner, Platform = DevicePlatform.Web, Token = "private-device-token", IsActive = true };
+        db.DeviceTokens.Add(device);
+        await db.SaveChangesAsync();
+        var service = new UserNotificationService(db);
+
+        await service.RevokeDeviceAsync(Guid.NewGuid(), device.Token);
+        Assert.True(device.IsActive);
+        Assert.Empty(db.AuditLogs);
+
+        await service.RevokeDeviceAsync(owner, device.Token);
+        Assert.False(device.IsActive);
+        var log = Assert.Single(db.AuditLogs);
+        Assert.Equal(AuditAction.DeviceRevoke, log.Action);
+        Assert.Equal(owner.ToString(), log.UserId);
+        Assert.Equal(device.Id.ToString(), log.EntityId);
+        Assert.False(log.IsSynced);
+        Assert.DoesNotContain(device.Token, log.NewValues!);
+
+        await service.RevokeDeviceAsync(owner, device.Token);
+        await service.RevokeDeviceAsync(owner, "missing-token");
+        Assert.Single(db.AuditLogs);
+    }
+
+    [Fact]
+    public async Task RevokeDeviceAsync_DoesNotMutateDeletedDevice()
+    {
+        await using var db = CreateInMemoryDbContext();
+        var owner = Guid.NewGuid();
+        var device = new DeviceToken { Id = Guid.NewGuid(), UserId = owner, Platform = DevicePlatform.Web, Token = "deleted-token", IsActive = true, IsDeleted = true };
+        db.DeviceTokens.Add(device);
+        await db.SaveChangesAsync();
+        await new UserNotificationService(db).RevokeDeviceAsync(owner, device.Token);
+        Assert.True(device.IsActive);
+        Assert.Empty(db.AuditLogs);
     }
 }

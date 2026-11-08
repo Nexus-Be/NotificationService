@@ -27,6 +27,9 @@ public sealed class NotificationsController : ControllerBase
     /// <summary>Registers or refreshes device token.</summary>
     [HttpPost("devices")]
     [RequireRole]
+    [RequestSizeLimit(16384)]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    [ProducesResponseType(typeof(DeviceRegisteredResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> RegisterDevice(
         [FromBody] RegisterDeviceRequest request,
         CancellationToken cancellationToken)
@@ -47,7 +50,12 @@ public sealed class NotificationsController : ControllerBase
         [FromRoute] string token,
         CancellationToken cancellationToken)
     {
-        await _notificationService.RevokeDeviceAsync(token, cancellationToken);
+        if (!this.TryGetUserId(out var userId, out var authError))
+        {
+            return authError;
+        }
+
+        await _notificationService.RevokeDeviceAsync(userId, token, cancellationToken);
         return NoContent();
     }
 
@@ -82,6 +90,7 @@ public sealed class NotificationsController : ControllerBase
     }
 
     /// <summary>Retrieves personal in-app notifications history.</summary>
+    [HttpGet]
     [HttpGet("me")]
     [RequireRole]
     public async Task<IActionResult> GetMyNotifications(
@@ -104,8 +113,44 @@ public sealed class NotificationsController : ControllerBase
         return Ok(result);
     }
 
-    /// <summary>Marks notifications as read.</summary>
+    /// <summary>Sets the read or unread state of an owned notification.</summary>
+    [HttpPut("{id:guid}/read-states")]
+    [RequireRole]
+    public async Task<IActionResult> SetReadState(Guid id, [FromBody] SetNotificationReadStateRequest request, CancellationToken cancellationToken)
+    {
+        if (!this.TryGetUserId(out var userId, out var error)) return error;
+        return Ok(await _notificationService.SetReadStateAsync(userId, id, request, cancellationToken));
+    }
+
+    /// <summary>Marks a single notification as read by ID.</summary>
+    [HttpPatch("{id:guid}/read")]
+    [HttpPut("{id:guid}/read")]
+    [RequireRole]
+    public async Task<IActionResult> MarkSingleNotificationAsRead(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        if (!this.TryGetUserId(out var userId, out var authError))
+        {
+            return authError;
+        }
+
+        var result = await _notificationService.MarkAsReadAsync(userId, id, cancellationToken);
+        if (result is null)
+        {
+            return NotFound(new
+            {
+                errorCode = "NOTIFICATION_NOT_FOUND",
+                message = "Notification not found or does not belong to the user."
+            });
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>Marks multiple or all notifications as read.</summary>
     [HttpPatch("me/read")]
+    [HttpPut("me/read")]
     [RequireRole]
     public async Task<IActionResult> MarkNotificationsAsRead(
         [FromBody] BatchMarkReadRequest request,
