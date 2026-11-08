@@ -1,0 +1,36 @@
+# Preferences and notification read states
+Status: VERIFIED —2026-11-08; draft saved before code.
+
+## Routes/access
+GET/PUT /api/v1/notifications/preferences retain existing routes; authenticated caller identity only. GET200 effective list; PUT200 updatedCount (actual changed rows). New PUT /api/v1/notifications/{id:guid}/read-states ->200 NotificationDto, body {"isRead":false} ortrue. RequireRole identity guard, owner from Gateway headers, never body userId. Existing read aliases remain compatibility routes; new action has one route. Thin NotificationsController/IUserNotificationService pairing.
+
+## Preferences contract
+GET lists every NotificationType x existing non-deleted supported Email/Push/InApp channel, ordered type/channel. Missing active row yields id:null,isDisabled:false,isDefault:true. Existing rows preserve id,isDefault:false. Add isMandatory and isChannelDisabled to all rows; critical OrderPaid/SecurityAlert/Otp or active mandatory template for same pair =>isMandatory:true and effective isDisabled:false even for legacy disabled stored values. Global channel disabled shown separately and still prevents sending. GET does not create/update/audit anything; defaults apply virtually before first save.
+PUT body {"preferences":[{"notificationType":"OrderShipped","channelCode":"Email","isDisabled":true}]} with1..100 nonnull items; all fields required, strict PascalCase/case-insensitive enum names only (numeric/comma invalid). Reject duplicate normalized pairs, unknown/missing/unsupported channel and disabled mandatory request. No partial acceptance or silent skipping; validate all before writes. Soft-hidden preferences ignored and never revived. Idempotent identical PUT leaves timestamps/audit unchanged,updatedCount0. Different concurrent PUTs last writer wins under per-user advisory transaction lock. Unique active composite index prevents duplicate rows from other writers; unique constraint conflict409, no automatic data merging.
+Enums unchanged: NotificationType OrderPaid0,OrderShipped1,AuctionOutbid2,AuctionWon3,ReputationPenalty4,SecurityAlert5,Otp6,Promotion7; ChannelType Email0,Push1,InApp2,Sms3 (unsupported here). DB integers, response strings. Partial unique(UserId,NotificationType,ChannelCode) WHERE NOT IsDeleted, plus query filter. Preflight active duplicate keys by GROUP BY/HAVING count>1; owner must reconcile existing duplicates before migration, never auto-delete history. Audit PreferenceUpdate4 per changed row via AddAuditLog same SaveChanges/transaction.
+
+## Read states contract
+Required isRead nullable bool DTO distinguishes omitted fromfalse. Nonempty path GUID; missing/foreign/deleted row404 NOTIFICATION_NOT_FOUND, including caller Admin accessing another user. Conditional SQL update only IsRead/ReadAt/UpdatedAt; unchanged state no new timestamp. Setfalse clears ReadAt, true sets UTC time. Preserve status/delivery attempts/RowVersion/logs/soft-delete/ownership. Re-read pure NotificationDto(id,title,body,isRead,createdAt,readAt); no endpoint-specific entity exposure. No new audit action for personal read toggles. Concurrent toggles last mutation wins; return current visible owner state, not a versioned snapshot.
+
+## Errors/semantics
+400 VAL_INVALID_INPUT invalid request/enums/duplicates/IDs; 401 UNAUTHORIZED missing identity; 404 CHANNEL_NOT_FOUND or NOTIFICATION_NOT_FOUND;409 PREFERENCE_MANDATORY or PREFERENCE_CONFLICT. Global English sentence-case ProblemDetails. Missing bool/list rejected via request attributes and service guard. Existing legacy argument error behavior outside changed methods not rewritten.
+Dispatch effective mandatory=criticaltype OR chosen template mandatory OR active mandatory template on same type/channel pair; legacy in-app uses the same pair policy and global channel. Current replay returns prior outcome before new preferences/config; new requests use current policy. No migration modifies saved preference values/templates or notifications. No frontend or user-registration integration; virtual defaults avoid cross-service callback dependency.
+
+## Pre-code verification/handoff
+Create Notifications partial feature file for preference/read-state use cases, shared policy and DTO changes; keep layer directDbContext/no Repository. One additive filtered unique index migration, no seed rewrite/drop. Live HTTP auth/validation/Swagger, PostgreSQL uniqueness/advisory concurrency/audit rollback/no-op/defaults/hidden, single read/unread invariants, legacy/dispatch mandatory regression. Full Release208 existing tests plus additions; isolated testDB only, no real send/project migration/deploy/commit.
+
+## Verified handoff
+- NotificationService; existing NotificationsController/IUserNotificationService, new partial UserNotificationService.Preferences and NotificationPreferencePolicy. Existing DTOs extended; new SetNotificationReadStateRequest. All principal identities remain Gateway-derived.
+- Migration20261107184347_AddActivePreferenceUniqueness + designer/snapshot only creates filtered active composite index. Query filter excludes deleted preferences. No historical rows normalized/deleted; no project DB migration applied. Default IDs nullable by design; clients use type/channel pair as identity, not null ID. updatedCount now actual changed persisted rows, repeated same PUT0.
+- Release0 errors/0warnings;223 tests passed,0failed/skipped.15 new Kestrel/PostgreSQL tests: default24 pairs/no writes, audit/no-op/ownership, invalid full batch/missing bool/enums/duplicates, critical and template-pair policy, global disable, hidden rows,8 concurrent requests, external writer race409, unique constraint, audit rollback and read-state404/401/idempotency/status preservation/Swagger.
+- Two older fixtures updated to reflect changed contract: optional preference tests use OrderShipped instead of critical OrderPaid, default-list test initializes seeded channel config and asserts virtual matrix. Positional record validation belongs to constructor parameters for MVC; corrected new input annotations accordingly. All208 prior tests retained.
+- Scope limitation: default policy virtual, no registration callback; latest writer wins, no preference version token; existing legacy internal in-app route/read aliases remain, optional suppression on legacy route still has no durable replay manifest. Mandatory enforcement covers available enum types/templates; full SRS business-to-template mapping remains backlog. Client UI must consume isMandatory/isDefault/isChannelDisabled and nullable ID.
+- No live sends/providers, actual DB data migration, credentials change, commit/deploy. Owned PostgreSQL test container cleaned. Aggregate GitNexus CRITICAL includes prior stages; ambiguous/UNKNOWN framework/interface edges reviewed through source and HTTP/EF tests.
+
+Preflight before normal reviewed migration rollout (not run against project DB here):
+
+    SELECT "UserId", "NotificationType", "ChannelCode", count(*)
+    FROM "NotificationPreferences" WHERE NOT "IsDeleted"
+    GROUP BY "UserId", "NotificationType", "ChannelCode" HAVING count(*) > 1;
+
+Any result requires owner reconciliation; do not auto-delete history. New index covers active rows only, so an old hidden row plus one new active row is valid. Apply schema/index before relying on this concurrency guarantee in deployment.

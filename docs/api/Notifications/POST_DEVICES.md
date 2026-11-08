@@ -93,3 +93,6 @@ public sealed record DeviceRegisteredResponse(
 - [x] **Api:** `NotificationsController` kế thừa `ControllerBase`, trả Pure DTO.
 - [x] **Tests:** Đã kiểm thử tự động đạt 100% pass.
 - [x] **Verify:** `dotnet build` và `dotnet test` vượt qua 100%.
+
+## Device lifecycle update (2026-11-08)
+Current authoritative contract: docs/api/Devices/POST_DEVICES.md. Register/refresh/rotation and revoke share per-token transaction locks. Active foreign token409, inactive token can transfer after revoke; deleted token not revived. previousToken enables atomic rotation. Revoke never bypasses ownership, no-op204 if foreign/unknown/inactive; audit fingerprints only. Existing path-token values must be URL-encoded.237 tests pass, no project DB/provider changes or migration.

@@ -1,12 +1,20 @@
 namespace Notification.Infrastructure;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.DataProtection;
+using Notification.Application.Services.Email;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Notification.Application.Interfaces;
 using Notification.Infrastructure.BackgroundWorkers;
 using Notification.Infrastructure.Persistence;
 using Notification.Infrastructure.Services.Email;
+using Notification.Infrastructure.Services.Push;
+using Notification.Application.Services.Deliveries;
+using Notification.Application.Services.EventLogs;
+using Notification.Application.Services.Health;
+using Notification.Infrastructure.Health;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 public static class DependencyInjection
 {
@@ -60,9 +68,51 @@ public static class DependencyInjection
         services.AddSingleton<IEmailService, MailKitEmailSenderService>();
         services.AddSingleton<IEmailSenderService>(sp => (MailKitEmailSenderService)sp.GetRequiredService<IEmailService>());
 
-        // Non-blocking in-memory background email queue & worker
-        services.AddSingleton<IEmailBackgroundQueue, EmailBackgroundQueue>();
-        services.AddHostedService<EmailBackgroundWorker>();
+        var deliverySettings = new DeliveryWorkerSettings();
+        configuration.GetSection("DeliveryWorker").Bind(deliverySettings);
+        var configuredAttemptLimit = configuration["NOTIFICATION_RETRY_LIMIT"];
+        if (!string.IsNullOrWhiteSpace(configuredAttemptLimit))
+        {
+            if (!int.TryParse(configuredAttemptLimit, out var attemptLimit))
+                throw new InvalidOperationException("Notification retry limit must be a valid integer.");
+            deliverySettings.MaxAttempts = attemptLimit;
+        }
+        deliverySettings.Validate();
+        services.AddSingleton(deliverySettings);
+        services.TryAddSingleton<TimeProvider>(TimeProvider.System);
+        services.AddSingleton<IEmailDeliverySender, SmtpEmailDeliverySender>();
+        var fcmOptions = new FcmOptions();
+        configuration.GetSection("Fcm").Bind(fcmOptions);
+        if (!string.IsNullOrWhiteSpace(configuration["FCM_PROJECT_ID"])) fcmOptions.ProjectId = configuration["FCM_PROJECT_ID"]!;
+        services.AddSingleton(fcmOptions);
+        services.AddSingleton<IFcmAccessTokenProvider, GoogleFcmAccessTokenProvider>();
+        services.AddHttpClient<IPushDeliverySender, FcmPushDeliverySender>(client => client.Timeout = Timeout.InfiniteTimeSpan);
+        services.AddHostedService<DatabaseEmailWorker>();
+
+        var retentionSettings = new EventLogRetentionSettings();
+        configuration.GetSection("EventLogRetention").Bind(retentionSettings);
+        retentionSettings.Validate();
+        services.AddSingleton(retentionSettings);
+        services.AddHostedService<EventLogRetentionWorker>();
+
+        var healthSettings = new HealthSettings();
+        configuration.GetSection("Health").Bind(healthSettings);
+        healthSettings.Validate();
+        services.AddSingleton(healthSettings);
+        services.AddSingleton<WorkerHealthRegistry>();
+        services.AddSingleton<IWorkerHealthReporter>(sp => sp.GetRequiredService<WorkerHealthRegistry>());
+        services.AddSingleton<IWorkerHealthReader>(sp => sp.GetRequiredService<WorkerHealthRegistry>());
+        services.AddScoped<IDatabaseHealthProbe, DatabaseHealthProbe>();
+
+        var otpSettings = new OtpWorkerSettings();
+        configuration.GetSection("OtpWorker").Bind(otpSettings);
+        otpSettings.Validate();
+        services.AddSingleton(otpSettings);
+        var protection = services.AddDataProtection().SetApplicationName("Nexus.Notification.Otp");
+        var keyRing = configuration["OtpProtection:KeyRingPath"];
+        if (!string.IsNullOrWhiteSpace(keyRing)) protection.PersistKeysToFileSystem(new DirectoryInfo(keyRing));
+        services.AddSingleton<IOtpPayloadProtector, DataProtectionOtpPayloadProtector>();
+        services.AddHostedService<DurableOtpWorker>();
 
         // Identity propagation delegating handler for outgoing inter-service HTTP requests
         services.AddTransient<Services.Common.IdentityPropagationHandler>();

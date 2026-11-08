@@ -12,4 +12,7 @@ public class EventLog : BaseEntity<Guid>
     public string? ActorRole { get; set; }
     public Guid? TargetId { get; set; }
     public string? Payload { get; set; }
+    public string? TraceId { get; set; }
+    public string? Headers { get; set; }
+    public string? RequestHash { get; set; }
 }

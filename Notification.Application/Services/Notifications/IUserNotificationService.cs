@@ -13,6 +13,8 @@ public interface IUserNotificationService
         CancellationToken cancellationToken = default
     );
 
+    Task<NotificationDto> SetReadStateAsync(Guid userId, Guid id, SetNotificationReadStateRequest request, CancellationToken cancellationToken = default);
+
     Task<NotificationDto?> MarkAsReadAsync(
         Guid userId,
         Guid notificationId,
@@ -26,6 +28,7 @@ public interface IUserNotificationService
     );
 
     Task RevokeDeviceAsync(
+        Guid userId,
         string token,
         CancellationToken cancellationToken = default
     );

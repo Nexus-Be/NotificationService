@@ -22,6 +22,152 @@ namespace Notification.Infrastructure.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Notification.Domain.Entities.AccountStatusChangeDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<long>("StatusVersion")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "StatusVersion")
+                        .IsUnique();
+
+                    b.ToTable("AccountStatusChangeDispatches");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.AuctionOutbidDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuctionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PreviousBidId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("TriggerBidId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionId");
+
+                    b.HasIndex("NotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("PreviousBidId")
+                        .IsUnique();
+
+                    b.HasIndex("TriggerBidId")
+                        .IsUnique();
+
+                    b.ToTable("AuctionOutbidDispatches");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.AuctionWinnerDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuctionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("ResultId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("WinningBidId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionId")
+                        .IsUnique();
+
+                    b.HasIndex("NotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("ResultId")
+                        .IsUnique();
+
+                    b.HasIndex("WinningBidId")
+                        .IsUnique();
+
+                    b.ToTable("AuctionWinnerDispatches");
+                });
+
             modelBuilder.Entity("Notification.Domain.Entities.AuditLog", b =>
                 {
                     b.Property<Guid>("Id")
@@ -149,6 +295,51 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.ToTable("BrokerHealthChecks");
                 });
 
+            modelBuilder.Entity("Notification.Domain.Entities.DeliveryRetryRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("AcceptedRowVersion")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("ActorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("DeliveryId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("ExpectedRowVersion")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("PreviousAttemptCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeliveryId", "CreatedAt");
+
+                    b.ToTable("DeliveryRetryRequests");
+                });
+
             modelBuilder.Entity("Notification.Domain.Entities.DeviceToken", b =>
                 {
                     b.Property<Guid>("Id")
@@ -245,6 +436,9 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
+                    b.Property<string>("Headers")
+                        .HasColumnType("jsonb");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
@@ -254,6 +448,10 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.Property<string>("Payload")
                         .HasColumnType("jsonb");
 
+                    b.Property<string>("RequestHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<string>("SourceService")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -262,10 +460,30 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("TargetId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("TraceId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TraceId");
+
+                    b.HasIndex("ActorId", "OccurredAt");
+
+                    b.HasIndex("CreatedAt", "Id");
+
+                    b.HasIndex("EventType", "OccurredAt");
+
+                    b.HasIndex("OccurredAt", "Id");
+
+                    b.HasIndex("SourceService", "EventId")
+                        .IsUnique()
+                        .HasFilter("\"EventId\" IS NOT NULL");
+
+                    b.HasIndex("SourceService", "OccurredAt");
 
                     b.ToTable("EventLogs");
                 });
@@ -380,6 +598,10 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.Property<int>("AttemptCount")
                         .HasColumnType("integer");
 
+                    b.Property<string>("BodyOverride")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
                     b.Property<int>("ChannelCode")
                         .HasColumnType("integer");
 
@@ -420,6 +642,10 @@ namespace Notification.Infrastructure.Persistence.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
+
+                    b.Property<string>("SubjectOverride")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -558,6 +784,10 @@ namespace Notification.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ChannelCode");
 
+                    b.HasIndex("UserId", "NotificationType", "ChannelCode")
+                        .IsUnique()
+                        .HasFilter("NOT \"IsDeleted\"");
+
                     b.ToTable("NotificationPreferences");
 
                     b.HasData(
@@ -618,6 +848,10 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsInboxVisible")
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
                     b.Property<bool>("IsRead")
                         .HasColumnType("boolean");
 
@@ -653,6 +887,10 @@ namespace Notification.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TemplateId");
 
+                    b.HasIndex("SourceEventId", "UserId", "TemplateId")
+                        .IsUnique()
+                        .HasFilter("\"SourceEventId\" IS NOT NULL AND \"TemplateId\" IS NOT NULL");
+
                     b.ToTable("Notifications");
 
                     b.HasData(
@@ -663,6 +901,7 @@ namespace Notification.Infrastructure.Persistence.Migrations
                             ChannelScope = 0,
                             CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             IsDeleted = false,
+                            IsInboxVisible = true,
                             IsRead = true,
                             NotificationType = 0,
                             Payload = "{\"subOrderId\":\"02000000-0000-0000-0000-000000000001\",\"amount\":850000}",
@@ -741,6 +980,244 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.HasData(
                         new
                         {
+                            Id = new Guid("60000000-0000-0000-0000-00000000000f"),
+                            BodyTemplate = "<p>Xin chào {{FullName}},</p><p>Bạn đã thắng phiên {{AuctionTitle}}, kết quả chốt lúc {{SettledAtUtc}}.</p><p>Giá thắng: {{WinningAmount}} VND. Hạn thanh toán: {{PaymentDeadlineUtc}}.</p><p>Tham chiếu đơn: {{OrderReference}}</p><p>Hãy mở chi tiết phiên và đơn đấu giá liên quan trong ứng dụng Nexus. Kiểm tra số tiền cuối cùng và chỉ thanh toán khi hệ thống xác nhận đơn còn hiệu lực. Thông báo này không xác nhận đã thanh toán.</p>",
+                            ChannelCode = 0,
+                            Code = "AUCTION_WINNER_EMAIL",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 3,
+                            SubjectTemplate = "Kết quả thắng đấu giá và hướng dẫn thanh toán",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000010"),
+                            BodyTemplate = "Bạn đã thắng phiên {{AuctionTitle}} với giá {{WinningAmount}} VND, chốt lúc {{SettledAtUtc}}. Hạn thanh toán: {{PaymentDeadlineUtc}}. Kiểm tra đơn còn hiệu lực trong ứng dụng Nexus trước khi thanh toán.",
+                            ChannelCode = 1,
+                            Code = "AUCTION_WINNER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 3,
+                            SubjectTemplate = "Bạn đã thắng đấu giá",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-00000000000e"),
+                            BodyTemplate = "Bạn đã bị vượt giá tại phiên {{AuctionTitle}}. Mức giá mới ghi nhận lúc {{OccurredAtUtc}}: {{NewAmount}} VND.",
+                            ChannelCode = 1,
+                            Code = "AUCTION_BID_OUTBID_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 2,
+                            SubjectTemplate = "Bạn đã bị vượt giá",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-00000000000c"),
+                            BodyTemplate = "Bạn đã thanh toán thành công đơn hàng {{OrderNo}}. Tổng thanh toán: {{TotalAmount}} VND.",
+                            ChannelCode = 1,
+                            Code = "ORDER_PAID_BUYER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 0,
+                            SubjectTemplate = "Thanh toán đơn hàng thành công",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-00000000000d"),
+                            BodyTemplate = "Bạn có đơn hàng mới {{OrderNo}} đã được thanh toán. Vui lòng xác nhận trước {{AcceptDeadlineUtc}}.",
+                            ChannelCode = 1,
+                            Code = "ORDER_PAID_SELLER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 0,
+                            SubjectTemplate = "Bạn có đơn hàng mới",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-00000000000a"),
+                            BodyTemplate = "<p>Xin chào {{FullName}},</p><p>Vào lúc {{ChangedAtUtc}}, tài khoản Nexus của bạn đã được tạm khóa do vi phạm quy định.</p><p><strong>Lý do:</strong> {{Reason}}</p><p>Tài khoản bị đình chỉ hoạt động cho đến khi được mở khóa. Nếu cần hỗ trợ, hãy liên hệ bộ phận hỗ trợ Nexus.</p>",
+                            ChannelCode = 0,
+                            Code = "ACCOUNT_BANNED_EMAIL",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 5,
+                            SubjectTemplate = "Thông báo tạm khóa tài khoản do vi phạm",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-00000000000b"),
+                            BodyTemplate = "<p>Xin chào {{FullName}},</p><p>Vào lúc {{ChangedAtUtc}}, tài khoản Nexus của bạn đã được mở khóa về trạng thái hoạt động.</p><p><strong>Lý do:</strong> {{Reason}}</p><p>Thông báo này xác nhận việc khôi phục quyền sử dụng tài khoản tại thời điểm nêu trên.</p>",
+                            ChannelCode = 0,
+                            Code = "ACCOUNT_UNBANNED_EMAIL",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 5,
+                            SubjectTemplate = "Thông báo mở khóa tài khoản",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000008"),
+                            BodyTemplate = "<p>Xin chào {{FullName}},</p><p>Yêu cầu trở thành Seller cho gian hàng {{ShopName}} đã được chấp thuận lúc {{DecidedAtUtc}}.</p><p>Tài khoản hiện tại của bạn đã được cấp thêm quyền Seller. Bạn có thể truy cập Portal Người bán để bắt đầu bán hàng.</p>",
+                            ChannelCode = 0,
+                            Code = "SELLER_APPROVED_EMAIL",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 5,
+                            SubjectTemplate = "Yêu cầu trở thành Seller đã được chấp thuận",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000009"),
+                            BodyTemplate = "<p>Xin chào {{FullName}},</p><p>Yêu cầu trở thành Seller cho gian hàng {{ShopName}} đã bị từ chối lúc {{DecidedAtUtc}}.</p><p><strong>Lý do:</strong> {{RejectionReason}}</p>",
+                            ChannelCode = 0,
+                            Code = "SELLER_REJECTED_EMAIL",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 5,
+                            SubjectTemplate = "Kết quả xét duyệt yêu cầu trở thành Seller",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000006"),
+                            BodyTemplate = "<p>Xin chào {{FullName}},</p><p>Mật khẩu tài khoản Nexus của bạn đã được thay đổi thành công lúc {{ChangedAtUtc}}.</p><p>Nếu bạn không thực hiện thao tác này, hãy liên hệ bộ phận hỗ trợ Nexus ngay.</p>",
+                            ChannelCode = 0,
+                            Code = "PASSWORD_CHANGED_EMAIL",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 5,
+                            SubjectTemplate = "Mật khẩu của bạn đã được thay đổi",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000007"),
+                            BodyTemplate = "<p>Xin chào {{FullName}},</p><p>Mật khẩu tài khoản Nexus của bạn đã được đặt lại thành công lúc {{ChangedAtUtc}}.</p><p>Nếu bạn không thực hiện thao tác này, hãy liên hệ bộ phận hỗ trợ Nexus ngay.</p>",
+                            ChannelCode = 0,
+                            Code = "PASSWORD_RESET_SUCCEEDED_EMAIL",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 5,
+                            SubjectTemplate = "Mật khẩu của bạn đã được đặt lại",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000004"),
+                            BodyTemplate = "Đơn hàng {{OrderNo}} đã thanh toán {{TotalAmount}}.",
+                            ChannelCode = 1,
+                            Code = "ORDER_PAID_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 0,
+                            SubjectTemplate = "Đơn hàng {{OrderNo}} đã thanh toán",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000005"),
+                            BodyTemplate = "{{AuctionTitle}} đã có mức giá mới {{BidAmount}}.",
+                            ChannelCode = 1,
+                            Code = "AUCTION_OUTBID_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 2,
+                            SubjectTemplate = "Bạn đã bị vượt giá",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000003"),
+                            BodyTemplate = "Bạn có đơn hàng {{OrderNo}} đã thanh toán số tiền {{TotalAmount}}.",
+                            ChannelCode = 2,
+                            Code = "ORDER_PAID_IN_APP",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 0,
+                            SubjectTemplate = "Đơn hàng {{OrderNo}} đã thanh toán",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
                             Id = new Guid("60000000-0000-0000-0000-000000000001"),
                             BodyTemplate = "Đơn hàng {{OrderNo}} của bạn đã được thanh toán thành công số tiền {{TotalAmount}}.",
                             ChannelCode = 0,
@@ -749,7 +1226,7 @@ namespace Notification.Infrastructure.Persistence.Migrations
                             CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
                             IsActive = true,
                             IsDeleted = false,
-                            IsMandatory = false,
+                            IsMandatory = true,
                             Locale = "vi-VN",
                             NotificationType = 0,
                             SubjectTemplate = "Xác nhận thanh toán đơn hàng {{OrderNo}}",
@@ -773,6 +1250,258 @@ namespace Notification.Infrastructure.Persistence.Migrations
                             UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
                         });
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.OrderPaidDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BuyerNotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("SellerNotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuyerNotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("SellerNotificationId")
+                        .IsUnique();
+
+                    b.ToTable("OrderPaidDispatches");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.OtpEmailDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ErrorCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("IssuedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("LastAttemptAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("NextRetryAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ProtectedFingerprint")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("ProtectedPayload")
+                        .HasMaxLength(16000)
+                        .HasColumnType("character varying(16000)");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("Recipient")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
+
+                    b.Property<string>("RecipientKey")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
+
+                    b.Property<int>("RelativeMinutes")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("RowVersion")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TraceId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("Status", "NextRetryAt");
+
+                    b.HasIndex("RecipientKey", "Purpose", "IssuedAt");
+
+                    b.ToTable("OtpEmailDispatches");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.PasswordChangeDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotificationId")
+                        .IsUnique();
+
+                    b.ToTable("PasswordChangeDispatches");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.SellerDecisionDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationId")
+                        .IsUnique();
+
+                    b.HasIndex("NotificationId")
+                        .IsUnique();
+
+                    b.ToTable("SellerDecisionDispatches");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.AccountStatusChangeDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.AuctionOutbidDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.AuctionWinnerDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.DeliveryRetryRequest", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationDelivery", "Delivery")
+                        .WithMany()
+                        .HasForeignKey("DeliveryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Delivery");
                 });
 
             modelBuilder.Entity("Notification.Domain.Entities.NotificationDelivery", b =>
@@ -841,6 +1570,39 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Channel");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.OrderPaidDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("BuyerNotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("SellerNotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.PasswordChangeDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.SellerDecisionDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Notification.Domain.Entities.NotificationChannel", b =>

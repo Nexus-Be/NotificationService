@@ -27,6 +27,9 @@ public sealed class NotificationsController : ControllerBase
     /// <summary>Registers or refreshes device token.</summary>
     [HttpPost("devices")]
     [RequireRole]
+    [RequestSizeLimit(16384)]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    [ProducesResponseType(typeof(DeviceRegisteredResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> RegisterDevice(
         [FromBody] RegisterDeviceRequest request,
         CancellationToken cancellationToken)
@@ -47,7 +50,12 @@ public sealed class NotificationsController : ControllerBase
         [FromRoute] string token,
         CancellationToken cancellationToken)
     {
-        await _notificationService.RevokeDeviceAsync(token, cancellationToken);
+        if (!this.TryGetUserId(out var userId, out var authError))
+        {
+            return authError;
+        }
+
+        await _notificationService.RevokeDeviceAsync(userId, token, cancellationToken);
         return NoContent();
     }
 
@@ -103,6 +111,15 @@ public sealed class NotificationsController : ControllerBase
         var request = new GetMyNotificationsRequest(isRead, notificationType, page, pageSize);
         var result = await _notificationService.GetMyNotificationsAsync(userId, request, cancellationToken);
         return Ok(result);
+    }
+
+    /// <summary>Sets the read or unread state of an owned notification.</summary>
+    [HttpPut("{id:guid}/read-states")]
+    [RequireRole]
+    public async Task<IActionResult> SetReadState(Guid id, [FromBody] SetNotificationReadStateRequest request, CancellationToken cancellationToken)
+    {
+        if (!this.TryGetUserId(out var userId, out var error)) return error;
+        return Ok(await _notificationService.SetReadStateAsync(userId, id, request, cancellationToken));
     }
 
     /// <summary>Marks a single notification as read by ID.</summary>
