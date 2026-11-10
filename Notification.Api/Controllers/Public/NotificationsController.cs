@@ -113,6 +113,17 @@ public sealed class NotificationsController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>Retrieves an owned notification for inbox and push clicks without changing its read state.</summary>
+    [HttpGet("{id:guid}")]
+    [RequireRole]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    [ProducesResponseType(typeof(InAppNotificationItemResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetNotification(Guid id, CancellationToken cancellationToken)
+    {
+        if (!this.TryGetUserId(out var userId, out var error)) return error;
+        return Ok(await _notificationService.GetNotificationAsync(userId, id, cancellationToken));
+    }
+
     /// <summary>Sets the read or unread state of an owned notification.</summary>
     [HttpPut("{id:guid}/read-states")]
     [RequireRole]

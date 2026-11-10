@@ -65,6 +65,142 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.ToTable("AccountStatusChangeDispatches");
                 });
 
+            modelBuilder.Entity("Notification.Domain.Entities.AuctionCancellationDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuctionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionId")
+                        .IsUnique();
+
+                    b.ToTable("AuctionCancellationDispatches");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.AuctionCancellationRecipient", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SourceEventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("SourceEventId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("AuctionCancellationRecipients");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.AuctionOrderPaidDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuctionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BuyerNotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("ResultId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SellerNotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("WinningBidId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionId")
+                        .IsUnique();
+
+                    b.HasIndex("BuyerNotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("ResultId")
+                        .IsUnique();
+
+                    b.HasIndex("SellerNotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("WinningBidId")
+                        .IsUnique();
+
+                    b.ToTable("AuctionOrderPaidDispatches");
+                });
+
             modelBuilder.Entity("Notification.Domain.Entities.AuctionOutbidDispatch", b =>
                 {
                     b.Property<Guid>("Id")
@@ -114,6 +250,220 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("AuctionOutbidDispatches");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.AuctionPaymentTimeoutDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuctionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("ResultId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("WinningBidId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionId")
+                        .IsUnique();
+
+                    b.HasIndex("NotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("ResultId")
+                        .IsUnique();
+
+                    b.HasIndex("WinningBidId")
+                        .IsUnique();
+
+                    b.ToTable("AuctionPaymentTimeoutDispatches");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.AuctionSellerPaymentTimeoutDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuctionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("ResultId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("WinningBidId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionId")
+                        .IsUnique();
+
+                    b.HasIndex("NotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("ResultId")
+                        .IsUnique();
+
+                    b.HasIndex("WinningBidId")
+                        .IsUnique();
+
+                    b.ToTable("AuctionSellerPaymentTimeoutDispatches");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.AuctionSellerResultDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuctionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("ResultId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("WinningBidId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionId")
+                        .IsUnique();
+
+                    b.HasIndex("NotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("ResultId")
+                        .IsUnique();
+
+                    b.HasIndex("WinningBidId")
+                        .IsUnique();
+
+                    b.ToTable("AuctionSellerResultDispatches");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.AuctionStartDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuctionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionId")
+                        .IsUnique();
+
+                    b.HasIndex("NotificationId")
+                        .IsUnique();
+
+                    b.ToTable("AuctionStartDispatches");
                 });
 
             modelBuilder.Entity("Notification.Domain.Entities.AuctionWinnerDispatch", b =>
@@ -980,6 +1330,686 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.HasData(
                         new
                         {
+                            Id = new Guid("60000000-0000-0000-0000-000000000037"),
+                            BodyTemplate = "Đơn {{OrderNo}} đã được hủy theo yêu cầu của bạn lúc {{CancelledAtUtc}}. Lý do: {{Reason}}. Vui lòng kiểm tra đơn và tiến trình hoàn tiền hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "ORDER_BUYER_CANCELLED_BUYER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 17,
+                            SubjectTemplate = "Đơn hàng đã được hủy theo yêu cầu người mua",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000038"),
+                            BodyTemplate = "Người mua đã hủy đơn {{OrderNo}} lúc {{CancelledAtUtc}}. Lý do: {{Reason}}. Vui lòng kiểm tra trạng thái đơn hiện tại trong Nexus trước khi tiếp tục chuẩn bị hàng.",
+                            ChannelCode = 1,
+                            Code = "ORDER_BUYER_CANCELLED_SELLER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 17,
+                            SubjectTemplate = "Đơn hàng đã được hủy theo yêu cầu người mua",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000036"),
+                            BodyTemplate = "Đơn {{OrderNo}} đã bị hủy do quá hạn xác nhận thanh toán,ghi nhận lúc {{CancelledAtUtc}}. Hạn gốc: {{PaymentDeadlineUtc}}. Vui lòng kiểm tra đơn và trạng thái thanh toán hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "ORDER_PAYMENT_EXPIRED_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 16,
+                            SubjectTemplate = "Đơn hàng đã hủy do quá hạn thanh toán",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000035"),
+                            BodyTemplate = "Đơn {{OrderNo}} đã ghi nhận cộng {{NetAmount}} VND vào ví người bán,lúc {{SettledAtUtc}}. Vui lòng kiểm tra giao dịch và số dư hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "ORDER_SELLER_SETTLED_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 15,
+                            SubjectTemplate = "Đã ghi nhận cộng tiền vào ví người bán",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000033"),
+                            BodyTemplate = "Đơn {{OrderNo}} đã hoàn tất,ghi nhận lúc {{CompletedAtUtc}}. Vui lòng mở đơn trong Nexus để xem chi tiết và các lựa chọn đánh giá hiện có.",
+                            ChannelCode = 1,
+                            Code = "ORDER_COMPLETED_BUYER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 14,
+                            SubjectTemplate = "Đơn hàng đã hoàn tất",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000034"),
+                            BodyTemplate = "Đơn {{OrderNo}} đã hoàn tất,ghi nhận lúc {{CompletedAtUtc}}. Vui lòng kiểm tra chi tiết đơn và trạng thái thanh toán cho người bán trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "ORDER_COMPLETED_SELLER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 14,
+                            SubjectTemplate = "Đơn hàng đã hoàn tất",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000021"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: Vận đơn GHN đã được tạo,ghi nhận lúc {{OccurredAtUtc}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_CREATED_BUYER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000022"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: Vận đơn GHN đã được tạo,ghi nhận lúc {{OccurredAtUtc}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_CREATED_SELLER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000023"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: GHN ghi nhận đã lấy hàng,ghi nhận lúc {{OccurredAtUtc}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_PICKED_UP_BUYER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000024"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: GHN ghi nhận đã lấy hàng,ghi nhận lúc {{OccurredAtUtc}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_PICKED_UP_SELLER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000025"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: GHN ghi nhận hàng đang được vận chuyển,ghi nhận lúc {{OccurredAtUtc}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_IN_TRANSIT_BUYER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000026"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: GHN ghi nhận hàng đang được vận chuyển,ghi nhận lúc {{OccurredAtUtc}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_IN_TRANSIT_SELLER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000027"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: GHN ghi nhận đang giao hàng,ghi nhận lúc {{OccurredAtUtc}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_OUT_FOR_DELIVERY_BUYER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000028"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: GHN ghi nhận đang giao hàng,ghi nhận lúc {{OccurredAtUtc}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_OUT_FOR_DELIVERY_SELLER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000029"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: GHN ghi nhận đã giao hàng thành công,ghi nhận lúc {{OccurredAtUtc}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_DELIVERED_BUYER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-00000000002a"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: GHN ghi nhận đã giao hàng thành công,ghi nhận lúc {{OccurredAtUtc}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_DELIVERED_SELLER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-00000000002b"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: GHN ghi nhận giao hàng không thành công,ghi nhận lúc {{OccurredAtUtc}}. Lý do: {{Reason}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_DELIVERY_FAILED_BUYER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-00000000002c"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: GHN ghi nhận giao hàng không thành công,ghi nhận lúc {{OccurredAtUtc}}. Lý do: {{Reason}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_DELIVERY_FAILED_SELLER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-00000000002d"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: GHN ghi nhận hàng đang chuyển hoàn,ghi nhận lúc {{OccurredAtUtc}}. Lý do: {{Reason}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_RETURNING_BUYER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-00000000002e"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: GHN ghi nhận hàng đang chuyển hoàn,ghi nhận lúc {{OccurredAtUtc}}. Lý do: {{Reason}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_RETURNING_SELLER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-00000000002f"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: GHN ghi nhận hàng đã chuyển hoàn,ghi nhận lúc {{OccurredAtUtc}}. Lý do: {{Reason}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_RETURNED_BUYER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000030"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: GHN ghi nhận hàng đã chuyển hoàn,ghi nhận lúc {{OccurredAtUtc}}. Lý do: {{Reason}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_RETURNED_SELLER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000031"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: GHN ghi nhận vận đơn đã bị hủy,ghi nhận lúc {{OccurredAtUtc}}. Lý do: {{Reason}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_CANCELLED_BUYER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000032"),
+                            BodyTemplate = "Đơn {{OrderNo}},mã vận đơn {{TrackingCode}}: GHN ghi nhận vận đơn đã bị hủy,ghi nhận lúc {{OccurredAtUtc}}. Lý do: {{Reason}}. Vui lòng kiểm tra trạng thái đơn và vận đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "SHIPMENT_CANCELLED_SELLER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 1,
+                            SubjectTemplate = "Cập nhật vận chuyển đơn hàng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000020"),
+                            BodyTemplate = "Đơn {{OrderNo}} đã được hoàn {{RefundAmount}} VND vào ví Buyer,ghi nhận lúc {{CompletedAtUtc}}. Vui lòng kiểm tra giao dịch và số dư hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "ORDER_REFUND_COMPLETED_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 13,
+                            SubjectTemplate = "Hoàn tiền vào ví Buyer thành công",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-00000000001a"),
+                            BodyTemplate = "Seller đã chấp nhận xử lý đơn {{OrderNo}},ghi nhận lúc {{DecidedAtUtc}}. Vui lòng kiểm tra trạng thái đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "ORDER_ACCEPTED_BUYER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 12,
+                            SubjectTemplate = "Seller đã chấp nhận đơn",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-00000000001b"),
+                            BodyTemplate = "Seller đã chấp nhận xử lý đơn {{OrderNo}},ghi nhận lúc {{DecidedAtUtc}}. Vui lòng kiểm tra trạng thái đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "ORDER_ACCEPTED_SELLER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 12,
+                            SubjectTemplate = "Seller đã chấp nhận đơn",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-00000000001c"),
+                            BodyTemplate = "Đơn {{OrderNo}} bị hủy do Seller từ chối,ghi nhận lúc {{DecidedAtUtc}}. Lý do: {{Reason}}. Vui lòng kiểm tra trạng thái đơn và hoàn tiền trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "ORDER_REJECTED_BUYER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 12,
+                            SubjectTemplate = "Đơn hàng đã bị hủy do Seller từ chối",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-00000000001d"),
+                            BodyTemplate = "Đơn {{OrderNo}} bị hủy do Seller từ chối,ghi nhận lúc {{DecidedAtUtc}}. Lý do: {{Reason}}. Vui lòng kiểm tra trạng thái đơn và hoàn tiền trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "ORDER_REJECTED_SELLER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 12,
+                            SubjectTemplate = "Đơn hàng đã bị hủy do Seller từ chối",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-00000000001e"),
+                            BodyTemplate = "Đơn {{OrderNo}} bị hủy do quá hạn Seller chấp nhận,ghi nhận lúc {{DecidedAtUtc}}. Lý do: {{Reason}}. Vui lòng kiểm tra trạng thái đơn và hoàn tiền trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "ORDER_ACCEPTANCE_TIMEOUT_BUYER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 12,
+                            SubjectTemplate = "Đơn hàng đã bị hủy do quá hạn chấp nhận",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-00000000001f"),
+                            BodyTemplate = "Đơn {{OrderNo}} bị hủy do quá hạn Seller chấp nhận,ghi nhận lúc {{DecidedAtUtc}}. Lý do: {{Reason}}. Vui lòng kiểm tra trạng thái đơn và hoàn tiền trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "ORDER_ACCEPTANCE_TIMEOUT_SELLER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 12,
+                            SubjectTemplate = "Đơn hàng đã bị hủy do quá hạn chấp nhận",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000018"),
+                            BodyTemplate = "Đơn đấu giá {{OrderNo}} đã thanh toán {{TotalAmount}} VND,ghi nhận lúc {{PaidAtUtc}}. Vui lòng kiểm tra trạng thái đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "AUCTION_ORDER_PAID_BUYER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 0,
+                            SubjectTemplate = "Đơn đấu giá đã thanh toán thành công",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000019"),
+                            BodyTemplate = "Đơn đấu giá {{OrderNo}} đã được thanh toán,ghi nhận lúc {{PaidAtUtc}}. Hạn chấp nhận từ nguồn: {{AcceptDeadlineUtc}}. Vui lòng mở đơn trong Nexus,kiểm tra trạng thái và quyền chấp nhận hiện tại trước khi thao tác.",
+                            ChannelCode = 1,
+                            Code = "AUCTION_ORDER_PAID_SELLER_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 0,
+                            SubjectTemplate = "Đơn đấu giá đã được thanh toán",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000017"),
+                            BodyTemplate = "Phiên {{AuctionTitle}} được kích hoạt lúc {{StartedAtUtc}}; thời điểm kết thúc dự kiến tại lần kích hoạt: {{AuctionEndsAtUtc}}. Vui lòng kiểm tra trạng thái phiên hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "AUCTION_STARTED_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 11,
+                            SubjectTemplate = "Phiên đấu giá đã được kích hoạt",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000016"),
+                            BodyTemplate = "Người thắng phiên {{AuctionTitle}} đã quá hạn thanh toán (hạn gốc {{PaymentDeadlineUtc}}). Kết quả ghi nhận lúc {{TimedOutAtUtc}}: đơn đã bị hủy, phiên thất bại. Vui lòng kiểm tra phiên và đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "AUCTION_SELLER_PAYMENT_TIMEOUT_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 9,
+                            SubjectTemplate = "Người thắng đã quá hạn thanh toán",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000014"),
+                            BodyTemplate = "Kết quả phiên {{AuctionTitle}} ghi nhận lúc {{DecidedAtUtc}}: đã có người thắng với giá {{WinningAmount}} VND; hạn thanh toán gốc {{PaymentDeadlineUtc}}. Vui lòng kiểm tra phiên và đơn hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "AUCTION_SELLER_WINNER_SELECTED_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 10,
+                            SubjectTemplate = "Phiên đấu giá đã có người thắng",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000015"),
+                            BodyTemplate = "Phiên {{AuctionTitle}} thất bại vì không có lượt đặt giá, theo kết quả ghi nhận lúc {{DecidedAtUtc}}. Vui lòng kiểm tra chi tiết phiên hiện tại trong Nexus.",
+                            ChannelCode = 1,
+                            Code = "AUCTION_SELLER_NO_BIDS_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 10,
+                            SubjectTemplate = "Phiên đấu giá kết thúc không có bid",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000012"),
+                            BodyTemplate = "<p>Xin chào {{FullName}},</p><p>Bạn đã quá hạn thanh toán đơn {{OrderReference}} của phiên {{AuctionTitle}}. Hạn thanh toán: {{PaymentDeadlineUtc}}.</p><p>Kết quả ghi nhận lúc {{TimedOutAtUtc}}: đơn đã bị hủy, phiên kết thúc thất bại.</p><p>Hãy kiểm tra trạng thái đơn và thông tin uy tín hiện tại trong ứng dụng Nexus. Thông báo này không yêu cầu thanh toán khoản phạt tiền.</p>",
+                            ChannelCode = 0,
+                            Code = "AUCTION_PAYMENT_TIMEOUT_EMAIL",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 9,
+                            SubjectTemplate = "Đơn đấu giá đã quá hạn thanh toán",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000013"),
+                            BodyTemplate = "Bạn đã quá hạn thanh toán phiên {{AuctionTitle}} (hạn {{PaymentDeadlineUtc}}). Kết quả hủy đơn ghi nhận lúc {{TimedOutAtUtc}}. Vui lòng kiểm tra trạng thái hiện tại trong ứng dụng Nexus.",
+                            ChannelCode = 1,
+                            Code = "AUCTION_PAYMENT_TIMEOUT_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = false,
+                            Locale = "vi-VN",
+                            NotificationType = 9,
+                            SubjectTemplate = "Đơn đấu giá đã quá hạn thanh toán",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
+                            Id = new Guid("60000000-0000-0000-0000-000000000011"),
+                            BodyTemplate = "Phiên {{AuctionTitle}} đã bị hủy lúc {{CancelledAtUtc}}. Lý do: {{Reason}}.",
+                            ChannelCode = 1,
+                            Code = "AUCTION_CANCELLED_PUSH",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = new Guid("00000000-0000-0000-0000-000000000000"),
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            Locale = "vi-VN",
+                            NotificationType = 8,
+                            SubjectTemplate = "Phiên đấu giá đã bị hủy",
+                            UpdatedAt = new DateTimeOffset(new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            UpdatedBy = new Guid("00000000-0000-0000-0000-000000000000")
+                        },
+                        new
+                        {
                             Id = new Guid("60000000-0000-0000-0000-00000000000f"),
                             BodyTemplate = "<p>Xin chào {{FullName}},</p><p>Bạn đã thắng phiên {{AuctionTitle}}, kết quả chốt lúc {{SettledAtUtc}}.</p><p>Giá thắng: {{WinningAmount}} VND. Hạn thanh toán: {{PaymentDeadlineUtc}}.</p><p>Tham chiếu đơn: {{OrderReference}}</p><p>Hãy mở chi tiết phiên và đơn đấu giá liên quan trong ứng dụng Nexus. Kiểm tra số tiền cuối cùng và chỉ thanh toán khi hệ thống xác nhận đơn còn hiệu lực. Thông báo này không xác nhận đã thanh toán.</p>",
                             ChannelCode = 0,
@@ -1252,6 +2282,165 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Notification.Domain.Entities.OrderBuyerCancellationDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BuyerNotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("SellerNotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuyerNotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("SellerNotificationId")
+                        .IsUnique();
+
+                    b.ToTable("OrderBuyerCancellationDispatches");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.OrderCompletionDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AuctionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BuyerNotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("OrderKind")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("SellerNotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ShipmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionId")
+                        .IsUnique();
+
+                    b.HasIndex("BuyerNotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("SellerNotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("OrderKind", "OrderId")
+                        .IsUnique();
+
+                    b.ToTable("OrderCompletionDispatches");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.OrderDecisionDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AuctionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BuyerNotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("OrderKind")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("SellerNotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionId")
+                        .IsUnique();
+
+                    b.HasIndex("BuyerNotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("SellerNotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("OrderKind", "OrderId")
+                        .IsUnique();
+
+                    b.ToTable("OrderDecisionDispatches");
+                });
+
             modelBuilder.Entity("Notification.Domain.Entities.OrderPaidDispatch", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1296,6 +2485,164 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("OrderPaidDispatches");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.OrderPaymentTimeoutDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.ToTable("OrderPaymentTimeoutDispatches");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.OrderRefundDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AuctionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("OrderKind")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("RefundId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("WalletCreditTransactionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("RefundId")
+                        .IsUnique();
+
+                    b.HasIndex("WalletCreditTransactionId")
+                        .IsUnique();
+
+                    b.HasIndex("OrderKind", "OrderId");
+
+                    b.ToTable("OrderRefundDispatches");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.OrderSettlementDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("AuctionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("NotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("OrderKind")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid>("SettlementId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("WalletCreditTransactionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionId")
+                        .IsUnique();
+
+                    b.HasIndex("NotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("SettlementId")
+                        .IsUnique();
+
+                    b.HasIndex("WalletCreditTransactionId")
+                        .IsUnique();
+
+                    b.HasIndex("OrderKind", "OrderId")
+                        .IsUnique();
+
+                    b.ToTable("OrderSettlementDispatches");
                 });
 
             modelBuilder.Entity("Notification.Domain.Entities.OtpEmailDispatch", b =>
@@ -1466,6 +2813,96 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.ToTable("SellerDecisionDispatches");
                 });
 
+            modelBuilder.Entity("Notification.Domain.Entities.ShipmentEventDispatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("BuyerNotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("RequestHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<Guid?>("SellerNotificationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ShipmentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("SourceVersion")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("SuppressionReason")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BuyerNotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("SellerNotificationId")
+                        .IsUnique();
+
+                    b.HasIndex("ShipmentId", "SourceVersion")
+                        .IsUnique();
+
+                    b.ToTable("ShipmentEventDispatches");
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.ShipmentNotificationStream", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("HeaderHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset>("LastOccurredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("LastStatus")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("LastVersion")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ShipmentNotificationStreams");
+                });
+
             modelBuilder.Entity("Notification.Domain.Entities.AccountStatusChangeDispatch", b =>
                 {
                     b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
@@ -1475,7 +2912,73 @@ namespace Notification.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Notification.Domain.Entities.AuctionCancellationRecipient", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Notification.Domain.Entities.AuctionCancellationDispatch", null)
+                        .WithMany()
+                        .HasForeignKey("SourceEventId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.AuctionOrderPaidDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("BuyerNotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("SellerNotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Notification.Domain.Entities.AuctionOutbidDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.AuctionPaymentTimeoutDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.AuctionSellerPaymentTimeoutDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.AuctionSellerResultDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.AuctionStartDispatch", b =>
                 {
                     b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
                         .WithMany()
@@ -1572,6 +3075,51 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.Navigation("Channel");
                 });
 
+            modelBuilder.Entity("Notification.Domain.Entities.OrderBuyerCancellationDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("BuyerNotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("SellerNotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.OrderCompletionDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("BuyerNotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("SellerNotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.OrderDecisionDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("BuyerNotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("SellerNotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Notification.Domain.Entities.OrderPaidDispatch", b =>
                 {
                     b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
@@ -1583,6 +3131,33 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
                         .WithMany()
                         .HasForeignKey("SellerNotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.OrderPaymentTimeoutDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.OrderRefundDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.OrderSettlementDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("NotificationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -1601,6 +3176,25 @@ namespace Notification.Infrastructure.Persistence.Migrations
                     b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
                         .WithMany()
                         .HasForeignKey("NotificationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Notification.Domain.Entities.ShipmentEventDispatch", b =>
+                {
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("BuyerNotificationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Notification.Domain.Entities.NotificationRecord", null)
+                        .WithMany()
+                        .HasForeignKey("SellerNotificationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Notification.Domain.Entities.ShipmentNotificationStream", null)
+                        .WithMany()
+                        .HasForeignKey("ShipmentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

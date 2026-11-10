@@ -1,0 +1,13 @@
+# Opt-in overlay; use with docker-compose.yml. Credentials stay outside the repository.
+services:
+  notification-service:
+    environment:
+      FCM_PROJECT_ID: "${FCM_PROJECT_ID:?FCM_PROJECT_ID is required for live push}"
+      GOOGLE_APPLICATION_CREDENTIALS: /run/secrets/firebase-service-account.json
+    volumes:
+      - type: bind
+        source: "${FCM_CREDENTIALS_HOST_PATH:?FCM_CREDENTIALS_HOST_PATH is required for live push}"
+        target: /run/secrets/firebase-service-account.json
+        read_only: true
+        bind:
+          create_host_path: false

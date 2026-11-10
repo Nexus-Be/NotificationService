@@ -65,3 +65,6 @@ appsettings*.json
 .agents/history/
 .agents/review/
 
+
+# Private operational backups
+.local-backups/

@@ -11,3 +11,10 @@
 .env
 .env.*
 appsettings*.json
+
+# Private backups and runtime configuration
+**/.local-backups
+**/appsettings*.json
+**/.gitnexus
+**/.agents
+**/.claude

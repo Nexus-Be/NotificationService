@@ -6,20 +6,23 @@ using System.Threading;
 using System.Threading.Tasks;
 using Notification.Application.Interfaces;
 
-public sealed class EmailNotificationService : IEmailNotificationService
+public sealed partial class EmailNotificationService : IEmailNotificationService
 {
     private readonly IEmailSenderService _emailSender;
     private readonly IEmailBackgroundQueue? _backgroundQueue;
     private readonly IOtpEmailDispatchService? _otpDispatch;
+    private readonly IEmailDeliverySender? _strictEmailSender;
 
     public EmailNotificationService(
         IEmailSenderService emailSender,
         IEmailBackgroundQueue? backgroundQueue = null,
-        IOtpEmailDispatchService? otpDispatch = null)
+        IOtpEmailDispatchService? otpDispatch = null,
+        IEmailDeliverySender? strictEmailSender = null)
     {
         _emailSender = emailSender;
         _backgroundQueue = backgroundQueue;
         _otpDispatch = otpDispatch;
+        _strictEmailSender = strictEmailSender;
     }
 
     public async Task<OtpEmailDispatchResponse> DispatchOtpAsync(SendOtpEmailRequest request, CancellationToken cancellationToken = default)
