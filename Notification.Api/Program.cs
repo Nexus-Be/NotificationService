@@ -32,7 +32,7 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     try
     {
-        if (db.Database.IsRelational())
+        if (builder.Configuration.GetValue("DatabaseInitialization:ApplyMigrationsOnStartup", true) && db.Database.IsRelational())
         {
             db.Database.Migrate();
         }
