@@ -1,0 +1,7 @@
+# Local integration bootstrap. Enable live delivery only after Firebase credentials are configured.
+services:
+  notification-service:
+    ports: !override
+      - "127.0.0.1:8007:8007"
+    environment:
+      DeliveryWorker__Enabled: "${NOTIFICATION_LIVE_DELIVERIES_ENABLED:-false}"

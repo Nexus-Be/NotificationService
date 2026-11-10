@@ -94,8 +94,8 @@ public sealed class PreferencesApiIntegrationTests : IAsyncLifetime
     {
         await using var db = Db(); var before = await db.NotificationPreferences.IgnoreQueryFilters().CountAsync(); var audits = await db.AuditLogs.CountAsync();
         var result = (await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>(Root + "/preferences"))!;
-        Assert.Equal(24,result.Count); Assert.All(result,r => { Assert.Null(r.Id); Assert.True(r.IsDefault); Assert.False(r.IsDisabled); });
-        Assert.Equal(10,result.Count(r => r.IsMandatory));
+        Assert.Equal(54,result.Count); Assert.All(result,r => { Assert.Null(r.Id); Assert.True(r.IsDefault); Assert.False(r.IsDisabled); });
+        Assert.Equal(18,result.Count(r => r.IsMandatory));
         Assert.Equal(before,await db.NotificationPreferences.IgnoreQueryFilters().CountAsync()); Assert.Equal(audits,await db.AuditLogs.CountAsync());
         Assert.False(db.Database.HasPendingModelChanges());
     }

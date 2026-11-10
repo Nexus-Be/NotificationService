@@ -9,3 +9,6 @@ public interface IEmailBackgroundQueue
     ValueTask QueueOtpEmailAsync(SendOtpEmailDto dto, CancellationToken cancellationToken = default);
     ValueTask<SendOtpEmailDto> DequeueOtpEmailAsync(CancellationToken cancellationToken);
 }
+
+
+

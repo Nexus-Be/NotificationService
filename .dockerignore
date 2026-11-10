@@ -11,3 +11,7 @@
 .env
 .env.*
 appsettings*.json
+
+# Private Neon backups and runtime configuration must never enter build context
+**/.local-backups
+**/appsettings*.json

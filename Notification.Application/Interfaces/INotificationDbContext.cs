@@ -14,6 +14,21 @@ public interface INotificationDbContext
     DbSet<OrderPaidDispatch> OrderPaidDispatches { get; }
     DbSet<AuctionOutbidDispatch> AuctionOutbidDispatches { get; }
     DbSet<AuctionWinnerDispatch> AuctionWinnerDispatches { get; }
+    DbSet<AuctionCancellationDispatch> AuctionCancellationDispatches { get; }
+    DbSet<AuctionCancellationRecipient> AuctionCancellationRecipients { get; }
+    DbSet<AuctionPaymentTimeoutDispatch> AuctionPaymentTimeoutDispatches { get; }
+    DbSet<AuctionSellerResultDispatch> AuctionSellerResultDispatches { get; }
+    DbSet<AuctionSellerPaymentTimeoutDispatch> AuctionSellerPaymentTimeoutDispatches { get; }
+    DbSet<AuctionStartDispatch> AuctionStartDispatches { get; }
+    DbSet<AuctionOrderPaidDispatch> AuctionOrderPaidDispatches { get; }
+    DbSet<OrderDecisionDispatch> OrderDecisionDispatches { get; }
+    DbSet<OrderRefundDispatch> OrderRefundDispatches { get; }
+    DbSet<ShipmentNotificationStream> ShipmentNotificationStreams { get; }
+    DbSet<ShipmentEventDispatch> ShipmentEventDispatches { get; }
+    DbSet<OrderCompletionDispatch> OrderCompletionDispatches { get; }
+    DbSet<OrderSettlementDispatch> OrderSettlementDispatches { get; }
+    DbSet<OrderBuyerCancellationDispatch> OrderBuyerCancellationDispatches { get; }
+    DbSet<OrderPaymentTimeoutDispatch> OrderPaymentTimeoutDispatches { get; }
     DatabaseFacade Database { get; }
     DbSet<NotificationChannel> NotificationChannels { get; }
     DbSet<NotificationTemplate> NotificationTemplates { get; }
