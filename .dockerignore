@@ -11,7 +11,9 @@
 .env
 .env.*
 appsettings*.json
+**/appsettings*.json
 
+# Private backups and agent metadata
 **/.local-backups
 **/.gitnexus
 **/.agents

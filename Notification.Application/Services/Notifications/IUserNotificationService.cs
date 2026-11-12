@@ -13,6 +13,8 @@ public interface IUserNotificationService
         CancellationToken cancellationToken = default
     );
 
+    Task<InAppNotificationItemResponse> GetNotificationAsync(Guid userId, Guid id, CancellationToken cancellationToken = default);
+
     Task<NotificationDto> SetReadStateAsync(Guid userId, Guid id, SetNotificationReadStateRequest request, CancellationToken cancellationToken = default);
 
     Task<NotificationDto?> MarkAsReadAsync(

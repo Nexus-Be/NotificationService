@@ -25,6 +25,24 @@ public sealed class EmailController : ControllerBase
     public async Task<IActionResult> SendOtpEmail([FromBody] SendOtpEmailRequest request, CancellationToken cancellationToken)
         => Ok(await _emailNotificationService.DispatchOtpAsync(request, cancellationToken));
 
+    /// <summary>Sends the account ban email accepted from a trusted caller.</summary>
+    [HttpPost("user-banned")]
+    [RequireRole("service", "admin")]
+    [RequestSizeLimit(16384)]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    [ProducesResponseType(typeof(EmailDispatchResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> SendUserBannedEmail([FromBody] SendUserBannedEmailRequest request, CancellationToken cancellationToken)
+        => Ok(await _emailNotificationService.DispatchUserBannedAsync(request, cancellationToken));
+
+    /// <summary>Sends the account restoration email accepted from a trusted caller.</summary>
+    [HttpPost("user-unbanned")]
+    [RequireRole("service", "admin")]
+    [RequestSizeLimit(16384)]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    [ProducesResponseType(typeof(EmailDispatchResponse), StatusCodes.Status200OK)]
+    public async Task<IActionResult> SendUserUnbannedEmail([FromBody] SendUserUnbannedEmailRequest request, CancellationToken cancellationToken)
+        => Ok(await _emailNotificationService.DispatchUserUnbannedAsync(request, cancellationToken));
+
     /// <summary>Sends an HTML email through the configured provider.</summary>
     [HttpPost("send")]
     [ProducesResponseType(typeof(EmailDispatchResponse), StatusCodes.Status200OK)]

@@ -18,5 +18,18 @@ public enum AuditAction
     AccountStatusChangeAccepted = 13,
     OrderPaymentAccepted = 14,
     AuctionOutbidAccepted = 15,
-    AuctionWinnerAccepted = 16
+    AuctionWinnerAccepted = 16,
+    AuctionCancellationAccepted = 17,
+    AuctionPaymentTimeoutAccepted = 18,
+    AuctionSellerResultAccepted = 19,
+    AuctionSellerPaymentTimeoutAccepted = 20,
+    AuctionStartAccepted = 21,
+    AuctionOrderPaymentAccepted = 22,
+    OrderDecisionAccepted = 23,
+    OrderRefundAccepted = 24,
+    ShipmentEventAccepted = 25,
+    OrderCompletionAccepted = 26,
+    OrderSettlementAccepted = 27,
+    OrderPaymentExpiryAccepted = 28,
+    OrderBuyerCancellationAccepted = 29
 }

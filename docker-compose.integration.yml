@@ -6,8 +6,8 @@ services:
       DatabaseInitialization__ApplyMigrationsOnStartup: "false"
       DeliveryWorker__Enabled: "${NOTIFICATION_LIVE_DELIVERIES_ENABLED:-false}"
       EventLogRetention__Enabled: "false"
+
 volumes:
   notification-otp-keys:
     external: true
     name: nexus-notification_notification-otp-keys
-

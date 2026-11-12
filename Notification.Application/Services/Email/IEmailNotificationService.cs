@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 public interface IEmailNotificationService
 {
     Task<OtpEmailDispatchResponse> DispatchOtpAsync(SendOtpEmailRequest request, CancellationToken cancellationToken = default);
+    Task<EmailDispatchResponse> DispatchUserBannedAsync(SendUserBannedEmailRequest request, CancellationToken cancellationToken = default);
+    Task<EmailDispatchResponse> DispatchUserUnbannedAsync(SendUserUnbannedEmailRequest request, CancellationToken cancellationToken = default);
     Task<EmailDispatchResponse> DispatchEmailAsync(SendGeneralEmailRequest request, CancellationToken cancellationToken = default);
     Task<EmailDispatchResponse> DispatchSellerRejectionAsync(SendSellerRejectionEmailRequest request, CancellationToken cancellationToken = default);
     Task<bool> SendOtpEmailAsync(SendOtpEmailDto dto, CancellationToken cancellationToken = default);
