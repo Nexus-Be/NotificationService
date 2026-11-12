@@ -108,9 +108,7 @@ public static class DependencyInjection
         configuration.GetSection("OtpWorker").Bind(otpSettings);
         otpSettings.Validate();
         services.AddSingleton(otpSettings);
-        var protection = services.AddDataProtection().SetApplicationName("Nexus.Notification.Otp");
-        var keyRing = configuration["OtpProtection:KeyRingPath"];
-        if (!string.IsNullOrWhiteSpace(keyRing)) protection.PersistKeysToFileSystem(new DirectoryInfo(keyRing));
+        services.AddOtpDataProtection(configuration);
         services.AddSingleton<IOtpPayloadProtector, DataProtectionOtpPayloadProtector>();
         services.AddHostedService<DurableOtpWorker>();
 

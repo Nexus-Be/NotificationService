@@ -67,6 +67,5 @@ appsettings*.json
 
 
 # Private operational backups
-<<<<<<< HEAD
 .local-backups/
 
