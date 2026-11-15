@@ -19,7 +19,7 @@ public sealed partial class UserNotificationService
         var lookup = saved.ToDictionary(p => (p.NotificationType,p.ChannelCode));
         var mandatory = await NotificationPreferencePolicy.MandatoryPairsAsync(_db,cancellationToken);
         var result = new List<NotificationPreferenceResponse>();
-        foreach (var type in Enum.GetValues<NotificationType>())
+        foreach (var type in Enum.GetValues<NotificationType>().Where(type => !IsLifecycleInboxOnly(type)))
         foreach (var channel in channels)
         {
             lookup.TryGetValue((type,channel.Code),out var row);
@@ -29,6 +29,9 @@ public sealed partial class UserNotificationService
         }
         return result;
     }
+
+    private static bool IsLifecycleInboxOnly(NotificationType type) =>
+        type is NotificationType.AuctionFailed or NotificationType.AuctionWinnerOffer;
 
     public async Task<UpdatePreferencesResult> UpdatePreferencesAsync(Guid userId,UpdatePreferencesRequest request,CancellationToken cancellationToken = default)
     {
@@ -40,7 +43,7 @@ public sealed partial class UserNotificationService
             if (item is null || item.IsDisabled is null) throw NotificationPreferencePolicy.Invalid();
             var type = NotificationPreferencePolicy.Parse<NotificationType>(item.NotificationType);
             var channel = NotificationPreferencePolicy.Parse<ChannelType>(item.ChannelCode);
-            if (!NotificationPreferencePolicy.IsSupported(channel) || !desired.TryAdd((type,channel),item.IsDisabled.Value))
+            if (IsLifecycleInboxOnly(type) || !NotificationPreferencePolicy.IsSupported(channel) || !desired.TryAdd((type,channel),item.IsDisabled.Value))
                 throw NotificationPreferencePolicy.Invalid();
         }
         await using var transaction = _db.Database.IsRelational() ? await _db.Database.BeginTransactionAsync(cancellationToken) : null;

@@ -33,6 +33,22 @@ public sealed class AuctionCancellationService(INotificationDbContext db,TimePro
         var title = r.AuctionTitle.Trim(); var reason = r.Reason.Trim(); var cancelled = Utc(r.CancelledAt.Value);
         var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { auction,r.SellerUserId,title,reason,kind,r.BidCount,cancelled }))));
         await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
+        if (audience == "seller")
+        {
+            await Lock($"auction-cancel-seller:{auction:N}", cancellationToken);
+            var auctionKey = auction.ToString();
+            var prior = await db.Notifications.FromSqlInterpolated(
+                $"SELECT * FROM \"Notifications\" WHERE \"UserId\" = {user} AND \"NotificationType\" = {(int)NotificationType.AuctionCancelled} AND \"TemplateId\" IS NULL AND \"Payload\"->>'auctionId' = {auctionKey}")
+                .IgnoreQueryFilters().AsNoTracking().FirstOrDefaultAsync(cancellationToken);
+            if (prior is not null)
+            {
+                var deliveries = await db.NotificationDeliveries.AsNoTracking()
+                    .Where(d => d.NotificationId == prior.Id)
+                    .Select(d => new AuctionCancellationDeliveryResponse(d.Id, d.ChannelCode.ToString(), d.Status.ToString(), d.ErrorCode))
+                    .ToListAsync(cancellationToken);
+                return new(id, auction, prior.Id, user, prior.Status.ToString(), prior.IsInboxVisible && !prior.IsDeleted, true, deliveries);
+            }
+        }
         await Lock("auction-cancel-event:" + id.ToString("N"),cancellationToken);
         var header = await db.AuctionCancellationDispatches.IgnoreQueryFilters().AsNoTracking().SingleOrDefaultAsync(x => x.Id == id,cancellationToken);
         if (header is not null && header.RequestHash != hash) throw Conflict();

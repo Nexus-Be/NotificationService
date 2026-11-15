@@ -8,6 +8,7 @@ using Notification.Application.Services.Dispatches;
 using Notification.Application.Services.Deliveries;
 using Notification.Application.Services.Management;
 using Notification.Application.Services.Notifications;
+using Notification.Application.Services.AuctionLifecycle;
 
 public static class DependencyInjection
 {
@@ -40,6 +41,7 @@ public static class DependencyInjection
         services.AddScoped<IDeliveryService, DeliveryService>();
         services.AddScoped<IDispatchService, DispatchService>();
         services.AddScoped<IEmailNotificationService, EmailNotificationService>();
+        services.AddScoped<IAuctionLifecycleService, AuctionLifecycleService>();
         services.AddScoped<IUserNotificationService, UserNotificationService>();
         return services;
     }
