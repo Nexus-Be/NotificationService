@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddServiceDefaults(builder.Configuration, "notification-service");
 
 // 2. Application & Infrastructure Dependency Injection
+builder.Services.AddAuctionNotificationAuth(builder.Configuration);
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
@@ -25,6 +26,8 @@ var app = builder.Build();
 
 // 4. Default Middleware Pipeline (Exception Handler, Internal auth, Swagger UI)
 app.UseServiceDefaults();
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Automatically apply database migrations on startup if relational DB is available
 using (var scope = app.Services.CreateScope())

@@ -19,5 +19,7 @@ public enum NotificationType
     OrderCompleted = 14,
     OrderSellerSettled = 15,
     OrderPaymentExpired = 16,
-    OrderBuyerCancelled = 17
+    OrderBuyerCancelled = 17,
+    AuctionFailed = 18,
+    AuctionWinnerOffer = 19
 }
