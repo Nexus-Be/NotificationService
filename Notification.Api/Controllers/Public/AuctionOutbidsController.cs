@@ -1,5 +1,6 @@
 namespace Notification.Api.Controllers.Public;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Notification.Api.Extensions;
@@ -14,7 +15,7 @@ public sealed class AuctionOutbidsController(IAuctionOutbidService service) : Co
 {
     /// <summary>Accepts a notification for the previous highest bidder after a higher bid commits.</summary>
     [HttpPost]
-    [RequireRole("service", "admin")]
+    [Authorize(Policy = AuctionNotificationAuth.Policy)]
     [RequestSizeLimit(16384)]
     [ProducesResponseType(typeof(AuctionOutbidResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> Create([FromBody] CreateAuctionOutbidRequest request, CancellationToken ct) => Ok(await service.CreateAsync(request, ct));

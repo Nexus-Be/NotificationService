@@ -112,7 +112,7 @@ public sealed class SellerDecisionService(INotificationDbContext db, IDispatchSe
                 Destination = email,
                 Data = data
             },
-                                      cancellationToken);
+            cancellationToken);
 
         if (created.IsReplay)
             throw Conflict();

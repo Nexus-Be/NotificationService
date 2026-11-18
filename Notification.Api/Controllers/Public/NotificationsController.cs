@@ -113,6 +113,16 @@ public sealed class NotificationsController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>Counts unread items in the authenticated user’s inbox.</summary>
+    [HttpGet("me/unread-count")]
+    [RequireRole]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<IActionResult> GetUnreadCount(CancellationToken cancellationToken)
+    {
+        if (!this.TryGetUserId(out var userId, out var error)) return error;
+        return Ok(new { unreadCount = await _notificationService.GetUnreadCountAsync(userId, cancellationToken) });
+    }
+
     /// <summary>Retrieves an owned notification for inbox and push clicks without changing its read state.</summary>
     [HttpGet("{id:guid}")]
     [RequireRole]

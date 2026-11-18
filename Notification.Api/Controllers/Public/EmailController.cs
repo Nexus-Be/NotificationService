@@ -45,12 +45,14 @@ public sealed class EmailController : ControllerBase
 
     /// <summary>Sends an HTML email through the configured provider.</summary>
     [HttpPost("send")]
+    [RequireRole("service", "admin")]
     [ProducesResponseType(typeof(EmailDispatchResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> SendGeneralEmail([FromBody] SendGeneralEmailRequest request, CancellationToken cancellationToken)
         => Ok(await _emailNotificationService.DispatchEmailAsync(request, cancellationToken));
 
     /// <summary>Sends a seller registration rejection email.</summary>
     [HttpPost("seller-rejection")]
+    [RequireRole("service", "admin")]
     [ProducesResponseType(typeof(EmailDispatchResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> SendSellerRejectionEmail([FromBody] SendSellerRejectionEmailRequest request, CancellationToken cancellationToken)
         => Ok(await _emailNotificationService.DispatchSellerRejectionAsync(request, cancellationToken));

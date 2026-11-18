@@ -1,4 +1,5 @@
 namespace Notification.Api.Controllers.Public;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Notification.Api.Filters;
@@ -11,7 +12,7 @@ public sealed class AuctionOrderPaymentsController(IAuctionOrderPaymentService s
 {
     /// <summary>Accepts buyer and seller notifications after auction-order payment and settlement commit.</summary>
     [HttpPost]
-    [RequireRole("service","admin")]
+    [Authorize(Policy = AuctionNotificationAuth.Policy)]
     [RequestSizeLimit(16384)]
     [ProducesResponseType(typeof(AuctionOrderPaymentResponse),StatusCodes.Status200OK)]
     public async Task<IActionResult> Create([FromBody] CreateAuctionOrderPaymentRequest request,CancellationToken ct) => Ok(await service.CreateAsync(request,ct));

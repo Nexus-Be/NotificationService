@@ -4,7 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
-internal static class AuctionNotificationAuth
+public static class AuctionNotificationAuth
 {
     public const string Scheme = "AuctionNotifications";
     public const string Policy = "AuctionNotificationWriter";
@@ -25,7 +25,8 @@ internal static class AuctionNotificationAuth
                     var path = context.Request.Path.Value?.TrimEnd('/');
                     if (!HttpMethods.IsPost(context.Request.Method) ||
                         !new[] { "/api/v1/notifications/auction-failed", "/api/v1/notifications/auction-cancelled",
-                            "/api/v1/notifications/auction-winner-offers" }.Contains(path, StringComparer.OrdinalIgnoreCase))
+                            "/api/v1/notifications/auction-winner-offers", "/api/v1/notifications/auction-order-payments",
+                            "/api/v1/notifications/auction-outbids", "/api/v1/notifications/auction-winners" }.Contains(path, StringComparer.OrdinalIgnoreCase))
                         context.NoResult();
                     return Task.CompletedTask;
                 }

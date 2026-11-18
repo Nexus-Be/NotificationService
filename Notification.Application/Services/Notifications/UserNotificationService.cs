@@ -169,6 +169,9 @@ public sealed partial class UserNotificationService : IUserNotificationService
             notification.ReadAt);
     }
 
+    public Task<int> GetUnreadCountAsync(Guid userId, CancellationToken cancellationToken = default) =>
+        _db.Notifications.CountAsync(n => n.UserId == userId && !n.IsDeleted && n.IsInboxVisible && !n.IsRead, cancellationToken);
+
     public async Task<PagedData<InAppNotificationItemResponse>> GetMyNotificationsAsync(
         Guid userId,
         GetMyNotificationsRequest request,

@@ -16,7 +16,8 @@ public sealed record CreateAuctionOrderPaymentRequest
     [Required] public decimal? TotalAmount { get; init; }
     [Required,RegularExpression("(?i)^VND$")] public string Currency { get; init; } = "VND";
     [Required,RegularExpression("(?i)^Paid$")] public string OrderStatus { get; init; } = string.Empty;
-    [Required,RegularExpression("(?i)^Settled$")] public string AuctionStatus { get; init; } = string.Empty;
+    [Required,RegularExpression("(?i)^(Ended|Settled)$")] public string AuctionStatus { get; init; } = string.Empty;
+    [Required,RegularExpression("(?i)^Paid$")] public string SettlementStatus { get; init; } = string.Empty;
     [Required] public DateTimeOffset? SellerAcceptStartedAt { get; init; }
     [Required] public DateTimeOffset? PaidAt { get; init; }
     [Required] public DateTimeOffset? SellerAcceptDeadline { get; init; }

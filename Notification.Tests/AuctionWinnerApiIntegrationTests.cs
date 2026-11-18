@@ -4,6 +4,7 @@ using Notification.Application.Services.Notifications;
 using Notification.Application.Common.Models;
 using System.Net;
 using System.Net.Http.Json;
+using Notification.Api.Extensions;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Builder;
@@ -66,11 +67,12 @@ public sealed class AuctionWinnerApiIntegrationTests : IAsyncLifetime
         var builder = WebApplication.CreateBuilder(); builder.Logging.ClearProviders(); builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Services.AddControllers().AddApplicationPart(typeof(AuctionWinnersController).Assembly)
             .ConfigureApiBehaviorOptions(o => o.InvalidModelStateResponseFactory = ApiValidationProblemFactory.Create);
+        AuctionServiceTestToken.Configure(builder.Services, builder.Configuration);
         builder.Services.AddEndpointsApiExplorer(); builder.Services.AddSwaggerGen();
         builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(_connection));
         builder.Services.AddScoped<INotificationDbContext>(sp => sp.GetRequiredService<AppDbContext>());
         builder.Services.AddSingleton<TimeProvider>(_clock); builder.Services.AddApplicationServices();
-        _app = builder.Build(); _app.UseGlobalExceptionHandler(); _app.UseMiddleware<UserContextMiddleware>(); _app.UseSwagger(); _app.MapControllers();
+        _app = builder.Build(); _app.UseGlobalExceptionHandler(); _app.UseMiddleware<UserContextMiddleware>(); _app.UseAuthentication(); _app.UseAuthorization(); _app.UseSwagger(); _app.MapControllers();
         await _app.StartAsync();
         _client = new HttpClient { BaseAddress = new Uri(_app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single()) };
         Role("service");
@@ -85,6 +87,7 @@ public sealed class AuctionWinnerApiIntegrationTests : IAsyncLifetime
     private void Role(string? role,Guid? userId = null)
     {
         _client.DefaultRequestHeaders.Remove("x-user-id"); _client.DefaultRequestHeaders.Remove("x-user-roles");
+        _client.DefaultRequestHeaders.Authorization = role == "service" ? AuctionServiceTestToken.Create() : null;
         if (role is null) return;
         _client.DefaultRequestHeaders.Add("x-user-id",(userId ?? Guid.NewGuid()).ToString()); _client.DefaultRequestHeaders.Add("x-user-roles",role);
     }
@@ -216,8 +219,8 @@ public sealed class AuctionWinnerApiIntegrationTests : IAsyncLifetime
     public async Task Http_RejectsUntrustedOrInvalidWinnerPaymentFieldsAndUnknownLinks()
     {
         var r = Request(); Role(null); await Check(await _client.PostAsJsonAsync(Route,r),HttpStatusCode.Unauthorized);
-        foreach(var role in new[] { "buyer","seller","staff" }) { Role(role); await Check(await _client.PostAsJsonAsync(Route,r),HttpStatusCode.Forbidden); }
-        Role("admin");
+        foreach(var role in new[] { "buyer","seller","staff","admin" }) { Role(role); await Check(await _client.PostAsJsonAsync(Route,r),HttpStatusCode.Unauthorized); }
+        Role("service");
         foreach(var invalid in new[] { r with { SourceEventId = null },r with { AuctionId = Guid.Empty },r with { ResultId = Guid.Empty },r with { WinningBidId = null },r with { WinnerUserId = r.SellerUserId },
             r with { WinnerEmail = "invalid" },r with { WinnerFullName = "bad\nname" },r with { AuctionTitle = new string('a',201) },r with { OrderId = Guid.Empty },r with { WinningAmount = 0 },
             r with { WinningAmount = 1.001m },r with { Currency = "USD" },r with { SettledAt = null },r with { SettledAt = _clock.GetUtcNow().AddMinutes(1) },r with { PaymentDeadline = r.SettledAt } })

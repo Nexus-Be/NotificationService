@@ -32,6 +32,7 @@ public sealed class EmailApiIntegrationTests : IAsyncLifetime
     public async Task InitializeAsync()
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = "Development" });
+        builder.Configuration["INTERNAL_SERVICE_SECRET"] = "test-notification-internal-key";
         builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Services.AddControllers().AddApplicationPart(typeof(EmailController).Assembly)
             .ConfigureApiBehaviorOptions(o => o.InvalidModelStateResponseFactory = ApiValidationProblemFactory.Create);
@@ -51,11 +52,52 @@ public sealed class EmailApiIntegrationTests : IAsyncLifetime
             await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.EnsureCreatedAsync();
         _app.UseGlobalExceptionHandler();
         _app.UseMiddleware<UserContextMiddleware>();
+        _app.UseMiddleware<InternalServiceAuthMiddleware>();
         _app.UseSwagger();
         _app.MapControllers();
         await _app.StartAsync();
         var address = _app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single();
         _client = new HttpClient { BaseAddress = new Uri(address) };
+    }
+
+    [Fact]
+    public async Task InternalInApp_RequiresConfiguredKeyEvenWithSwaggerReferer()
+    {
+        const string route = "/api/v1/internal/notifications/in-app";
+        using var request = new HttpRequestMessage(HttpMethod.Post, route)
+        {
+            Content = JsonContent.Create(new { })
+        };
+        request.Headers.Referrer = new Uri("http://localhost/swagger/index.html");
+        Assert.Equal(HttpStatusCode.Forbidden, (await _client.SendAsync(request)).StatusCode);
+
+        _client.DefaultRequestHeaders.Add(InternalServiceAuthMiddleware.HeaderKeyInternalService, "invalid");
+        Assert.Equal(HttpStatusCode.Forbidden, (await _client.PostAsJsonAsync(route, new { })).StatusCode);
+
+        _client.DefaultRequestHeaders.Remove(InternalServiceAuthMiddleware.HeaderKeyInternalService);
+        _client.DefaultRequestHeaders.Add(InternalServiceAuthMiddleware.HeaderKeyInternalService, "test-notification-internal-key");
+        Assert.Equal(HttpStatusCode.BadRequest, (await _client.PostAsJsonAsync(route, new { })).StatusCode);
+    }
+
+    private void UseServiceIdentity()
+    {
+        _client.DefaultRequestHeaders.Add("x-user-id", Guid.NewGuid().ToString());
+        _client.DefaultRequestHeaders.Add("x-user-roles", "service");
+    }
+
+    [Theory]
+    [InlineData("/api/v1/notifications/email/send")]
+    [InlineData("/api/v1/notifications/email/seller-rejection")]
+    [InlineData("/api/v1/notifications/dispatches")]
+    public async Task ManagementWrites_RequireServiceOrAdminRole(string route)
+    {
+        var anonymous = await _client.PostAsJsonAsync(route, new { });
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymous.StatusCode);
+
+        _client.DefaultRequestHeaders.Add("x-user-id", Guid.NewGuid().ToString());
+        _client.DefaultRequestHeaders.Add("x-user-roles", "buyer");
+        var buyer = await _client.PostAsJsonAsync(route, new { });
+        Assert.Equal(HttpStatusCode.Forbidden, buyer.StatusCode);
     }
 
     public async Task DisposeAsync()
@@ -120,6 +162,7 @@ public sealed class EmailApiIntegrationTests : IAsyncLifetime
     [InlineData("/api/v1/internal/notifications/email/seller-rejection")]
     public async Task LegacyEmailRoutes_AreNotExposed(string route)
     {
+        _client.DefaultRequestHeaders.Add(InternalServiceAuthMiddleware.HeaderKeyInternalService, "test-notification-internal-key");
         var response = await _client.PostAsJsonAsync(route, new { });
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -139,6 +182,7 @@ public sealed class EmailApiIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task GeneralEmail_ReturnsPureDto_AndProviderFailureUsesMiddleware()
     {
+        UseServiceIdentity();
         var request = new { toEmail = "user@example.com", subject = "Hello", htmlBody = "<p>Hello</p>" };
         var response = await _client.PostAsJsonAsync("/api/v1/notifications/email/send", request);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -157,6 +201,7 @@ public sealed class EmailApiIntegrationTests : IAsyncLifetime
     [InlineData("user@example.com", "Hello", "")]
     public async Task GeneralEmail_RejectsInvalidInput(string toEmail, string subject, string htmlBody)
     {
+        UseServiceIdentity();
         var response = await _client.PostAsJsonAsync("/api/v1/notifications/email/send", new { toEmail, subject, htmlBody });
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         _sender.Verify(s => s.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -165,6 +210,7 @@ public sealed class EmailApiIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task Rejection_EncodesUntrustedHtml_AndRequiresReason()
     {
+        UseServiceIdentity();
         var response = await _client.PostAsJsonAsync("/api/v1/notifications/email/seller-rejection",
             new { email = "seller@example.com", fullName = "<b>Seller</b>", shopName = "Shop", rejectReason = "<script>bad</script>" });
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -190,6 +236,7 @@ public sealed class EmailApiIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task Dispatch_UsesRealFeatureAndReturnsPureDto()
     {
+        UseServiceIdentity();
         var request = DispatchServiceTests.Request();
         var response = await _client.PostAsJsonAsync("/api/v1/notifications/dispatches", request);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -212,6 +259,7 @@ public sealed class EmailApiIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task PushDispatch_ReturnsPerDeviceArrayAndRejectsCallerDestination()
     {
+        UseServiceIdentity();
         var user = Guid.NewGuid();
         using (var scope = _app.Services.CreateScope())
         {

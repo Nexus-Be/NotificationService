@@ -24,20 +24,25 @@ public sealed class AuctionOrderPaymentService(INotificationDbContext db, TimePr
             r.BuyerUserId == r.SellerUserId || string.IsNullOrWhiteSpace(r.OrderNo) || r.OrderNo.Length > 100 || r.OrderNo.Any(char.IsControl) ||
             r.TotalAmount is null or <= 0 or > 9999999999999999.99m || decimal.Round(r.TotalAmount.Value, 2) != r.TotalAmount ||
             !string.Equals(r.Currency, "VND", StringComparison.OrdinalIgnoreCase) || r.PaidAt is null || r.PaidAt > time.GetUtcNow().AddSeconds(30) ||
-            !string.Equals(r.OrderStatus, "Paid", StringComparison.OrdinalIgnoreCase) || !string.Equals(r.AuctionStatus, "Settled", StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(r.OrderStatus, "Paid", StringComparison.OrdinalIgnoreCase) || !string.Equals(r.SettlementStatus, "Paid", StringComparison.OrdinalIgnoreCase) ||
+            !(string.Equals(r.AuctionStatus, "Ended", StringComparison.OrdinalIgnoreCase) || string.Equals(r.AuctionStatus, "Settled", StringComparison.OrdinalIgnoreCase)) ||
             r.SellerAcceptStartedAt is null || Utc(r.SellerAcceptStartedAt.Value) < Utc(r.PaidAt.Value) || r.SellerAcceptStartedAt > time.GetUtcNow().AddSeconds(30) ||
             r.SellerAcceptDeadline is null || Utc(r.SellerAcceptDeadline.Value) <= Utc(r.SellerAcceptStartedAt.Value) || r.TraceId?.Length > 100 || r.TraceId?.Any(char.IsControl) == true)
             throw new DomainException("VAL_INVALID_INPUT", "Auction order payment notification fields are invalid.");
         var id = r.SourceEventId.Value; var order = r.OrderId.Value; var orderNo = r.OrderNo.Trim();
         var paidAt = Utc(r.PaidAt.Value); var deadline = Utc(r.SellerAcceptDeadline.Value);
-        var proof = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
-        { order, r.AuctionId, r.ResultId, r.WinningBidId, OrderStatus = "Paid", AuctionStatus = "Settled", SellerAcceptStartedAt = Utc(r.SellerAcceptStartedAt.Value), r.ShopId, r.BuyerUserId, r.SellerUserId, orderNo, TotalAmount = r.TotalAmount.Value.ToString("0.00", CultureInfo.InvariantCulture), Currency = "VND", paidAt, deadline }))));
+        var auctionStatus = string.Equals(r.AuctionStatus, "Ended", StringComparison.OrdinalIgnoreCase) ? "Ended" : "Settled";
+        var paymentProof = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new
+        { order, r.AuctionId, r.ResultId, r.WinningBidId, OrderStatus = "Paid", AuctionStatus = auctionStatus, SellerAcceptStartedAt = Utc(r.SellerAcceptStartedAt.Value), r.ShopId, r.BuyerUserId, r.SellerUserId, orderNo, TotalAmount = r.TotalAmount.Value.ToString("0.00", CultureInfo.InvariantCulture), Currency = "VND", paidAt, deadline }))));
+        var proof = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes($"{paymentProof}:Paid")));
         await using var tx = await db.Database.BeginTransactionAsync(cancellationToken);
         await Lock("auction-order-paid-event:" + id.ToString("N"), cancellationToken);
         var existing = await db.AuctionOrderPaidDispatches.IgnoreQueryFilters().AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, cancellationToken);
         if (existing is not null)
         {
-            if (existing.RequestHash != proof) throw Conflict();
+            // Older Settled receipts used the payment proof without the settlement status.
+            if (existing.RequestHash != proof && !(auctionStatus == "Settled" && existing.RequestHash == paymentProof))
+                throw Conflict();
             return await Response(existing, true, cancellationToken);
         }
         await Lock("auction-order-paid-auction:" + r.AuctionId.Value.ToString("N"), cancellationToken);
@@ -63,9 +68,9 @@ public sealed class AuctionOrderPaymentService(INotificationDbContext db, TimePr
             ["AcceptDeadlineUtc"] = deadline.ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture)
         };
         var now = Utc(time.GetUtcNow());
-        var buyer = await Branch(r.BuyerUserId.Value, "Buyer", templates.Single(t => t.Code == codes[0]), r, orderNo, paidAt, deadline, data, channels, now, cancellationToken);
+        var buyer = await Branch(r.BuyerUserId.Value, "Buyer", templates.Single(t => t.Code == codes[0]), r, orderNo, auctionStatus, paidAt, deadline, data, channels, now, cancellationToken);
         var sellerData = new Dictionary<string, string>(data); sellerData.Remove("TotalAmount");
-        var seller = await Branch(r.SellerUserId.Value, "Seller", templates.Single(t => t.Code == codes[1]), r, orderNo, paidAt, deadline, sellerData, channels, now, cancellationToken);
+        var seller = await Branch(r.SellerUserId.Value, "Seller", templates.Single(t => t.Code == codes[1]), r, orderNo, auctionStatus, paidAt, deadline, sellerData, channels, now, cancellationToken);
         var receipt = new AuctionOrderPaidDispatch { Id = id, OrderId = order, AuctionId = r.AuctionId.Value, ResultId = r.ResultId.Value, WinningBidId = r.WinningBidId.Value, RequestHash = proof, BuyerNotificationId = buyer.Id, SellerNotificationId = seller.Id, CreatedAt = now, UpdatedAt = now };
         db.AuctionOrderPaidDispatches.Add(receipt);
         db.AddAuditLog(AuditAction.AuctionOrderPaymentAccepted, nameof(AuctionOrderPaidDispatch), id.ToString(), newValues: new
@@ -75,7 +80,7 @@ public sealed class AuctionOrderPaymentService(INotificationDbContext db, TimePr
         return await Response(receipt, false, cancellationToken);
     }
 
-    private async Task<NotificationRecord> Branch(Guid user, string audience, NotificationTemplate template, CreateAuctionOrderPaymentRequest request, string orderNo,
+    private async Task<NotificationRecord> Branch(Guid user, string audience, NotificationTemplate template, CreateAuctionOrderPaymentRequest request, string orderNo, string auctionStatus,
         DateTimeOffset paidAt, DateTimeOffset deadline, Dictionary<string, string> data, List<NotificationChannel> channels, DateTimeOffset now, CancellationToken ct)
     {
         var inbox = !channels.Single(c => c.Code == ChannelType.InApp).IsDisabled;
@@ -96,7 +101,8 @@ public sealed class AuctionOrderPaymentService(INotificationDbContext db, TimePr
             ["orderNo"] = orderNo,
             ["paidAt"] = paidAt,
             ["orderStatus"] = "Paid",
-            ["auctionStatus"] = "Settled"
+            ["auctionStatus"] = auctionStatus,
+            ["settlementStatus"] = "Paid"
         };
         if (audience == "Buyer") { payload["totalAmount"] = request.TotalAmount; payload["currency"] = "VND"; }
         else { payload["sellerAcceptStartedAt"] = Utc(request.SellerAcceptStartedAt!.Value); payload["sellerAcceptDeadline"] = deadline; }

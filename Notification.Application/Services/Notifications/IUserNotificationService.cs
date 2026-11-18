@@ -52,6 +52,8 @@ public interface IUserNotificationService
         CancellationToken cancellationToken = default
     );
 
+    Task<int> GetUnreadCountAsync(Guid userId, CancellationToken cancellationToken = default);
+
     Task<BatchMarkReadResult> MarkNotificationsAsReadAsync(
         Guid userId,
         BatchMarkReadRequest request,

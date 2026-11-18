@@ -1,4 +1,5 @@
 namespace Notification.Api.Controllers.Public;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Notification.Api.Extensions;
@@ -12,7 +13,7 @@ public sealed class AuctionWinnersController(IAuctionWinnerService service) : Co
 {
     /// <summary>Accepts winner payment-instruction notifications after an auction result commits.</summary>
     [HttpPost]
-    [RequireRole("service","admin")]
+    [Authorize(Policy = AuctionNotificationAuth.Policy)]
     [RequestSizeLimit(16384)]
     [ProducesResponseType(typeof(AuctionWinnerResponse),StatusCodes.Status200OK)]
     public async Task<IActionResult> Create([FromBody] CreateAuctionWinnerRequest request,CancellationToken ct) => Ok(await service.CreateAsync(request,ct));

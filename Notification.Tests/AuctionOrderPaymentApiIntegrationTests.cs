@@ -47,7 +47,7 @@ public sealed class AuctionOrderPaymentApiIntegrationTests : IAsyncLifetime
     private AuctionOrderPaymentService Service(AppDbContext db) => new(db,_clock);
     private CreateAuctionOrderPaymentRequest Request() => new()
     {
-        AuctionId = Guid.NewGuid(),ResultId = Guid.NewGuid(),WinningBidId = Guid.NewGuid(),OrderStatus = "Paid",AuctionStatus = "Settled",SellerAcceptStartedAt = _clock.GetUtcNow(),
+        AuctionId = Guid.NewGuid(),ResultId = Guid.NewGuid(),WinningBidId = Guid.NewGuid(),OrderStatus = "Paid",AuctionStatus = "Settled",SettlementStatus = "Paid",SellerAcceptStartedAt = _clock.GetUtcNow(),
         SourceEventId = Guid.NewGuid(),OrderId = Guid.NewGuid(),ShopId = Guid.NewGuid(),BuyerUserId = Guid.NewGuid(),SellerUserId = Guid.NewGuid(),
         OrderNo = "SUB-EXAMPLE-001",TotalAmount = 1250000.50m,PaidAt = _clock.GetUtcNow(),SellerAcceptDeadline = _clock.GetUtcNow().AddHours(24)
     };
@@ -66,11 +66,12 @@ public sealed class AuctionOrderPaymentApiIntegrationTests : IAsyncLifetime
         var builder = WebApplication.CreateBuilder(); builder.Logging.ClearProviders(); builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Services.AddControllers().AddApplicationPart(typeof(AuctionOrderPaymentsController).Assembly)
             .ConfigureApiBehaviorOptions(o => o.InvalidModelStateResponseFactory = ApiValidationProblemFactory.Create);
+        AuctionServiceTestToken.Configure(builder.Services, builder.Configuration);
         builder.Services.AddEndpointsApiExplorer(); builder.Services.AddSwaggerGen();
         builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(_connection));
         builder.Services.AddScoped<INotificationDbContext>(sp => sp.GetRequiredService<AppDbContext>());
         builder.Services.AddSingleton<TimeProvider>(_clock); builder.Services.AddApplicationServices();
-        _app = builder.Build(); _app.UseGlobalExceptionHandler(); _app.UseMiddleware<UserContextMiddleware>(); _app.UseSwagger(); _app.MapControllers();
+        _app = builder.Build(); _app.UseGlobalExceptionHandler(); _app.UseMiddleware<UserContextMiddleware>(); _app.UseAuthentication(); _app.UseAuthorization(); _app.UseSwagger(); _app.MapControllers();
         await _app.StartAsync();
         _client = new HttpClient { BaseAddress = new Uri(_app.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>()!.Addresses.Single()) };
         Role("service");
@@ -85,6 +86,7 @@ public sealed class AuctionOrderPaymentApiIntegrationTests : IAsyncLifetime
     private void Role(string? role,Guid? userId = null)
     {
         _client.DefaultRequestHeaders.Remove("x-user-id"); _client.DefaultRequestHeaders.Remove("x-user-roles");
+        _client.DefaultRequestHeaders.Authorization = role == "service" ? AuctionServiceTestToken.Create() : null;
         if (role is null) return;
         _client.DefaultRequestHeaders.Add("x-user-id",(userId ?? Guid.NewGuid()).ToString()); _client.DefaultRequestHeaders.Add("x-user-roles",role);
     }
@@ -98,7 +100,7 @@ public sealed class AuctionOrderPaymentApiIntegrationTests : IAsyncLifetime
     [PostgresFact]
     public async Task Http_CreatesExactlyTwoLogicalItems_WithRoleSpecificPayloadAndNoTokens()
     {
-        var request = Request(); await Device(request.BuyerUserId!.Value,2); await Device(request.SellerUserId!.Value,3);
+        var request = Request() with { AuctionStatus = "Ended" }; await Device(request.BuyerUserId!.Value,2); await Device(request.SellerUserId!.Value,3);
         var response = await _client.PostAsJsonAsync(Route,request); await Check(response,HttpStatusCode.OK); Assert.True(response.Headers.CacheControl!.NoStore);
         var accepted = (await response.Content.ReadFromJsonAsync<AuctionOrderPaymentResponse>())!;
         Assert.Equal(3,accepted.Buyer.Deliveries.Count); Assert.Equal(4,accepted.Seller.Deliveries.Count); Assert.Empty(_push.Messages);
@@ -106,6 +108,13 @@ public sealed class AuctionOrderPaymentApiIntegrationTests : IAsyncLifetime
         Assert.Contains("đã thanh toán",buyer.Body); Assert.Contains("1,250,000.50",buyer.Body); Assert.Contains("đã được thanh toán",seller.Body);
         Assert.Contains("UTC",seller.Body); Assert.DoesNotContain("1,250,000.50",seller.Body); Assert.DoesNotContain("ví",seller.Body);
         using var buyerPayload = JsonDocument.Parse(buyer.Payload!); using var sellerPayload = JsonDocument.Parse(seller.Payload!);
+        Assert.Equal("Ended", buyerPayload.RootElement.GetProperty("auctionStatus").GetString());
+        Assert.Equal("Paid", sellerPayload.RootElement.GetProperty("settlementStatus").GetString());
+        var unread = await _client.GetFromJsonAsync<JsonElement>("/api/v1/notifications/me/unread-count");
+        Assert.Equal(1, unread.GetProperty("unreadCount").GetInt32());
+        Role("service");
+        await Check(await _client.PostAsJsonAsync(Route, request with { SettlementStatus = "Expired" }), HttpStatusCode.BadRequest, "VAL_INVALID_INPUT");
+        await Check(await _client.PostAsJsonAsync(Route, request with { AuctionStatus = "Settled" }), HttpStatusCode.Conflict, "AUCTION_ORDER_PAYMENT_CONFLICT");
         Assert.Equal("Buyer",buyerPayload.RootElement.GetProperty("audience").GetString()); Assert.True(buyerPayload.RootElement.TryGetProperty("totalAmount",out _));
         Assert.Equal("Seller",sellerPayload.RootElement.GetProperty("audience").GetString()); Assert.False(sellerPayload.RootElement.TryGetProperty("totalAmount",out _));
         Assert.Equal(request.ShopId,sellerPayload.RootElement.GetProperty("shopId").GetGuid());
@@ -201,8 +210,10 @@ public sealed class AuctionOrderPaymentApiIntegrationTests : IAsyncLifetime
     public async Task Http_RejectsUntrustedCallsInvalidFieldsAndUnknownPaymentClaims()
     {
         var r = Request(); Role(null); await Check(await _client.PostAsJsonAsync(Route,r),HttpStatusCode.Unauthorized);
-        foreach(var role in new[] { "buyer","seller","staff" }) { Role(role); await Check(await _client.PostAsJsonAsync(Route,r),HttpStatusCode.Forbidden); }
-        Role("admin");
+        foreach(var role in new[] { "buyer","seller","staff","admin" }) { Role(role); await Check(await _client.PostAsJsonAsync(Route,r),HttpStatusCode.Unauthorized); }
+        _client.DefaultRequestHeaders.Authorization = AuctionServiceTestToken.Create("wrong.scope");
+        await Check(await _client.PostAsJsonAsync(Route,r),HttpStatusCode.Forbidden);
+        Role("service");
         foreach(var invalid in new[] { r with { SourceEventId = Guid.Empty },r with { OrderId = null },r with { ShopId = Guid.Empty },r with { BuyerUserId = null },
             r with { SellerUserId = r.BuyerUserId },r with { OrderNo = "bad\nno" },r with { TotalAmount = 0 },r with { TotalAmount = 1.001m },
             r with { TotalAmount = 10000000000000000m },r with { Currency = "USD" },r with { PaidAt = null },r with { PaidAt = _clock.GetUtcNow().AddMinutes(1) },
