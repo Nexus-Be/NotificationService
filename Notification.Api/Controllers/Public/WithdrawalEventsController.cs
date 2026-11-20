@@ -12,7 +12,7 @@ public sealed class WithdrawalEventsController(IWithdrawalEventService service) 
 {
     /// <summary>Accepts the confirmed result of a withdrawal request (approved, rejected, completed or failed) from Wallet.</summary>
     [HttpPost]
-    [RequireRole("service", "admin")]
+    [RequireServiceKeyOrRole("service", "admin")]
     [RequestSizeLimit(16384)]
     [ProducesResponseType(typeof(WithdrawalEventResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> Create([FromBody] WithdrawalEventRequest request, CancellationToken ct) =>
