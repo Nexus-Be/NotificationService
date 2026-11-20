@@ -2,6 +2,10 @@
 
 Notification REST API trên .NET8/PostgreSQL, cổng **8007**. Nhận OTP/email nghiệp vụ từ service nguồn, lưu receipt và retry trong DB; phục vụ thông báo in-app, thiết bị và tùy chọn kênh.
 
+## Cập nhật Notification cho đấu giá
+
+Xem [báo cáo cập nhật ngày 20/11/2026](docs/updates/2026-11-20-auction-notifications.md): năm API in-app mới, Buy Now/Giá sàn, xác thực, chống gửi trùng, kết quả test và checklist tích hợp.
+
 ## Cách chạy dành cho thành viên
 
 1. Pull nhánh `dev`.
