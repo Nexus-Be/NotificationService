@@ -29,5 +29,7 @@ public enum NotificationType
     AuctionReserveRestriction = 24,
     // Values 0-24 are in use and must never be renumbered.
     WithdrawalResult = 25,
-    ProductBannedByReport = 26
+    ProductBannedByReport = 26,
+    /// <summary>Told to the person who reported a product once staff have dealt with the report.</summary>
+    ProductReportResolved = 27
 }
