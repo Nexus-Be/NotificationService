@@ -26,7 +26,11 @@ public static class AuctionNotificationAuth
                     if (!HttpMethods.IsPost(context.Request.Method) ||
                         !new[] { "/api/v1/notifications/auction-failed", "/api/v1/notifications/auction-cancelled",
                             "/api/v1/notifications/auction-winner-offers", "/api/v1/notifications/auction-order-payments",
-                            "/api/v1/notifications/auction-outbids", "/api/v1/notifications/auction-winners" }.Contains(path, StringComparer.OrdinalIgnoreCase))
+                            "/api/v1/notifications/auction-outbids", "/api/v1/notifications/auction-winners",
+                            "/api/v1/notifications/auction-watchlist-bids", "/api/v1/notifications/auction-report-resolved",
+                            "/api/v1/notifications/auction-deposits",
+                            "/api/v1/notifications/auction-reserve-approval-needed",
+                            "/api/v1/notifications/auction-reserve-restriction" }.Contains(path, StringComparer.OrdinalIgnoreCase))
                         context.NoResult();
                     return Task.CompletedTask;
                 }

@@ -6,6 +6,8 @@ Tài liệu dành cho bên tích hợp AuctionService, Gateway và FE. Đường
 
 | POST | Nghiệp vụ | Tài liệu chi tiết |
 |---|---|---|
+| `/auction-reserve-approval-needed` | Seller duyệt giá dưới giá sàn | [Buy Now và Giá sàn](../AuctionReserve/AUCTION_BUY_NOW_RESERVE_CONTRACT.md) |
+| `/auction-reserve-restriction` | Cảnh báo hoặc hạn chế Giá sàn | [Buy Now và Giá sàn](../AuctionReserve/AUCTION_BUY_NOW_RESERVE_CONTRACT.md) |
 | `/auction-failed` | Báo Seller khi phiên chuyển sang thất bại | [Lifecycle in-app](#lifecycle-in-app) |
 | `/auction-cancelled` | Báo Seller khi phiên bị hủy bởi Seller hoặc Admin | [Lifecycle in-app](#lifecycle-in-app) |
 | `/auction-winner-offers` | Mời bidder đủ điều kiện làm người thắng thay thế | [Lifecycle in-app](#lifecycle-in-app) |
@@ -18,7 +20,7 @@ Tài liệu dành cho bên tích hợp AuctionService, Gateway và FE. Đường
 | `/auction-payment-timeouts` | Báo hết hạn thanh toán | [Auction payment timeouts](../AuctionPaymentTimeouts/AUCTION_PAYMENT_TIMEOUTS.md) |
 | `/auction-seller-payment-timeouts` | Báo hết hạn thanh toán cho Seller | [Auction seller payment timeouts](../AuctionSellerPaymentTimeouts/AUCTION_SELLER_PAYMENT_TIMEOUTS.md) |
 
-Ba endpoint lifecycle dùng JWT service chuyên biệt tại NotificationService. Các endpoint còn lại có quy tắc xác thực và trạng thái tích hợp riêng theo tài liệu từng route. Sự kiện tạo phiên chưa phát thông báo.
+Các endpoint lifecycle, auction-outbids, auction-winners, auction-order-payments và hai route Giá sàn mới trong [Buy Now và Giá sàn](../AuctionReserve/AUCTION_BUY_NOW_RESERVE_CONTRACT.md), cùng ba route trong [Auction activity](../AuctionActivity/AUCTION_ACTIVITY.md) dùng JWT service chuyên biệt. Các endpoint còn lại có quy tắc xác thực và trạng thái tích hợp riêng theo tài liệu từng route. Sự kiện tạo phiên chưa phát thông báo.
 
 ## Lifecycle in-app
 
@@ -43,6 +45,8 @@ Ba request đều yêu cầu `sourceEventId`, `auctionId`, `auctionTitle` và ch
 
 | Endpoint | Trường bổ sung | Điều kiện |
 |---|---|---|
+| `/auction-reserve-approval-needed` | Seller duyệt giá dưới giá sàn | [Buy Now và Giá sàn](../AuctionReserve/AUCTION_BUY_NOW_RESERVE_CONTRACT.md) |
+| `/auction-reserve-restriction` | Cảnh báo hoặc hạn chế Giá sàn | [Buy Now và Giá sàn](../AuctionReserve/AUCTION_BUY_NOW_RESERVE_CONTRACT.md) |
 | `/auction-failed` | `sellerUserId`, `reason`, `failedAt` | Lý do bắt buộc, tối đa 1.000 ký tự. Phát sau khi trạng thái thất bại đã lưu. |
 | `/auction-cancelled` | `sellerUserId`, `reason`, `cancelledAt`, `forced` | Lý do bắt buộc, tối đa 1.000 ký tự. `forced` là boolean bắt buộc, `true` khi Admin cưỡng chế hủy. |
 | `/auction-winner-offers` | `offerId`, `bidId`, `bidderUserId`, `previousWinnerUserId`, `sellerUserId`, `amount`, `currency`, `offeredAt`, `expiresAt` | `amount > 0`, `currency = "VND"`, `expiresAt > offeredAt`. Bidder được mời phải khác người thắng trước và Seller. |

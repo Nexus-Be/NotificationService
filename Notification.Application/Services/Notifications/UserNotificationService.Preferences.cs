@@ -31,7 +31,9 @@ public sealed partial class UserNotificationService
     }
 
     private static bool IsLifecycleInboxOnly(NotificationType type) =>
-        type is NotificationType.AuctionFailed or NotificationType.AuctionWinnerOffer;
+        type is NotificationType.AuctionFailed or NotificationType.AuctionWinnerOffer or
+            NotificationType.AuctionWatchlistBid or NotificationType.AuctionReportResolved or NotificationType.AuctionDeposit or
+            NotificationType.AuctionReserveApprovalNeeded or NotificationType.AuctionReserveRestriction;
 
     public async Task<UpdatePreferencesResult> UpdatePreferencesAsync(Guid userId,UpdatePreferencesRequest request,CancellationToken cancellationToken = default)
     {

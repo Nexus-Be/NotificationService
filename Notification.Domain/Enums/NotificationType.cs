@@ -21,5 +21,10 @@ public enum NotificationType
     OrderPaymentExpired = 16,
     OrderBuyerCancelled = 17,
     AuctionFailed = 18,
-    AuctionWinnerOffer = 19
+    AuctionWinnerOffer = 19,
+    AuctionWatchlistBid = 20,
+    AuctionReportResolved = 21,
+    AuctionDeposit = 22,
+    AuctionReserveApprovalNeeded = 23,
+    AuctionReserveRestriction = 24
 }
