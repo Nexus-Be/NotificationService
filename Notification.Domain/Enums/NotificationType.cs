@@ -1,4 +1,4 @@
-namespace Notification.Domain.Enums;
+﻿namespace Notification.Domain.Enums;
 
 public enum NotificationType
 {
@@ -26,5 +26,8 @@ public enum NotificationType
     AuctionReportResolved = 21,
     AuctionDeposit = 22,
     AuctionReserveApprovalNeeded = 23,
-    AuctionReserveRestriction = 24
+    AuctionReserveRestriction = 24,
+    // Values 0-24 are in use and must never be renumbered.
+    WithdrawalResult = 25,
+    ProductBannedByReport = 26
 }

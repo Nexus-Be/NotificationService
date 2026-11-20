@@ -1,4 +1,4 @@
-namespace Notification.Application.Services.Notifications;
+﻿namespace Notification.Application.Services.Notifications;
 
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +33,9 @@ public sealed partial class UserNotificationService
     private static bool IsLifecycleInboxOnly(NotificationType type) =>
         type is NotificationType.AuctionFailed or NotificationType.AuctionWinnerOffer or
             NotificationType.AuctionWatchlistBid or NotificationType.AuctionReportResolved or NotificationType.AuctionDeposit or
-            NotificationType.AuctionReserveApprovalNeeded or NotificationType.AuctionReserveRestriction;
+            NotificationType.AuctionReserveApprovalNeeded or NotificationType.AuctionReserveRestriction or
+            // Withdrawal results and product bans are service notices, not something a user opts out of.
+            NotificationType.WithdrawalResult or NotificationType.ProductBannedByReport;
 
     public async Task<UpdatePreferencesResult> UpdatePreferencesAsync(Guid userId,UpdatePreferencesRequest request,CancellationToken cancellationToken = default)
     {
