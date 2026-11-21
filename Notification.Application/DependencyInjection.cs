@@ -14,6 +14,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
+        services.AddScoped<Notification.Application.Services.Audit.IAuditSyncSourceService, Notification.Application.Services.Audit.AuditSyncSourceService>();
         services.AddScoped<Notification.Application.Services.PasswordChanges.IPasswordChangeService, Notification.Application.Services.PasswordChanges.PasswordChangeService>();
         services.AddScoped<Notification.Application.Services.SellerDecisions.ISellerDecisionService, Notification.Application.Services.SellerDecisions.SellerDecisionService>();
         services.AddScoped<Notification.Application.Services.AccountStatusChanges.IAccountStatusChangeService, Notification.Application.Services.AccountStatusChanges.AccountStatusChangeService>();
