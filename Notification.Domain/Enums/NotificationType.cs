@@ -31,5 +31,10 @@ public enum NotificationType
     WithdrawalResult = 25,
     ProductBannedByReport = 26,
     /// <summary>Told to the person who reported a product once staff have dealt with the report.</summary>
-    ProductReportResolved = 27
+    ProductReportResolved = 27,
+    ProductReportDismissed = 28,
+    ProductApproved = 29,
+    ProductRejected = 30,
+    ProductSuspended = 31,
+    ProductBanned = 32
 }

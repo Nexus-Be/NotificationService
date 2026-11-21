@@ -35,7 +35,9 @@ public sealed partial class UserNotificationService
             NotificationType.AuctionWatchlistBid or NotificationType.AuctionReportResolved or NotificationType.AuctionDeposit or
             NotificationType.AuctionReserveApprovalNeeded or NotificationType.AuctionReserveRestriction or
             // Withdrawal results and product bans are service notices, not something a user opts out of.
-            NotificationType.WithdrawalResult or NotificationType.ProductBannedByReport or NotificationType.ProductReportResolved;
+            NotificationType.WithdrawalResult or NotificationType.ProductBannedByReport or NotificationType.ProductReportResolved or
+            NotificationType.ProductReportDismissed or NotificationType.ProductApproved or NotificationType.ProductRejected or
+            NotificationType.ProductSuspended or NotificationType.ProductBanned;
 
     public async Task<UpdatePreferencesResult> UpdatePreferencesAsync(Guid userId,UpdatePreferencesRequest request,CancellationToken cancellationToken = default)
     {

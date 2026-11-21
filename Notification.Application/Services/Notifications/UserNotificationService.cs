@@ -39,6 +39,9 @@ public sealed partial class UserNotificationService : IUserNotificationService
         if (string.IsNullOrWhiteSpace(request.Body))
             throw new ArgumentException("Notification body is required.");
 
+        if (ProductReportType(request.NotificationType) is { } reportType)
+            return await CreateProductReportAsync(request, reportType, cancellationToken);
+
         NotificationType? parsedType = string.IsNullOrWhiteSpace(request.NotificationType) ? null :
             NotificationPreferencePolicy.Parse<NotificationType>(request.NotificationType);
 
