@@ -50,6 +50,7 @@ services:
       Health__DatabaseTimeoutSeconds: "${NOTIFICATION_HEALTH_DB_TIMEOUT_SECONDS:-15}"
       Health__WorkerGraceSeconds: "${NOTIFICATION_HEALTH_WORKER_GRACE_SECONDS:-30}"
       Health__OtpStallSeconds: "${NOTIFICATION_HEALTH_OTP_STALL_SECONDS:-120}"
+      OtpWorker__Enabled: "${NOTIFICATION_OTP_WORKER_ENABLED:-true}"
       OtpWorker__PollIntervalSeconds: "${NOTIFICATION_OTP_POLL_SECONDS:-1}"
       OtpWorker__SendTimeoutSeconds: "${NOTIFICATION_OTP_TIMEOUT_SECONDS:-30}"
       OtpWorker__LeaseSeconds: "${NOTIFICATION_OTP_LEASE_SECONDS:-120}"
