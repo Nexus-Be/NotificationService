@@ -2,6 +2,7 @@ namespace Notification.Application.Services.Email;
 
 public sealed class OtpWorkerSettings
 {
+    public bool Enabled { get; set; } = true;
     public int PollIntervalSeconds { get; set; } = 1;
     public int SendTimeoutSeconds { get; set; } = 30;
     public int LeaseSeconds { get; set; } = 120;

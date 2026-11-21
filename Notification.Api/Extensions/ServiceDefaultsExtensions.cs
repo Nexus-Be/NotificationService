@@ -139,6 +139,7 @@ public static class ServiceDefaultsExtensions
     public static WebApplication UseServiceDefaults(this WebApplication app)
     {
         app.UseGlobalExceptionHandler();
+        if (!app.Environment.IsDevelopment()) app.UseMiddleware<PublicRequestIdentityMiddleware>();
         app.UseMiddleware<UserContextMiddleware>();
         app.UseMiddleware<InternalServiceAuthMiddleware>();
 
