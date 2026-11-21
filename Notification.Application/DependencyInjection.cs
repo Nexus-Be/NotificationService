@@ -42,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<IDispatchService, DispatchService>();
         services.AddScoped<IEmailNotificationService, EmailNotificationService>();
         services.AddScoped<Notification.Application.Services.AuctionActivity.IAuctionActivityService, Notification.Application.Services.AuctionActivity.AuctionActivityService>();
+        services.AddScoped<Notification.Application.Services.WalletEvents.IWalletEventService, Notification.Application.Services.WalletEvents.WalletEventService>();
         services.AddScoped<IAuctionLifecycleService, AuctionLifecycleService>();
         services.AddScoped<IUserNotificationService, UserNotificationService>();
         return services;

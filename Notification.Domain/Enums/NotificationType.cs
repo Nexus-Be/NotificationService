@@ -26,5 +26,13 @@ public enum NotificationType
     AuctionReportResolved = 21,
     AuctionDeposit = 22,
     AuctionReserveApprovalNeeded = 23,
-    AuctionReserveRestriction = 24
+    AuctionReserveRestriction = 24,
+    WithdrawalEvent = 25,
+    ProductBannedReport = 26,
+    ProductReportResolved = 27,
+    ProductReportDismissed = 28,
+    ProductApproved = 29,
+    ProductRejected = 30,
+    ProductSuspended = 31,
+    ProductBanned = 32
 }

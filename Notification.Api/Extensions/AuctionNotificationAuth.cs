@@ -11,6 +11,7 @@ public static class AuctionNotificationAuth
 
     public static void AddAuctionNotificationAuth(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddWalletNotificationAuth(configuration);
         var signingKey = configuration["AuctionNotificationAuth:SigningKey"];
         var serviceId = configuration["AuctionNotificationAuth:ServiceUserId"]
             ?? "00000000-0000-0000-0000-0000000000a1";
