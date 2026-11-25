@@ -26,8 +26,8 @@ public static class NotificationChannelPlanner
             or NotificationType.AuctionWon or NotificationType.AuctionCancelled or NotificationType.AuctionPaymentTimedOut
             or NotificationType.AuctionSellerResult or NotificationType.AuctionFailed or NotificationType.AuctionWinnerOffer
             or NotificationType.AuctionReserveApprovalNeeded or NotificationType.AuctionReserveRestriction
-            or NotificationType.AuctionDeposit or NotificationType.WithdrawalEvent
-            or NotificationType.ProductBannedReport or NotificationType.ProductBanned or NotificationType.ProductSuspended or NotificationType.ProductRejected;
+            or NotificationType.AuctionDeposit or NotificationType.WithdrawalResult
+            or NotificationType.ProductBannedByReport or NotificationType.ProductBanned or NotificationType.ProductSuspended or NotificationType.ProductRejected;
     }
 
     public static async Task ApplyAsync(INotificationDbContext db, IReadOnlyList<NotificationRecord> records,

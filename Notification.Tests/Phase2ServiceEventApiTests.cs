@@ -227,6 +227,7 @@ public sealed class Phase2ServiceEventApiTests : IAsyncLifetime
 
     [PostgresTheory]
     [InlineData("PRODUCT_BANNED_REPORT", "ProductBannedByReport")]
+    [InlineData("ProductBannedByReport", "ProductBannedByReport")]
     [InlineData("REPORT_RESOLVED", "ProductReportResolved")]
     [InlineData("REPORT_DISMISSED", "ProductReportDismissed")]
     public async Task CatalogLegacyTypesBecomeCanonicalPrivateReplaySafeNotices(string alias, string expected)
@@ -328,6 +329,24 @@ public sealed class Phase2ServiceEventApiTests : IAsyncLifetime
         Assert.DoesNotContain("penaltyPoints", notice.Payload!);
         Assert.Equal(HttpStatusCode.BadRequest,
             (await _http.PostAsJsonAsync(Route("in-app"), request with { SourceEventId = null })).StatusCode);
+    }
+    [PostgresFact]
+    public async Task UpdatedWithdrawalContractReusesExistingEventIdentity()
+    {
+        var request = Withdrawal("Completed");
+        var response = await _http.PostAsJsonAsync(Route("withdrawal-events"), request);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var original = (await response.Content.ReadFromJsonAsync<ServiceEventResponse>())!;
+        await using var scope = _app!.Services.CreateAsyncScope();
+        var adapter = scope.ServiceProvider.GetRequiredService<Notification.Application.Services.WithdrawalEvents.IWithdrawalEventService>();
+        var replay = await adapter.CreateAsync(new Notification.Application.Services.WithdrawalEvents.WithdrawalEventRequest(
+            request.SourceEventId, request.WithdrawalId, request.RecipientUserId, request.Status,
+            request.ConfirmedAt, request.DisplayReason, request.TransactionId, "new-trace"), default);
+        Assert.True(replay.IsReplay);
+        Assert.Equal(original.NotificationId, replay.NotificationId);
+        await using var db = Db();
+        Assert.Single(await db.Notifications.ToListAsync());
+        Assert.Single(await db.NotificationDeliveries.ToListAsync());
     }
     private static WithdrawalEventRequest Withdrawal(string status) => new($"withdrawal:{Guid.NewGuid():D}:{status}",
         Guid.NewGuid(), Guid.NewGuid(), status, DateTimeOffset.UtcNow, "Lý do được phép hiển thị", "BANK-TEST", "phase2");

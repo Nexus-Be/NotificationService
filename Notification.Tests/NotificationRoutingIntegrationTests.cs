@@ -39,7 +39,7 @@ public sealed class NotificationRoutingIntegrationTests : IAsyncLifetime
     }
     [Theory]
     [InlineData(NotificationType.SecurityAlert,true)] [InlineData(NotificationType.OrderPaid,true)]
-    [InlineData(NotificationType.WithdrawalEvent,true)] [InlineData(NotificationType.AuctionWon,true)]
+    [InlineData(NotificationType.WithdrawalResult,true)] [InlineData(NotificationType.AuctionWon,true)]
     [InlineData(NotificationType.AuctionOutbid,false)] [InlineData(NotificationType.AuctionStarted,false)]
     [InlineData(NotificationType.AuctionWatchlistBid,false)] [InlineData(NotificationType.ProductApproved,false)]
     [InlineData(NotificationType.Promotion,false)] [InlineData(NotificationType.Otp,false)]
