@@ -11,7 +11,7 @@ public sealed class InAppNotificationsController(IUserNotificationService servic
 {
     /// <summary>Creates a recipient notification from an authorized service or administrator.</summary>
     [HttpPost]
-    [RequireRole("service", "admin", "staff")]
+    [RequireServiceKeyOrRole("service", "admin", "staff")]
     [RequestSizeLimit(16384)]
     [ProducesResponseType(typeof(InAppNotificationItemResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
