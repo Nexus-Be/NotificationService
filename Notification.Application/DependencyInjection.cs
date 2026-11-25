@@ -1,4 +1,4 @@
-namespace Notification.Application;
+﻿namespace Notification.Application;
 
 using Microsoft.Extensions.DependencyInjection;
 using Notification.Application.Services.Email;
@@ -14,6 +14,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
+        services.AddScoped<Notification.Application.Services.Audit.IAuditSyncSourceService, Notification.Application.Services.Audit.AuditSyncSourceService>();
         services.AddScoped<Notification.Application.Services.PasswordChanges.IPasswordChangeService, Notification.Application.Services.PasswordChanges.PasswordChangeService>();
         services.AddScoped<Notification.Application.Services.SellerDecisions.ISellerDecisionService, Notification.Application.Services.SellerDecisions.SellerDecisionService>();
         services.AddScoped<Notification.Application.Services.AccountStatusChanges.IAccountStatusChangeService, Notification.Application.Services.AccountStatusChanges.AccountStatusChangeService>();
@@ -42,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<IDispatchService, DispatchService>();
         services.AddScoped<IEmailNotificationService, EmailNotificationService>();
         services.AddScoped<Notification.Application.Services.AuctionActivity.IAuctionActivityService, Notification.Application.Services.AuctionActivity.AuctionActivityService>();
+        services.AddScoped<Notification.Application.Services.WithdrawalEvents.IWithdrawalEventService, Notification.Application.Services.WithdrawalEvents.WithdrawalEventService>();
         services.AddScoped<IAuctionLifecycleService, AuctionLifecycleService>();
         services.AddScoped<IUserNotificationService, UserNotificationService>();
         return services;

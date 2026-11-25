@@ -7,7 +7,41 @@ on:
     branches: ["main"]
 
 jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    # Disposable PostgreSQL for the integration tests that are skipped when NOTIFICATION_TEST_DB is not set.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: notification_it_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Test (unit and PostgreSQL integration)
+        env:
+          NOTIFICATION_TEST_DB: "Host=localhost;Port=5432;Database=notification_it_test;Username=postgres;Password=ci-only-password"
+        run: dotnet test Notification.sln --nologo --verbosity minimal
+
   build-and-push:
+    needs: tests
     runs-on: ubuntu-latest
 
     steps:
