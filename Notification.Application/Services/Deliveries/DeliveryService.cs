@@ -14,8 +14,9 @@ public sealed class DeliveryService : IDeliveryService
     private readonly DeliveryWorkerSettings _settings;
     private readonly TimeProvider _time;
     private readonly IPushDeliverySender? _pushSender;
+    private readonly INotificationRecipientResolver? _recipients;
 
-    public DeliveryService(INotificationDbContext db, IEmailDeliverySender sender, DeliveryWorkerSettings settings, TimeProvider time, IPushDeliverySender? pushSender = null)
+    public DeliveryService(INotificationDbContext db, IEmailDeliverySender sender, DeliveryWorkerSettings settings, TimeProvider time, IPushDeliverySender? pushSender = null, INotificationRecipientResolver? recipients = null)
     {
         _db = db;
         _sender = sender;
@@ -23,13 +24,14 @@ public sealed class DeliveryService : IDeliveryService
         _settings.Validate();
         _time = time;
         _pushSender = pushSender;
+        _recipients = recipients;
     }
 
     private IQueryable<NotificationDelivery> Eligible(DateTimeOffset now)
     {
         var expired = now.AddSeconds(-_settings.LeaseSeconds);
         return _db.NotificationDeliveries.Where(d => (d.ChannelCode == ChannelType.Email || d.ChannelCode == ChannelType.Push) && !d.IsDeleted &&
-            d.Notification != null && !d.Notification.IsDeleted && d.Notification.TemplateId != null &&
+            d.Notification != null && !d.Notification.IsDeleted && (d.Notification.TemplateId != null || d.ChannelCode == ChannelType.Email && d.SubjectOverride != null && d.BodyOverride != null) &&
             d.Channel != null && !d.Channel.IsDeleted && !d.Channel.IsDisabled &&
             ((d.Status == DeliveryStatus.Pending && (!d.NextRetryAt.HasValue || d.NextRetryAt <= now)) ||
              (d.Status == DeliveryStatus.Sending && (!d.LastAttemptAt.HasValue || d.LastAttemptAt <= expired))));
@@ -105,10 +107,23 @@ public sealed class DeliveryService : IDeliveryService
                 }
                 else
                 {
-                    var message = new EmailDeliveryMessage(candidate.Id, candidate.Destination,
-                        candidate.SubjectOverride ?? candidate.Notification!.Title ?? string.Empty, candidate.BodyOverride ?? candidate.Notification!.Body ?? string.Empty);
-                    var sent = await _sender.SendAsync(message, linked.Token).WaitAsync(linked.Token);
-                    result = new(sent.Succeeded, sent.IsTransient, sent.ErrorCode, sent.ErrorMessage);
+                    var destination = candidate.Destination;
+                    if (destination.StartsWith("user:", StringComparison.Ordinal))
+                    {
+                        if (!Guid.TryParse(destination[5..], out var userId) || userId != candidate.Notification!.UserId)
+                            throw new InvalidOperationException("Recipient reference is invalid.");
+                        if (_recipients is null) throw new HttpRequestException("Recipient resolver is not configured.");
+                        destination = await _recipients.ResolveAsync(userId, linked.Token);
+                    }
+                    if (string.IsNullOrWhiteSpace(destination))
+                        result = DeliveryOutcome.Failure("RECIPIENT_NOT_FOUND", "Verified email recipient was not found.");
+                    else
+                    {
+                        var message = new EmailDeliveryMessage(candidate.Id, destination,
+                            candidate.SubjectOverride ?? candidate.Notification!.Title ?? string.Empty, candidate.BodyOverride ?? candidate.Notification!.Body ?? string.Empty);
+                        var sent = await _sender.SendAsync(message, linked.Token).WaitAsync(linked.Token);
+                        result = new(sent.Succeeded, sent.IsTransient, sent.ErrorCode, sent.ErrorMessage);
+                    }
                 }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)

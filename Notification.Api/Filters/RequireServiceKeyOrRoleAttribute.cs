@@ -28,7 +28,7 @@ public sealed class RequireServiceKeyOrRoleAttribute : Attribute, IAuthorization
         var configuration = context.HttpContext.RequestServices.GetService<IConfiguration>();
         var configuredKey = configuration?["INTERNAL_SERVICE_SECRET"] ?? configuration?["InternalSecurity:ServiceKey"];
 
-        if (!string.IsNullOrWhiteSpace(configuredKey) &&
+        if (!string.IsNullOrWhiteSpace(configuredKey) && Encoding.UTF8.GetByteCount(configuredKey) >= 32 &&
             context.HttpContext.Request.Headers.TryGetValue(HeaderName, out var provided) &&
             provided.Count == 1 &&
             CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(provided.ToString()), Encoding.UTF8.GetBytes(configuredKey)))

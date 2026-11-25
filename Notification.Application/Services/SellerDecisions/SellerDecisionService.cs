@@ -164,7 +164,7 @@ public sealed class SellerDecisionService(INotificationDbContext db, IDispatchSe
                                     .IgnoreQueryFilters()
                                     .AsNoTracking().Where(x => x
                                     .NotificationId == receipt
-                                    .NotificationId)
+                                    .NotificationId && x.ChannelCode == ChannelType.Email)
                                     .ToListAsync(ct);
 
         if (notification is null || deliveries.Count != 1 || deliveries[0].ChannelCode != ChannelType.Email)
