@@ -90,7 +90,6 @@ public sealed class NotificationsController : ControllerBase
     }
 
     /// <summary>Retrieves personal in-app notifications history.</summary>
-    [HttpGet]
     [HttpGet("me")]
     [RequireRole]
     public async Task<IActionResult> GetMyNotifications(
@@ -145,7 +144,6 @@ public sealed class NotificationsController : ControllerBase
 
     /// <summary>Marks a single notification as read by ID.</summary>
     [HttpPatch("{id:guid}/read")]
-    [HttpPut("{id:guid}/read")]
     [RequireRole]
     public async Task<IActionResult> MarkSingleNotificationAsRead(
         [FromRoute] Guid id,
@@ -171,7 +169,6 @@ public sealed class NotificationsController : ControllerBase
 
     /// <summary>Marks multiple or all notifications as read.</summary>
     [HttpPatch("me/read")]
-    [HttpPut("me/read")]
     [RequireRole]
     public async Task<IActionResult> MarkNotificationsAsRead(
         [FromBody] BatchMarkReadRequest request,
