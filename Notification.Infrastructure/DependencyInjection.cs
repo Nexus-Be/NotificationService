@@ -33,8 +33,19 @@ public static class DependencyInjection
         }
         var connectionString = NormalizeConnectionString(rawConnection);
 
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(connectionString));
+        services.AddScoped<NotificationRoutingInterceptor>();
+        services.AddDbContext<AppDbContext>((sp, options) =>
+        {
+            options.UseNpgsql(connectionString);
+            if (configuration.GetValue("NotificationRouting:Enabled", true))
+                options.AddInterceptors(sp.GetRequiredService<NotificationRoutingInterceptor>());
+        });
+        services.AddHttpClient<INotificationRecipientResolver, Notification.Infrastructure.Services.Recipients.UserNotificationRecipientResolver>(client =>
+        {
+            var url = configuration["USER_SERVICE_URL"] ?? configuration["Services:User:BaseUrl"] ?? "http://user-service:8001/";
+            client.BaseAddress = new Uri(url.TrimEnd('/') + "/");
+            client.Timeout = TimeSpan.FromSeconds(8);
+        }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 
         services.AddScoped<INotificationDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 

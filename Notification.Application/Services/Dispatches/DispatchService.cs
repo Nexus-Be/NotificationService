@@ -100,7 +100,7 @@ public sealed class DispatchService : IDispatchService
             if (winner is not null) return winner;
             throw;
         }
-        return Response(notification, deliveries, false);
+        return Response(notification, deliveries.Where(d => d.ChannelCode == template.ChannelCode).ToList(), false);
     }
 
     private async Task<DispatchResponse?> FindReplayAsync(CreateDispatchRequest request, Guid templateId, CancellationToken cancellationToken)
@@ -109,7 +109,8 @@ public sealed class DispatchService : IDispatchService
             n.SourceEventId == request.SourceEventId && n.UserId == request.UserId && n.TemplateId == templateId, cancellationToken);
         if (notification is null) return null;
         var deliveries = await _db.NotificationDeliveries.IgnoreQueryFilters().AsNoTracking().Where(d => d.NotificationId == notification.Id).ToListAsync(cancellationToken);
-        return Response(notification, deliveries, true);
+        var channel = await _db.NotificationTemplates.AsNoTracking().Where(t => t.Id == templateId).Select(t => t.ChannelCode).SingleAsync(cancellationToken);
+        return Response(notification, deliveries.Where(d => d.ChannelCode == channel).ToList(), true);
     }
 
     private static DispatchResponse Response(NotificationRecord notification, IReadOnlyList<NotificationDelivery> deliveries, bool replay)

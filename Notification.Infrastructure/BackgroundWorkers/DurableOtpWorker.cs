@@ -12,6 +12,7 @@ public sealed class DurableOtpWorker(IServiceScopeFactory scopes,OtpWorkerSettin
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         settings.Validate();
+        if (!settings.Enabled) { health.Report(WorkerName.OtpEmail,WorkerActivity.Disabled); return; }
         try
         {
             while (!stoppingToken.IsCancellationRequested)

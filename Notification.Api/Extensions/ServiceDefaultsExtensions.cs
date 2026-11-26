@@ -23,6 +23,10 @@ public static class ServiceDefaultsExtensions
 
         services.AddSwaggerGen(options =>
         {
+            options.OperationFilter<ServiceEventOperationFilter>();
+            options.AddSecurityDefinition("WalletServiceKey", new OpenApiSecurityScheme
+            { Type = SecuritySchemeType.ApiKey, In = ParameterLocation.Header, Name = "X-Internal-Service-Key",
+              Description = "Wallet-only credential for withdrawal-events and the Wallet deposit contract." });
             options.SwaggerDoc("v1", new OpenApiInfo
             {
                 Title = $"Nexus {ToDisplayName(serviceName)} REST API",
@@ -135,6 +139,7 @@ public static class ServiceDefaultsExtensions
     public static WebApplication UseServiceDefaults(this WebApplication app)
     {
         app.UseGlobalExceptionHandler();
+        if (!app.Environment.IsDevelopment()) app.UseMiddleware<PublicRequestIdentityMiddleware>();
         app.UseMiddleware<UserContextMiddleware>();
         app.UseMiddleware<InternalServiceAuthMiddleware>();
 

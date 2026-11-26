@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Notification.Application.Common.Extensions;
 using Notification.Application.Interfaces;
 using Notification.Domain.Entities;
 using Notification.Domain.Enums;
@@ -42,13 +43,14 @@ public sealed class WithdrawalEventService(INotificationDbContext db, TimeProvid
         await db.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_advisory_xact_lock(hashtextextended({lockKey}, 8031))", ct);
 
         var existing = await db.Notifications.IgnoreQueryFilters().AsNoTracking()
-            .Where(n => n.SourceEventId == sourceEventId && n.UserId == request.RecipientUserId)
-            .SingleOrDefaultAsync(ct);
-        if (existing is not null)
+            .Where(n => n.SourceEventId == sourceEventId).ToListAsync(ct);
+        if (existing.Count > 0)
         {
-            if (existing.NotificationType != NotificationType.WithdrawalResult || !Matches(existing.Payload, hash))
+            var replay = existing.Count == 1 ? existing[0] : null;
+            if (replay is null || replay.UserId != request.RecipientUserId ||
+                replay.NotificationType != NotificationType.WithdrawalResult || !Matches(replay.Payload, hash))
                 throw new DomainException("WITHDRAWAL_EVENT_CONFLICT", "Source event has different notification data.", 409);
-            return new WithdrawalEventResponse(sourceEventKey, true, existing.Id);
+            return new WithdrawalEventResponse(sourceEventKey, true, replay.Id);
         }
 
         var (title, body) = Describe(request.Status, request.DisplayReason);
@@ -81,6 +83,9 @@ public sealed class WithdrawalEventService(INotificationDbContext db, TimeProvid
             Destination = request.RecipientUserId.ToString(), Status = visible ? DeliveryStatus.Sent : DeliveryStatus.Skipped,
             AttemptCount = 1, LastAttemptAt = now, RowVersion = 1, CreatedAt = now, UpdatedAt = now
         });
+        db.AddAuditLog(AuditAction.ServiceEventAccepted, nameof(NotificationRecord), row.Id.ToString(),
+            newValues: new { Source = "wallet", SourceEventId = sourceEventKey, Type = NotificationType.WithdrawalResult.ToString(), Visible = visible },
+            traceId: request.TraceId);
         await db.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
         return new WithdrawalEventResponse(sourceEventKey, false, row.Id);

@@ -19,7 +19,7 @@ public sealed class WorkerHealthRegistry : IWorkerHealthReader, IWorkerHealthRep
         _states = new()
         {
             [WorkerName.Delivery] = new(delivery.Enabled,delivery.Enabled ? WorkerActivity.NotStarted : WorkerActivity.Disabled),
-            [WorkerName.OtpEmail] = new(true,WorkerActivity.NotStarted),
+            [WorkerName.OtpEmail] = new(otp?.Enabled ?? true,(otp?.Enabled ?? true) ? WorkerActivity.NotStarted : WorkerActivity.Disabled),
             [WorkerName.EventLogRetention] = new(retention.Enabled,retention.Enabled ? WorkerActivity.NotStarted : WorkerActivity.Disabled)
         };
         _budgets = new()
