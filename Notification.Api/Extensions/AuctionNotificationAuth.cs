@@ -11,7 +11,9 @@ public static class AuctionNotificationAuth
 
     public static void AddAuctionNotificationAuth(this IServiceCollection services, IConfiguration configuration)
     {
-        var signingKey = configuration["AuctionNotificationAuth:SigningKey"];
+        var signingKey = Environment.GetEnvironmentVariable("AUCTION_NOTIFICATION_SIGNING_KEY")
+            ?? configuration["AuctionNotificationAuth:SigningKey"]
+            ?? configuration["InternalSecurity:ServiceKey"];
         var serviceId = configuration["AuctionNotificationAuth:ServiceUserId"]
             ?? "00000000-0000-0000-0000-0000000000a1";
 
