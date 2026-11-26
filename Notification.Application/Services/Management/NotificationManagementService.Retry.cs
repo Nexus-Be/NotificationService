@@ -28,9 +28,9 @@ public sealed partial class NotificationManagementService
         if (delivery is null) throw Error("DELIVERY_NOT_FOUND", "Notification delivery was not found.", 404);
         if (delivery.RowVersion != request.ExpectedRowVersion.Value)
             throw Error("DELIVERY_VERSION_CONFLICT", "Delivery state changed; reload before retrying.", 409);
-        if (parent is null || parent.IsDeleted || parent.TemplateId is null || delivery.Status != DeliveryStatus.Failed ||
+        if (parent is null || parent.IsDeleted || (parent.TemplateId is null && !(delivery.ChannelCode == ChannelType.Email && delivery.SubjectOverride != null && delivery.BodyOverride != null)) || delivery.Status != DeliveryStatus.Failed ||
             delivery.ChannelCode is not (ChannelType.Email or ChannelType.Push))
-            throw Error("DELIVERY_NOT_RETRYABLE", "Only visible failed template-backed email or push deliveries can be retried.", 409);
+            throw Error("DELIVERY_NOT_RETRYABLE", "Only persisted failed email or push deliveries can be retried.", 409);
         if (!await _db.NotificationChannels.AsNoTracking().AnyAsync(c => c.Code == delivery.ChannelCode && !c.IsDeleted && !c.IsDisabled, cancellationToken))
             throw Error("CHANNEL_DISABLED", "Delivery channel is missing or disabled.", 409);
         if (delivery.ChannelCode == ChannelType.Push)

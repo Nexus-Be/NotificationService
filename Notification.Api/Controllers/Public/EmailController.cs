@@ -22,6 +22,7 @@ public sealed class EmailController : ControllerBase
     [RequestSizeLimit(16384)]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     [ProducesResponseType(typeof(OtpEmailDispatchResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
     public async Task<IActionResult> SendOtpEmail([FromBody] SendOtpEmailRequest request, CancellationToken cancellationToken)
         => Ok(await _emailNotificationService.DispatchOtpAsync(request, cancellationToken));
 

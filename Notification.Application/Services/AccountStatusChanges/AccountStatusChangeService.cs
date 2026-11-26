@@ -91,7 +91,7 @@ public sealed class AccountStatusChangeService(INotificationDbContext db, IDispa
     private async Task<AccountStatusChangeResponse> Response(AccountStatusChangeDispatch receipt, CancellationToken ct)
     {
         var notification = await db.Notifications.IgnoreQueryFilters().AsNoTracking().SingleOrDefaultAsync(x => x.Id == receipt.NotificationId, ct);
-        var deliveries = await db.NotificationDeliveries.IgnoreQueryFilters().AsNoTracking().Where(x => x.NotificationId == receipt.NotificationId).ToListAsync(ct);
+        var deliveries = await db.NotificationDeliveries.IgnoreQueryFilters().AsNoTracking().Where(x => x.NotificationId == receipt.NotificationId && x.ChannelCode == ChannelType.Email).ToListAsync(ct);
         if (notification is null || deliveries.Count != 1 || deliveries[0].ChannelCode != ChannelType.Email)
             throw new DomainException("DELIVERY_STATE_INVALID", "Account status delivery state is invalid.", 409);
         return new(receipt.Id, receipt.UserId, receipt.StatusVersion, receipt.NotificationId, deliveries[0].Id, notification.Status.ToString(), deliveries[0].Status.ToString(), true);

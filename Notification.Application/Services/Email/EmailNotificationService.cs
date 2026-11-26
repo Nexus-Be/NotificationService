@@ -12,21 +12,25 @@ public sealed partial class EmailNotificationService : IEmailNotificationService
     private readonly IEmailBackgroundQueue? _backgroundQueue;
     private readonly IOtpEmailDispatchService? _otpDispatch;
     private readonly IEmailDeliverySender? _strictEmailSender;
+    private readonly OtpWorkerSettings? _otpSettings;
 
     public EmailNotificationService(
         IEmailSenderService emailSender,
         IEmailBackgroundQueue? backgroundQueue = null,
         IOtpEmailDispatchService? otpDispatch = null,
-        IEmailDeliverySender? strictEmailSender = null)
+        IEmailDeliverySender? strictEmailSender = null,
+        OtpWorkerSettings? otpSettings = null)
     {
         _emailSender = emailSender;
         _backgroundQueue = backgroundQueue;
         _otpDispatch = otpDispatch;
         _strictEmailSender = strictEmailSender;
+        _otpSettings = otpSettings;
     }
 
     public async Task<OtpEmailDispatchResponse> DispatchOtpAsync(SendOtpEmailRequest request, CancellationToken cancellationToken = default)
     {
+        if (_otpSettings?.Enabled == false) throw new DomainException("OTP_DELIVERY_DISABLED", "OTP email delivery is disabled in this environment.", 503);
         if (_otpDispatch is not null) return await _otpDispatch.EnqueueAsync(request, cancellationToken);
         var fullName = string.IsNullOrWhiteSpace(request.FullName) ? "Customer" : request.FullName.Trim();
         var purpose = string.IsNullOrWhiteSpace(request.Purpose) ? "registration" : request.Purpose.Trim().ToLowerInvariant();
@@ -60,6 +64,7 @@ public sealed partial class EmailNotificationService : IEmailNotificationService
 
     public async Task<bool> SendOtpEmailAsync(SendOtpEmailDto dto, CancellationToken cancellationToken = default)
     {
+        if (_otpSettings?.Enabled == false) throw new DomainException("OTP_DELIVERY_DISABLED", "OTP email delivery is disabled in this environment.", 503);
         if (_otpDispatch is not null)
         {
             await _otpDispatch.EnqueueAsync(new SendOtpEmailRequest { Email = dto.Email, FullName = dto.FullName, OtpCode = dto.OtpCode, Purpose = dto.Purpose, ExpiresInMinutes = dto.ExpiresInMinutes }, cancellationToken);

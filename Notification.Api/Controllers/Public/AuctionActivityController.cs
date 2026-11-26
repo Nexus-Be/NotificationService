@@ -28,7 +28,4 @@ public sealed class AuctionActivityController(IAuctionActivityService service) :
     public async Task<IActionResult> Report(AuctionReportResolvedRequest request, CancellationToken ct) =>
         Ok(await service.CreateAsync(request, ct));
 
-    [HttpPost("auction-deposits")]
-    public async Task<IActionResult> Deposit(AuctionDepositRequest request, CancellationToken ct) =>
-        Ok(await service.CreateAsync(request, ct));
 }

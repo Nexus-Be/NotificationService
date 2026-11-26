@@ -11,6 +11,7 @@ public static class AuctionNotificationAuth
 
     public static void AddAuctionNotificationAuth(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddWalletNotificationAuth(configuration);
         var signingKey = Environment.GetEnvironmentVariable("AUCTION_NOTIFICATION_SIGNING_KEY")
             ?? configuration["AuctionNotificationAuth:SigningKey"]
             ?? configuration["InternalSecurity:ServiceKey"];

@@ -32,15 +32,10 @@ public sealed class MailKitEmailSenderService : IEmailService, IEmailSenderServi
     {
         var opts = _smtpOptions.CurrentValue;
 
-        if (string.IsNullOrWhiteSpace(opts.Username)
-            || string.IsNullOrWhiteSpace(opts.Password))
+        if (string.IsNullOrWhiteSpace(opts.Username) || string.IsNullOrWhiteSpace(opts.Password) || string.IsNullOrWhiteSpace(opts.Host))
         {
-            _logger.LogWarning(
-                "[SIMULATION MODE] SMTP credentials missing. Simulating email dispatch to '{ToEmail}'. Subject: '{Subject}'.",
-                toEmail,
-                subject
-            );
-            return true;
+            _logger.LogWarning("SMTP configuration is missing. Email was not sent.");
+            return false;
         }
 
         try
@@ -59,7 +54,8 @@ public sealed class MailKitEmailSenderService : IEmailService, IEmailSenderServi
             await client.ConnectAsync(opts.Host, opts.Port, secureSocketOptions, cancellationToken);
             await client.AuthenticateAsync(opts.Username, opts.Password, cancellationToken);
             await client.SendAsync(message, cancellationToken);
-            await client.DisconnectAsync(true, cancellationToken);
+            try { await client.DisconnectAsync(false, CancellationToken.None); }
+            catch (Exception ex) { _logger.LogWarning(ex, "SMTP disconnect failed after message acceptance."); }
 
             _logger.LogInformation("Successfully sent email to '{ToEmail}' via SMTP ({Host}:{Port}).", toEmail, opts.Host, opts.Port);
             return true;

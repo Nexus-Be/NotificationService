@@ -122,7 +122,7 @@ public sealed class PasswordChangeService(INotificationDbContext db, IDispatchSe
     private async Task<PasswordChangeResponse> Response(PasswordChangeDispatch receipt, bool replay, CancellationToken ct)
     {
         var notification = await db.Notifications.IgnoreQueryFilters().AsNoTracking().SingleOrDefaultAsync(x => x.Id == receipt.NotificationId, ct);
-        var deliveries = await db.NotificationDeliveries.IgnoreQueryFilters().AsNoTracking().Where(x => x.NotificationId == receipt.NotificationId).ToListAsync(ct);
+        var deliveries = await db.NotificationDeliveries.IgnoreQueryFilters().AsNoTracking().Where(x => x.NotificationId == receipt.NotificationId && x.ChannelCode == ChannelType.Email).ToListAsync(ct);
 
         if (notification is null || deliveries.Count != 1 || deliveries[0].ChannelCode != ChannelType.Email)
             throw new DomainException("DELIVERY_STATE_INVALID", 

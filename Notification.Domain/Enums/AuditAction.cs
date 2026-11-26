@@ -31,5 +31,6 @@ public enum AuditAction
     OrderCompletionAccepted = 26,
     OrderSettlementAccepted = 27,
     OrderPaymentExpiryAccepted = 28,
-    OrderBuyerCancellationAccepted = 29
+    OrderBuyerCancellationAccepted = 29,
+    ServiceEventAccepted = 30
 }

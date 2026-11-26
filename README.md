@@ -2,9 +2,17 @@
 
 Notification REST API trên .NET8/PostgreSQL, cổng **8007**. Nhận OTP/email nghiệp vụ từ service nguồn, lưu receipt và retry trong DB; phục vụ thông báo in-app, thiết bị và tùy chọn kênh.
 
+## Cập nhật Phase 2 — Wallet và Catalog
+
+Xem [spec nhận sự kiện Phase 2](specs/06_PHASE2_SERVICE_EVENT_INTAKE.md), [contract Wallet](docs/api/WalletEvents/WALLET_NOTIFICATION_CONTRACT.md) và [contract Catalog](docs/api/ProductReportEvents/PRODUCT_REPORT_NOTIFICATION_CONTRACT.md). Receiver mới yêu cầu danh tính đã chốt; cập nhật Notification riêng chưa đồng nghĩa caller và Gateway đã tích hợp.
+
 ## Cập nhật Notification cho đấu giá
 
 Xem [báo cáo cập nhật ngày 20/11/2026](docs/updates/2026-11-20-auction-notifications.md): năm API in-app mới, Buy Now/Giá sàn, xác thực, chống gửi trùng, kết quả test và checklist tích hợp.
+
+## Deploy public
+
+Xem [hướng dẫn deploy Production và Render Free](docs/deployment/PUBLIC_DEPLOYMENT.md). Render Free chạy API/in-app với worker OTP và Email/Push tắt; OTP trả503 thay vì tiếp nhận yêu cầu không thể gửi. Cấu hình bí mật được nạp riêng trên nền tảng hosting.
 
 ## Cách chạy dành cho thành viên
 
