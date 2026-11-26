@@ -35,7 +35,8 @@ services:
       Smtp__Username: "${SMTP_USERNAME:-}"
       Smtp__Password: "${SMTP_PASSWORD:-}"
       InternalSecurity__ServiceKey: "${INTERNAL_SERVICE_SECRET:-}"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "${OTEL_EXPORTER_OTLP_ENDPOINT:-http://tempo:4317}"
+      USER_SERVICE_URL: "${USER_SERVICE_URL:-http://user-service:8001}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "${OTEL_EXPORTER_OTLP_ENDPOINT:-}"
       DeliveryWorker__Enabled: "${NOTIFICATION_DELIVERY_WORKER_ENABLED:-true}"
       NOTIFICATION_RETRY_LIMIT: "${NOTIFICATION_RETRY_LIMIT:-3}"
       DeliveryWorker__BaseDelaySeconds: "${NOTIFICATION_DELIVERY_BASE_DELAY_SECONDS:-10}"
@@ -58,7 +59,7 @@ services:
       OtpWorker__BaseDelaySeconds: "${NOTIFICATION_OTP_BASE_DELAY_SECONDS:-5}"
       OtpProtection__KeyRingPath: "/var/lib/notification/otp-keys"
       OtpProtection__SharedKeyRingBase64: "${OTP_SHARED_KEY_RING_BASE64:-}"
-      OtpProtection__RequireSharedKeyRing: "${OTP_REQUIRE_SHARED_KEY_RING:-true}"
+      OtpProtection__RequireSharedKeyRing: "${OTP_REQUIRE_SHARED_KEY_RING:-false}"
       FCM_PROJECT_ID: "${FCM_PROJECT_ID:-}"
       GOOGLE_APPLICATION_CREDENTIALS: "${FCM_CREDENTIALS_CONTAINER_PATH:-}"
     volumes:
