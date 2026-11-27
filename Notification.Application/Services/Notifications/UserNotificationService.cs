@@ -43,7 +43,12 @@ public sealed partial class UserNotificationService : IUserNotificationService
             return await CreateProductReportAsync(request, reportType, cancellationToken);
 
         NotificationType? parsedType = string.IsNullOrWhiteSpace(request.NotificationType) ? null :
-            NotificationPreferencePolicy.Parse<NotificationType>(request.NotificationType);
+            request.NotificationType.Trim().ToUpperInvariant() switch
+            {
+                "NEW_PRODUCT_REVIEW" => NotificationType.NewProductReview,
+                "REVIEW_HIDDEN" => NotificationType.ReviewHidden,
+                _ => NotificationPreferencePolicy.Parse<NotificationType>(request.NotificationType)
+            };
 
         if (request.SourceEventId.HasValue && request.SourceEventId.Value != Guid.Empty)
         {

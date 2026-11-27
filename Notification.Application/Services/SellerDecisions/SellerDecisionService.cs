@@ -110,7 +110,16 @@ public sealed class SellerDecisionService(INotificationDbContext db, IDispatchSe
                 TemplateCode = code,
                 Locale = locale,
                 Destination = email,
-                Data = data
+                Data = data,
+                Payload = JsonSerializer.Serialize(new
+                {
+                    type = nameof(NotificationType.SecurityAlert),
+                    kind = "SellerDecision",
+                    decision = decision == "approved" ? "Approved" : "Rejected",
+                    applicationId,
+                    shopName = shop,
+                    audience = decision == "approved" ? "seller" : "buyer"
+                })
             },
             cancellationToken);
 

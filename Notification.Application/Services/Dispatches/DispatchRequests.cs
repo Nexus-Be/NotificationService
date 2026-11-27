@@ -19,4 +19,5 @@ public sealed record CreateDispatchRequest
     [EmailAddress(ErrorMessage = "Destination must be a valid email address.")]
     [StringLength(500, ErrorMessage = "Destination must not exceed 500 characters.")]
     public string? Destination { get; init; }
+    public string? Payload { get; init; }
 }

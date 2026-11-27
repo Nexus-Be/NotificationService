@@ -74,7 +74,13 @@ public sealed class AccountStatusChangeService(INotificationDbContext db, IDispa
             TemplateCode = code,
             Locale = locale,
             Destination = email,
-            Data = new() { ["FullName"] = name, ["Reason"] = reason, ["ChangedAtUtc"] = changedAt.ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture) }
+            Data = new() { ["FullName"] = name, ["Reason"] = reason, ["ChangedAtUtc"] = changedAt.ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture) },
+            Payload = JsonSerializer.Serialize(new
+            {
+                type = nameof(NotificationType.SecurityAlert),
+                kind = "AccountStatus",
+                change = change == "banned" ? "Banned" : "Unbanned"
+            })
         }, cancellationToken);
         if (created.IsReplay) throw Conflict();
         var now = time.GetUtcNow();

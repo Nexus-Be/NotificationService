@@ -62,7 +62,8 @@ public sealed class DispatchService : IDispatchService
         {
             Id = Guid.NewGuid(), UserId = request.UserId!.Value, SourceEventId = request.SourceEventId,
             TemplateId = template.Id, NotificationType = template.NotificationType, ChannelScope = ChannelScope.Specific,
-            Title = title, Body = body, IsRead = skipped, ReadAt = skipped ? now : null,
+            Title = title, Body = body, Payload = string.IsNullOrWhiteSpace(request.Payload) ? null : request.Payload,
+            IsRead = skipped, ReadAt = skipped ? now : null,
             IsDeleted = skipped, DeletedAt = skipped ? now : null,
             Status = immediate || skipped ? NotificationStatus.Completed : NotificationStatus.Pending,
             CreatedAt = now, UpdatedAt = now
