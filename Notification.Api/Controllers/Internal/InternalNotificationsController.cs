@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Notification.Api.Filters;
 using Notification.Application.Services.Notifications;
 
 [ApiController]
 [Route("api/v1/internal/notifications")]
+[RequireServiceKeyOrRole("service", "admin", "staff")]
 public sealed class InternalNotificationsController : ControllerBase
 {
     private readonly IUserNotificationService _notificationService;

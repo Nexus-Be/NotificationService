@@ -32,7 +32,7 @@ public sealed class EmailApiIntegrationTests : IAsyncLifetime
     public async Task InitializeAsync()
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = "Development" });
-        builder.Configuration["INTERNAL_SERVICE_SECRET"] = "test-notification-internal-key";
+        builder.Configuration["INTERNAL_SERVICE_SECRET"] = "test-notification-internal-key-32b";
         builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Services.AddControllers().AddApplicationPart(typeof(EmailController).Assembly)
             .ConfigureApiBehaviorOptions(o => o.InvalidModelStateResponseFactory = ApiValidationProblemFactory.Create);
@@ -75,7 +75,7 @@ public sealed class EmailApiIntegrationTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.Forbidden, (await _client.PostAsJsonAsync(route, new { })).StatusCode);
 
         _client.DefaultRequestHeaders.Remove(InternalServiceAuthMiddleware.HeaderKeyInternalService);
-        _client.DefaultRequestHeaders.Add(InternalServiceAuthMiddleware.HeaderKeyInternalService, "test-notification-internal-key");
+        _client.DefaultRequestHeaders.Add(InternalServiceAuthMiddleware.HeaderKeyInternalService, "test-notification-internal-key-32b");
         Assert.Equal(HttpStatusCode.BadRequest, (await _client.PostAsJsonAsync(route, new { })).StatusCode);
     }
 
@@ -162,7 +162,7 @@ public sealed class EmailApiIntegrationTests : IAsyncLifetime
     [InlineData("/api/v1/internal/notifications/email/seller-rejection")]
     public async Task LegacyEmailRoutes_AreNotExposed(string route)
     {
-        _client.DefaultRequestHeaders.Add(InternalServiceAuthMiddleware.HeaderKeyInternalService, "test-notification-internal-key");
+        _client.DefaultRequestHeaders.Add(InternalServiceAuthMiddleware.HeaderKeyInternalService, "test-notification-internal-key-32b");
         var response = await _client.PostAsJsonAsync(route, new { });
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
