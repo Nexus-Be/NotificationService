@@ -90,7 +90,13 @@ public sealed class PasswordChangeService(INotificationDbContext db, IDispatchSe
                 ["FullName"] = name,
                 ["ChangedAtUtc"] = changedAt.ToString("yyyy-MM-dd HH:mm:ss 'UTC'",
                            System.Globalization.CultureInfo.InvariantCulture)
-            }
+            },
+            Payload = JsonSerializer.Serialize(new
+            {
+                type = nameof(NotificationType.SecurityAlert),
+                kind = "PasswordChange",
+                changeKind = kind
+            })
         }, cancellationToken);
 
         // A generic dispatch has no canonical business receipt; do not adopt unknown content.

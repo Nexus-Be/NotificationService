@@ -36,5 +36,7 @@ public enum NotificationType
     ProductApproved = 29,
     ProductRejected = 30,
     ProductSuspended = 31,
-    ProductBanned = 32
+    ProductBanned = 32,
+    NewProductReview = 33,
+    ReviewHidden = 34
 }
