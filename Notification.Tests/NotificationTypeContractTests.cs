@@ -18,6 +18,7 @@ public sealed class NotificationTypeContractTests
     [InlineData(NotificationType.WithdrawalResult, 25)]
     [InlineData(NotificationType.ProductBannedByReport, 26)]
     [InlineData(NotificationType.ProductReportResolved, 27)]
+    [InlineData(NotificationType.WalletTopupSucceeded, 35)]
     public void ValuesUsedByOtherServicesDoNotMove(NotificationType type, int expected)
     {
         Assert.Equal(expected, (int)type);

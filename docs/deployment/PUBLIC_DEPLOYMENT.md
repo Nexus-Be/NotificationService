@@ -1,6 +1,6 @@
 # Public deployment of Notification Service
 
-Deploy the Docker image from the dedicated release branch. The service listens on port **8007**. The existing GitHub workflow only builds/pushes an image on `main`; it does not deploy a backend and pushing another branch does not produce a hosted URL.
+Deploy the Docker image from the dedicated release branch. The service listens on port **8007**. The existing GitHub workflow builds and triggers a Render deploy only on pushes to `dev`; a feature-branch push alone does not update `https://nexus-notification-api.onrender.com`.
 
 ## Required runtime configuration
 
@@ -24,6 +24,8 @@ Use the platform's private environment-variable or secret settings. Do not commi
 | Smtp__Host, Smtp__Port, Smtp__UseSsl | Configured SMTP transport settings |
 | Smtp__SenderEmail, Smtp__SenderName | Configured sender |
 | Smtp__Username, Smtp__Password | Private SMTP credentials |
+| EmailProvider | `Smtp` for local SMTP or `Resend` for HTTPS API on Render Free |
+| RESEND_API_KEY, RESEND_FROM_EMAIL, RESEND_FROM_NAME | Resend key and approved sender; never commit the key |
 | OtpWorker__Enabled | true normally; false on Render Free (OTP endpoint returns503/OTP_DELIVERY_DISABLED) |
 | DeliveryWorker__Enabled | false until the DB queue and delivery configuration are reviewed; enable explicitly for business delivery |
 | EventLogRetention__Enabled | false initially |
@@ -49,7 +51,7 @@ OTP has its own worker. When `OtpWorker__Enabled=false`, it does not claim DB jo
 1. Select an existing VPS/container platform and provide access through its authenticated session or configured SSH profile. Record the target and branch/commit; do not invent a host, URL or paid plan.
 2. Build the Dockerfile at repository root, configure the private runtime values, and map the platform's HTTPS ingress to container port 8007.
 3. Keep the database migration flag false. Use an approved DB; a local fixture run is not approval to migrate or reset a shared database.
-4. Check the real HTTPS URL: `/health`, `/health/live`, and especially `/health/ready`. Readiness must report ready, not merely that a process exists.
+4. Check the real HTTPS URL: `/health` and especially `/health/ready`. Readiness must report ready, not merely that a process exists.
 5. Check `/api/v1/notifications/me` without credentials and with forged identity headers: neither may expose a user's notifications.
 6. Check a legitimate User JWT, the dedicated Auction/Wallet credentials, and each generic caller identity through the actual route used by its owner.
 7. Verify OTP/business email against a controlled inbox if email delivery is part of release acceptance. SMTP acceptance does not itself prove mailbox receipt. Push requires its own configured Firebase project and actual device receipt.
@@ -64,7 +66,13 @@ Use distinct private Production JWT/backend keys when the local bundle uses a pu
 
 Reference: https://render.com/docs/free
 
+### Email-enabled demo profile
+
+The earlier API-only release disabled OTP and delivery workers. For an email demo, first verify a sending domain or use only recipients allowed by the provider's test sender, review existing pending deliveries, and configure `EmailProvider=Resend`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, and `RESEND_FROM_NAME` as private Render environment variables. Set `OtpProtection__RequireSharedKeyRing=true` and supply the same private `OtpProtection__SharedKeyRingBase64` used by any process sharing the Notification DB. Only then enable `OtpWorker__Enabled=true` and `DeliveryWorker__Enabled=true`. Keep `DatabaseInitialization__ApplyMigrationsOnStartup=false`.
+
+Render Free can spin down after idle, so queued work may wait until the next inbound request starts the instance. The realtime hub at `/hubs/notifications` is authenticated with a User JWT and is a live hint only; clients must reload `/api/v1/notifications/me` after reconnect. The Gateway and FE integration requirements are in `docs/integrations/NOTIFICATION_REALTIME_HANDOFF.md`.
+
 
 ## Verification for this release
 
-Release build succeeded. The full test suite passed853/853 (0 failed, 0 skipped) using isolated PostgreSQL. A separate Production Docker smoke test passed9/9: readiness200, anonymous401, forged identity403, actual User JWT200, forged admin elevation403, disabled OTP503, scoped Wallet credentials400 for invalid DTO and401 for invalid key, Swagger200. No production DB upgrade was run.
+The previous API-only release passed 853/853 tests and its Production smoke checks. For the 2026-11-28 candidate, 916/916 tests passed against a restored PostgreSQL fixture. The candidate Docker image returned readiness 200 with DB Healthy; Swagger contained `wallet-topups`, while anonymous inbox and hub negotiate requests returned 401. These candidate checks do not establish that the new code is live on Render or that email reached an inbox. No production DB migration was run.

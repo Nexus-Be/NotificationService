@@ -245,7 +245,7 @@ public sealed class ShipmentEventApiIntegrationTests : IAsyncLifetime
     [PostgresFact]
     public async Task SwaggerAndPreferenceMatrix_ReuseOptionalOrderShippedType()
     {
-        Role("buyer"); var prefs=(await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!; Assert.Equal(54,prefs.Count); Assert.Equal(18,prefs.Count(p=>p.IsMandatory)); Assert.All(prefs.Where(p=>p.NotificationType=="OrderShipped"),p=>Assert.False(p.IsMandatory)); var swagger=await _client.GetStringAsync("/swagger/v1/swagger.json"); Assert.Contains(Route,swagger); Assert.Contains("sourceVersion",swagger); Assert.Contains("suppressionReason",swagger); Assert.Equal(25,(int)AuditAction.ShipmentEventAccepted); Assert.Equal(8,(int)ShipmentNotificationStatus.Cancelled);
+        Role("buyer"); var prefs=(await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!; Assert.Equal(63, prefs.Count); Assert.Equal(21, prefs.Count(p => p.IsMandatory)); Assert.All(prefs.Where(p=>p.NotificationType=="OrderShipped"),p=>Assert.False(p.IsMandatory)); var swagger=await _client.GetStringAsync("/swagger/v1/swagger.json"); Assert.Contains(Route,swagger); Assert.Contains("sourceVersion",swagger); Assert.Contains("suppressionReason",swagger); Assert.Equal(25,(int)AuditAction.ShipmentEventAccepted); Assert.Equal(8,(int)ShipmentNotificationStatus.Cancelled);
     }
 
     [PostgresFact]

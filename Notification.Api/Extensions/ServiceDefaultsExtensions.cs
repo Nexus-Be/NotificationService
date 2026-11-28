@@ -26,7 +26,7 @@ public static class ServiceDefaultsExtensions
             options.OperationFilter<ServiceEventOperationFilter>();
             options.AddSecurityDefinition("WalletServiceKey", new OpenApiSecurityScheme
             { Type = SecuritySchemeType.ApiKey, In = ParameterLocation.Header, Name = "X-Internal-Service-Key",
-              Description = "Wallet-only credential for withdrawal-events and the Wallet deposit contract." });
+              Description = "Wallet-only credential for withdrawal-events, wallet-topups and the Wallet deposit contract." });
             options.SwaggerDoc("v1", new OpenApiInfo
             {
                 Title = $"Nexus {ToDisplayName(serviceName)} REST API",

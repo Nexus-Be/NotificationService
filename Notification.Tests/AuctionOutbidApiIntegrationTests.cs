@@ -65,6 +65,7 @@ public sealed class AuctionOutbidApiIntegrationTests : IAsyncLifetime
         _connection = new NpgsqlConnectionStringBuilder(_admin) { Database = _database }.ConnectionString;
         await using (var db = Db()) await db.Database.MigrateAsync();
         var builder = WebApplication.CreateBuilder(); builder.Logging.ClearProviders(); builder.WebHost.UseUrls("http://127.0.0.1:0");
+        builder.Services.AddSignalR();
         builder.Services.AddControllers().AddApplicationPart(typeof(AuctionOutbidsController).Assembly)
             .ConfigureApiBehaviorOptions(o => o.InvalidModelStateResponseFactory = ApiValidationProblemFactory.Create);
         AuctionServiceTestToken.Configure(builder.Services, builder.Configuration);

@@ -85,7 +85,7 @@ public sealed partial class OtpEmailDispatchService
             var status = result.Succeeded ? OtpDispatchStatus.ProviderAccepted : expired ? OtpDispatchStatus.Expired : retry ? OtpDispatchStatus.Queued : OtpDispatchStatus.Failed;
             var code = result.Succeeded ? null : expired ? "OTP_EXPIRED" : SafeCode(result.ErrorCode);
             await Update(current,status,code,retry ? due : null,now,!retry,cancellationToken);
-            Audit(current,AuditAction.OtpResult,status.ToString(),code);
+            Audit(current,AuditAction.OtpResult,status.ToString(),code,result.ProviderMessageId);
             await db.SaveChangesAsync(cancellationToken); await transaction.CommitAsync(cancellationToken);
         }
         return true;

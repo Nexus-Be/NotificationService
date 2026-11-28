@@ -337,7 +337,7 @@ public sealed class AuctionSellerResultApiIntegrationTests : IAsyncLifetime
     {
         var swagger = await _client.GetStringAsync("/swagger/v1/swagger.json"); Assert.Contains(Route,swagger); Assert.Contains("{notificationId}",swagger); Assert.Contains("decidedAt",swagger);
         Role("seller"); var prefs = (await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!;
-        Assert.Equal(54,prefs.Count); Assert.Equal(18,prefs.Count(p => p.IsMandatory)); Assert.All(prefs.Where(p => p.NotificationType == "AuctionSellerResult"),p => Assert.False(p.IsMandatory));
+        Assert.Equal(63, prefs.Count); Assert.Equal(21, prefs.Count(p => p.IsMandatory)); Assert.All(prefs.Where(p => p.NotificationType == "AuctionSellerResult"),p => Assert.False(p.IsMandatory));
         Assert.Equal(10,(int)NotificationType.AuctionSellerResult); Assert.Equal(9,(int)NotificationType.AuctionPaymentTimedOut); Assert.Equal(19,(int)AuditAction.AuctionSellerResultAccepted);
     }
 

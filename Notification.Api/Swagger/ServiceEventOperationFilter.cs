@@ -21,7 +21,8 @@ public sealed class ServiceEventOperationFilter : IOperationFilter
             operation.Description = "Auction JWT selects AuctionDepositRequest. The Wallet service key selects WalletDepositEventRequest. Mixed contracts are rejected.";
             operation.Security = new List<OpenApiSecurityRequirement> { Security("Bearer"), Security("WalletServiceKey") };
         }
-        else if (context.MethodInfo.DeclaringType == typeof(WithdrawalEventsController))
+        else if (context.MethodInfo.DeclaringType == typeof(WithdrawalEventsController) ||
+                 context.MethodInfo.DeclaringType == typeof(WalletTopupsController))
             operation.Security = new List<OpenApiSecurityRequirement> { Security("WalletServiceKey") };
     }
 

@@ -171,7 +171,7 @@ public sealed class OrderCompletionApiIntegrationTests : IAsyncLifetime
     [PostgresFact]
     public async Task SwaggerPreferenceMatrixAndEnums_ExposeNewTypeAndMandatoryPushOnly()
     {
-        Role("buyer"); var prefs=(await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!; Assert.Equal(54,prefs.Count); Assert.Equal(18,prefs.Count(p=>p.IsMandatory)); Assert.True(prefs.Single(p=>p.NotificationType=="OrderCompleted" && p.ChannelCode=="Push").IsMandatory); Assert.False(prefs.Single(p=>p.NotificationType=="OrderCompleted" && p.ChannelCode=="InApp").IsMandatory);
+        Role("buyer"); var prefs=(await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!; Assert.Equal(63, prefs.Count); Assert.Equal(21, prefs.Count(p => p.IsMandatory)); Assert.True(prefs.Single(p=>p.NotificationType=="OrderCompleted" && p.ChannelCode=="Push").IsMandatory); Assert.False(prefs.Single(p=>p.NotificationType=="OrderCompleted" && p.ChannelCode=="InApp").IsMandatory);
         var swagger=await _client.GetStringAsync("/swagger/v1/swagger.json"); Assert.Contains(Route,swagger); Assert.Contains("completedAt",swagger); Assert.Contains("deliveryStatus",swagger); Assert.Equal(14,(int)NotificationType.OrderCompleted); Assert.Equal(13,(int)NotificationType.OrderRefunded); Assert.Equal(26,(int)AuditAction.OrderCompletionAccepted);
     }
 

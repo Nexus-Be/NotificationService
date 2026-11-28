@@ -19,6 +19,7 @@ using Notification.Application.Interfaces;
 using Notification.Application.Services.Notifications;
 using Notification.Application.Services.ServiceEvents;
 using Notification.Application.Services.WalletEvents;
+using Notification.Application.Services.WalletTopups;
 using Notification.Domain.Enums;
 using Notification.Infrastructure.Persistence;
 using Xunit;
@@ -105,7 +106,8 @@ public sealed class Phase2ServiceEventApiTests : IAsyncLifetime
         Assert.Equal(r.RecipientUserId, n.UserId);
         Assert.Equal(NotificationType.WithdrawalResult, n.NotificationType);
         Assert.Contains(status, n.Payload!);
-        Assert.Contains(r.DisplayReason!, n.Body!);
+        if (status is "Rejected" or "Failed") Assert.Contains(r.DisplayReason!, n.Body!);
+        else Assert.DoesNotContain(r.DisplayReason!, n.Body!);
         Assert.Single(await db.NotificationDeliveries.ToListAsync());
         Assert.Equal(ChannelType.InApp, (await db.NotificationDeliveries.SingleAsync()).ChannelCode);
         Assert.Equal(AuditAction.ServiceEventAccepted, (await db.AuditLogs.SingleAsync()).Action);
@@ -127,6 +129,56 @@ public sealed class Phase2ServiceEventApiTests : IAsyncLifetime
         Assert.Equal(r.BidderId, n.UserId);
         Assert.Equal(NotificationType.AuctionDeposit, n.NotificationType);
         Assert.Contains(status, n.Payload!);
+    }
+
+    [PostgresFact]
+    public async Task WalletTopupCreatesOneInboxNoticeAndOneEmailDeliveryWithStableReplay()
+    {
+        var topupId = Guid.NewGuid();
+        var request = new WalletTopupRequest($"wallet-topup:{topupId:D}:succeeded",
+            topupId, Guid.NewGuid(), Guid.NewGuid(), 10000000, "VND", DateTimeOffset.UtcNow, "first");
+        var responses = await Task.WhenAll(Enumerable.Range(0, 3)
+            .Select(_ => _http.PostAsJsonAsync(Route("wallet-topups"), request)));
+        Assert.All(responses, response => Assert.Equal(HttpStatusCode.OK, response.StatusCode));
+        var replay = await _http.PostAsJsonAsync(Route("wallet-topups"), request with
+            { ConfirmedAt = request.ConfirmedAt.ToOffset(TimeSpan.FromHours(7)), TraceId = "retry" });
+        Assert.True((await replay.Content.ReadFromJsonAsync<WalletTopupResponse>())!.IsReplay);
+        await using var db = Db();
+        var notice = await db.Notifications.SingleAsync();
+        Assert.Equal(NotificationType.WalletTopupSucceeded, notice.NotificationType);
+        Assert.Equal(request.RecipientUserId, notice.UserId);
+        Assert.True(notice.IsInboxVisible);
+        Assert.Equal(2, await db.NotificationDeliveries.CountAsync());
+        var email = await db.NotificationDeliveries.SingleAsync(d => d.ChannelCode == ChannelType.Email);
+        Assert.Equal($"user:{request.RecipientUserId:D}", email.Destination);
+        Assert.Equal(DeliveryStatus.Pending, email.Status);
+        Assert.Contains("10.000.000", email.BodyOverride!);
+        Assert.Equal(HttpStatusCode.Conflict, (await _http.PostAsJsonAsync(Route("wallet-topups"),
+            request with { Amount = 11000000 })).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, (await _http.PostAsJsonAsync(Route("wallet-topups"),
+            request with { SourceEventId = request.SourceEventId, TransactionId = Guid.NewGuid() })).StatusCode);
+    }
+
+    [PostgresFact]
+    public async Task WalletTopupRejectsUnverifiedOrInvalidRequests()
+    {
+        var id = Guid.NewGuid();
+        var request = new WalletTopupRequest($"wallet-topup:{id:D}:succeeded",
+            id, Guid.NewGuid(), Guid.NewGuid(), 10000000, "VND", DateTimeOffset.UtcNow, null);
+        foreach (var invalid in new[]
+        {
+            request with { Amount = 0 }, request with { Amount = 10000.5m },
+            request with { Currency = "USD" }, request with { RecipientUserId = Guid.Empty },
+            request with { SourceEventId = "different" },
+            request with { ConfirmedAt = DateTimeOffset.UtcNow.AddMinutes(2) }
+        })
+            Assert.Equal(HttpStatusCode.BadRequest,
+                (await _http.PostAsJsonAsync(Route("wallet-topups"), invalid)).StatusCode);
+        _http.DefaultRequestHeaders.Remove("X-Internal-Service-Key");
+        Assert.Equal(HttpStatusCode.Unauthorized,
+            (await _http.PostAsJsonAsync(Route("wallet-topups"), request)).StatusCode);
+        await using var db = Db();
+        Assert.Empty(await db.Notifications.ToListAsync());
     }
 
     [PostgresFact]
@@ -272,7 +324,7 @@ public sealed class Phase2ServiceEventApiTests : IAsyncLifetime
         var response = await _http.GetAsync("/swagger/v1/swagger.json");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-        foreach (var route in new[] { "withdrawal-events", "auction-deposits", "in-app" })
+        foreach (var route in new[] { "withdrawal-events", "auction-deposits", "wallet-topups", "in-app" })
             Assert.True(json.RootElement.GetProperty("paths").GetProperty(Route(route)).TryGetProperty("post", out _));
     }
 

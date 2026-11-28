@@ -38,7 +38,8 @@ public sealed class WalletNotificationHandler(IOptionsMonitor<AuthenticationSche
         var path = Request.Path.Value?.TrimEnd('/');
         if (!HttpMethods.IsPost(Request.Method) || path is null ||
             !(path.Equals("/api/v1/notifications/withdrawal-events", StringComparison.OrdinalIgnoreCase) ||
-              path.Equals("/api/v1/notifications/auction-deposits", StringComparison.OrdinalIgnoreCase)) ||
+              path.Equals("/api/v1/notifications/auction-deposits", StringComparison.OrdinalIgnoreCase) ||
+              path.Equals("/api/v1/notifications/wallet-topups", StringComparison.OrdinalIgnoreCase)) ||
             !Request.Headers.TryGetValue("X-Internal-Service-Key", out var supplied))
             return Task.FromResult(AuthenticateResult.NoResult());
         var key = configuration["WalletNotificationAuth:ServiceKey"];

@@ -319,7 +319,7 @@ public sealed class AuctionPaymentTimeoutApiIntegrationTests : IAsyncLifetime
     {
         var swagger = await _client.GetStringAsync("/swagger/v1/swagger.json"); Assert.Contains(Route,swagger); Assert.Contains("{notificationId}",swagger); Assert.Contains("timedOutAt",swagger);
         var r = Request(); Role("buyer",r.WinnerUserId); var prefs = (await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!;
-        Assert.Equal(54,prefs.Count); Assert.True(prefs.Single(p => p.NotificationType == "AuctionPaymentTimedOut" && p.ChannelCode == "Email").IsMandatory); Assert.False(prefs.Single(p => p.NotificationType == "AuctionPaymentTimedOut" && p.ChannelCode == "Push").IsMandatory);
+        Assert.Equal(63, prefs.Count); Assert.True(prefs.Single(p => p.NotificationType == "AuctionPaymentTimedOut" && p.ChannelCode == "Email").IsMandatory); Assert.False(prefs.Single(p => p.NotificationType == "AuctionPaymentTimedOut" && p.ChannelCode == "Push").IsMandatory);
     }
 
     private async Task Preference(Guid owner,ChannelType channel,bool disabled = true)

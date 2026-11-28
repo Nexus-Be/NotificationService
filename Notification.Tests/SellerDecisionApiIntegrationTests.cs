@@ -102,7 +102,8 @@ public sealed class SellerDecisionApiIntegrationTests : IAsyncLifetime
         await using var db = Db(); var row = await db.Notifications.SingleAsync(n => n.Id == accepted.NotificationId);
         Assert.Equal(request.UserId,row.UserId); Assert.Equal(NotificationType.SecurityAlert,row.NotificationType);
         Assert.Contains("chấp thuận",row.Title); Assert.Contains("&lt;b&gt;Owner&lt;/b&gt;",row.Body); Assert.Contains("&lt;i&gt;Shop&lt;/i&gt;",row.Body);
-        Assert.Contains("cấp thêm quyền Seller",row.Body); Assert.Contains("UTC",row.Body); Assert.Null(row.Payload);
+        Assert.Contains("cấp thêm quyền Seller",row.Body); Assert.Contains("UTC",row.Body);
+        Assert.Contains("\"kind\":\"SellerDecision\"",row.Payload!.Replace(" ",string.Empty));
         var receipt = await db.SellerDecisionDispatches.SingleAsync(); Assert.Equal(64,receipt.RequestHash.Length);
         var audit = Assert.Single(await db.AuditLogs.Where(a => a.Action == AuditAction.SellerDecisionAccepted).ToListAsync());
         Assert.Equal(request.UserId.ToString(),audit.UserId); Assert.Contains(request.ApplicationId.ToString()!,audit.NewValues);

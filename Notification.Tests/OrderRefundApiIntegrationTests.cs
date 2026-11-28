@@ -217,7 +217,7 @@ public sealed class OrderRefundApiIntegrationTests : IAsyncLifetime
     public async Task SwaggerPreferencesAndEnums_ExposeNewMandatoryPushAndOptionalInbox()
     {
         var swagger=await _client.GetStringAsync("/swagger/v1/swagger.json"); Assert.Contains(Route,swagger); Assert.Contains("walletCreditTransactionId",swagger); Assert.Contains("refundDestination",swagger);
-        Role("buyer"); var prefs=(await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!; Assert.Equal(54,prefs.Count); Assert.Equal(18,prefs.Count(p=>p.IsMandatory)); Assert.True(prefs.Single(p=>p.NotificationType=="OrderRefunded" && p.ChannelCode=="Push").IsMandatory); Assert.False(prefs.Single(p=>p.NotificationType=="OrderRefunded" && p.ChannelCode=="InApp").IsMandatory); Assert.Equal(13,(int)NotificationType.OrderRefunded); Assert.Equal(12,(int)NotificationType.OrderDecision); Assert.Equal(24,(int)AuditAction.OrderRefundAccepted);
+        Role("buyer"); var prefs=(await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!; Assert.Equal(63, prefs.Count); Assert.Equal(21, prefs.Count(p => p.IsMandatory)); Assert.True(prefs.Single(p=>p.NotificationType=="OrderRefunded" && p.ChannelCode=="Push").IsMandatory); Assert.False(prefs.Single(p=>p.NotificationType=="OrderRefunded" && p.ChannelCode=="InApp").IsMandatory); Assert.Equal(13,(int)NotificationType.OrderRefunded); Assert.Equal(12,(int)NotificationType.OrderDecision); Assert.Equal(24,(int)AuditAction.OrderRefundAccepted);
     }
 
     [PostgresFact]

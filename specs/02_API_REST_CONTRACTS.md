@@ -420,3 +420,7 @@ Pre-edit interface MEDIUM,service/controller UNKNOWN manually followed through D
 ## Account status direct-email compatibility — 2026-11-10
 
 POST /api/v1/notifications/email/user-banned and user-unbanned accept email/fullName/reason, service/admin only. Ban reason required; unban reason optional. Pure EmailDispatchResponse after strict SMTP acceptance; no missing-credentials simulation. These direct compatibility routes do not create durable receipts/history, deduplicate retries, or apply channel preferences; account-status-changes remains the durable business contract. See [contract](../docs/api/Email/POST_USER_STATUS_EMAILS.md). No schema/enum change.
+
+## Wallet top-up success notification (2026-11-27)
+
+POST /api/v1/notifications/wallet-topups accepts a confirmed Stripe top-up from WalletService, authenticated by the Wallet service key. It returns one logical in-app notice and one pending email delivery. Wallet must call only after wallet credit commit; replay of the same top-up returns the same notification, changed business data returns WALLET_TOPUP_CONFLICT (409). Request fields, ownership, validation, response, errors and verification are documented in docs/api/WalletTopups/POST_wallet_topups.md. NotificationType.WalletTopupSucceeded = 33; no schema migration. Email delivery resolves the current user contact and needs the SMTP worker. This API does not change wallet funds.

@@ -283,8 +283,9 @@ public sealed class UserNotificationServiceTests
         Assert.Equal(2, updateResult.UpdatedCount);
 
         var prefs = await service.GetPreferencesAsync(userId, CancellationToken.None);
-        Assert.Equal(60, prefs.Count);
+        Assert.Equal(63, prefs.Count);
         Assert.Equal(2, prefs.Count(p => !p.IsDefault));
+        Assert.Contains(prefs, p => p.NotificationType == "WalletTopupSucceeded" && p.ChannelCode == "Email" && p.IsMandatory && !p.IsDisabled);
         Assert.Contains(prefs, p => p.NotificationType == "OrderShipped" && p.ChannelCode == "Email" && p.IsDisabled);
         Assert.Contains(prefs, p => p.NotificationType == "AuctionOutbid" && p.ChannelCode == "Push" && !p.IsDisabled);
     }

@@ -103,7 +103,8 @@ public sealed class PasswordChangeApiIntegrationTests : IAsyncLifetime
         var row = await db.Notifications.SingleAsync(n => n.Id == accepted.NotificationId);
         Assert.Equal(request.UserId,row.UserId); Assert.Equal(NotificationType.SecurityAlert,row.NotificationType);
         Assert.Contains("thay đổi",row.Title); Assert.Contains("&lt;b&gt;Customer&lt;/b&gt;",row.Body); Assert.Contains("UTC",row.Body);
-        Assert.Contains("không thực hiện",row.Body); Assert.Null(row.Payload);
+        Assert.Contains("không thực hiện",row.Body);
+        Assert.Contains("\"kind\":\"PasswordChange\"",row.Payload!.Replace(" ",string.Empty));
         var receipt = await db.PasswordChangeDispatches.SingleAsync(); Assert.Equal(64,receipt.RequestHash.Length);
         var audit = Assert.Single(await db.AuditLogs.Where(a => a.Action == AuditAction.PasswordChangeAccepted).ToListAsync());
         Assert.Equal(request.UserId.ToString(),audit.UserId); Assert.Contains(accepted.NotificationId.ToString(),audit.NewValues);

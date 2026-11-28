@@ -235,7 +235,7 @@ public sealed class AuctionSellerPaymentTimeoutApiIntegrationTests : IAsyncLifet
     public async Task SwaggerAndPreferences_ReuseExistingTypeAndMandatoryEmailOnly()
     {
         var swagger = await _client.GetStringAsync("/swagger/v1/swagger.json"); Assert.Contains(Route,swagger); Assert.Contains("{notificationId}",swagger); Assert.Contains("timedOutAt",swagger);
-        Role("seller"); var prefs = (await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!; Assert.Equal(54,prefs.Count); Assert.Equal(18,prefs.Count(p => p.IsMandatory));
+        Role("seller"); var prefs = (await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!; Assert.Equal(63, prefs.Count); Assert.Equal(21, prefs.Count(p => p.IsMandatory));
         Assert.True(prefs.Single(p => p.NotificationType == "AuctionPaymentTimedOut" && p.ChannelCode == "Email").IsMandatory); Assert.False(prefs.Single(p => p.NotificationType == "AuctionPaymentTimedOut" && p.ChannelCode == "Push").IsMandatory); Assert.Equal(20,(int)AuditAction.AuctionSellerPaymentTimeoutAccepted);
     }
 

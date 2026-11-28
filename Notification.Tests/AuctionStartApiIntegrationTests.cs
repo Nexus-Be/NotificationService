@@ -193,7 +193,7 @@ public sealed class AuctionStartApiIntegrationTests : IAsyncLifetime
     public async Task SwaggerAndPreferenceMatrix_NewTypeIsOptionalAndPreviousEnumsStable()
     {
         var swagger=await _client.GetStringAsync("/swagger/v1/swagger.json"); Assert.Contains(Route,swagger); Assert.Contains("{notificationId}",swagger); Assert.Contains("scheduledStartAt",swagger);
-        Role("seller"); var prefs=(await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!; Assert.Equal(54,prefs.Count); Assert.Equal(18,prefs.Count(p => p.IsMandatory)); Assert.All(prefs.Where(p => p.NotificationType=="AuctionStarted"),p => Assert.False(p.IsMandatory)); Assert.Equal(11,(int)NotificationType.AuctionStarted); Assert.Equal(10,(int)NotificationType.AuctionSellerResult); Assert.Equal(21,(int)AuditAction.AuctionStartAccepted);
+        Role("seller"); var prefs=(await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!; Assert.Equal(63, prefs.Count); Assert.Equal(21, prefs.Count(p => p.IsMandatory)); Assert.All(prefs.Where(p => p.NotificationType=="AuctionStarted"),p => Assert.False(p.IsMandatory)); Assert.Equal(11,(int)NotificationType.AuctionStarted); Assert.Equal(10,(int)NotificationType.AuctionSellerResult); Assert.Equal(21,(int)AuditAction.AuctionStartAccepted);
     }
 
     [PostgresFact]

@@ -222,7 +222,7 @@ public sealed class OrderBuyerCancellationApiIntegrationTests : IAsyncLifetime
     [PostgresFact]
     public async Task PreferencesAndSwagger_ExposeNewTypeAndPreservePreviousEnumValues()
     {
-        Role("buyer"); var prefs = (await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!; Assert.Equal(54, prefs.Count); Assert.Equal(18, prefs.Count(p => p.IsMandatory)); Assert.True(prefs.Single(p => p.NotificationType == "OrderBuyerCancelled" && p.ChannelCode == "Push").IsMandatory); Assert.False(prefs.Single(p => p.NotificationType == "OrderBuyerCancelled" && p.ChannelCode == "InApp").IsMandatory);
+        Role("buyer"); var prefs = (await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!; Assert.Equal(63, prefs.Count); Assert.Equal(21, prefs.Count(p => p.IsMandatory)); Assert.True(prefs.Single(p => p.NotificationType == "OrderBuyerCancelled" && p.ChannelCode == "Push").IsMandatory); Assert.False(prefs.Single(p => p.NotificationType == "OrderBuyerCancelled" && p.ChannelCode == "InApp").IsMandatory);
         var swagger = await _client.GetStringAsync("/swagger/v1/swagger.json"); Assert.Contains(Route, swagger); Assert.Contains("previousOrderStatus", swagger); Assert.Contains("handoverStatus", swagger); Assert.Equal(17, (int)NotificationType.OrderBuyerCancelled); Assert.Equal(16, (int)NotificationType.OrderPaymentExpired); Assert.Equal(29, (int)AuditAction.OrderBuyerCancellationAccepted);
     }
 

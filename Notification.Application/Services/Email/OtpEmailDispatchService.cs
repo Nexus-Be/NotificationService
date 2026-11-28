@@ -108,9 +108,10 @@ public sealed partial class OtpEmailDispatchService(
         var at = row.Recipient.LastIndexOf('@'); var masked = at > 0 ? "***" + row.Recipient[at..] : "Recipient hidden";
         return new(row.Id,masked,row.Purpose,row.Status.ToString(),row.AttemptCount,row.IssuedAt,row.ExpiresAt,row.NextRetryAt,row.ErrorCode,row.CreatedAt,row.UpdatedAt);
     }
-    private AuditLog Audit(OtpEmailDispatch row,AuditAction action,string status,string? error) =>
+    private AuditLog Audit(OtpEmailDispatch row,AuditAction action,string status,string? error,string? providerMessageId = null) =>
         db.AddAuditLog(action,nameof(OtpEmailDispatch),row.Id.ToString(),newValues:new
         {
-            RequestId = row.Id,row.Recipient,row.Purpose,Status = status,row.AttemptCount,row.IssuedAt,row.ExpiresAt,ErrorCode = error,Timestamp = Now
+            RequestId = row.Id,row.Recipient,row.Purpose,Status = status,row.AttemptCount,row.IssuedAt,row.ExpiresAt,
+            ErrorCode = error,ProviderMessageId = providerMessageId,Timestamp = Now
         },userId:row.UserId?.ToString(),traceId:row.TraceId);
 }

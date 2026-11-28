@@ -327,7 +327,7 @@ public sealed class AuctionCancellationApiIntegrationTests : IAsyncLifetime
     {
         var swagger = await _client.GetStringAsync("/swagger/v1/swagger.json"); Assert.Contains(Route,swagger); Assert.Contains("{notificationId}",swagger); Assert.Contains("recipientKind",swagger);
         var r = Request(); Role("buyer",r.RecipientUserId); var prefs = (await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!;
-        Assert.Equal(54,prefs.Count); Assert.True(prefs.Single(p => p.NotificationType == "AuctionCancelled" && p.ChannelCode == "Push").IsMandatory);
+        Assert.Equal(63, prefs.Count); Assert.True(prefs.Single(p => p.NotificationType == "AuctionCancelled" && p.ChannelCode == "Push").IsMandatory);
         Assert.False(prefs.Single(p => p.NotificationType == "AuctionCancelled" && p.ChannelCode == "InApp").IsMandatory);
     }
 

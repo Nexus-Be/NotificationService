@@ -122,7 +122,8 @@ public sealed class DeliveryService : IDeliveryService
                         var message = new EmailDeliveryMessage(candidate.Id, destination,
                             candidate.SubjectOverride ?? candidate.Notification!.Title ?? string.Empty, candidate.BodyOverride ?? candidate.Notification!.Body ?? string.Empty);
                         var sent = await _sender.SendAsync(message, linked.Token).WaitAsync(linked.Token);
-                        result = new(sent.Succeeded, sent.IsTransient, sent.ErrorCode, sent.ErrorMessage);
+                        result = new(sent.Succeeded, sent.IsTransient, sent.ErrorCode, sent.ErrorMessage,
+                            ProviderMessageId: sent.ProviderMessageId);
                     }
                 }
             }

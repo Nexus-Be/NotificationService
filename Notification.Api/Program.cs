@@ -4,6 +4,7 @@ using Notification.Api.Extensions;
 using Notification.Application;
 using Notification.Infrastructure;
 using Notification.Infrastructure.Persistence;
+using Notification.Api.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,8 @@ builder.Services.AddServiceDefaults(builder.Configuration, "notification-service
 
 // 2. Application & Infrastructure Dependency Injection
 builder.Services.AddAuctionNotificationAuth(builder.Configuration);
+builder.Services.AddNotificationHubAuth(builder.Configuration);
+builder.Services.AddSignalR();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
 
@@ -47,6 +50,7 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.MapControllers();
+app.MapHub<NotificationHub>("/hubs/notifications").RequireAuthorization(NotificationHubAuth.Policy);
 app.MapNotificationHealth();
 
 app.Run();

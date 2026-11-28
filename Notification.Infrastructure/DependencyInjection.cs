@@ -76,8 +76,35 @@ public static class DependencyInjection
             var envPassword = configuration["SMTP_PASSWORD"];
             if (!string.IsNullOrWhiteSpace(envPassword)) opts.Password = envPassword;
         });
-        services.AddSingleton<IEmailService, MailKitEmailSenderService>();
-        services.AddSingleton<IEmailSenderService>(sp => (MailKitEmailSenderService)sp.GetRequiredService<IEmailService>());
+        services.Configure<ResendOptions>(opts =>
+        {
+            configuration.GetSection(ResendOptions.SectionName).Bind(opts);
+            if (!string.IsNullOrWhiteSpace(configuration["RESEND_API_KEY"])) opts.ApiKey = configuration["RESEND_API_KEY"]!;
+            if (!string.IsNullOrWhiteSpace(configuration["RESEND_FROM_EMAIL"])) opts.FromEmail = configuration["RESEND_FROM_EMAIL"]!;
+            if (!string.IsNullOrWhiteSpace(configuration["RESEND_FROM_NAME"])) opts.FromName = configuration["RESEND_FROM_NAME"]!;
+        });
+        var emailProvider = configuration["EmailProvider"] ?? "Smtp";
+        if (emailProvider.Equals("Resend", StringComparison.OrdinalIgnoreCase))
+        {
+            var resendKey = configuration["RESEND_API_KEY"] ?? configuration["Resend:ApiKey"];
+            var resendFrom = configuration["RESEND_FROM_EMAIL"] ?? configuration["Resend:FromEmail"];
+            if (string.IsNullOrWhiteSpace(resendKey) || string.IsNullOrWhiteSpace(resendFrom))
+                throw new InvalidOperationException("Resend API key and sender email must be configured.");
+            var resendBase = configuration["Resend:BaseUrl"] ?? "https://api.resend.com/";
+            if (!Uri.TryCreate(resendBase, UriKind.Absolute, out var resendUri) || resendUri.Scheme != Uri.UriSchemeHttps)
+                throw new InvalidOperationException("Resend base URL must use HTTPS.");
+            services.AddHttpClient<IEmailDeliverySender, ResendEmailDeliverySender>(client =>
+            {
+                client.BaseAddress = resendUri;
+                client.Timeout = Timeout.InfiniteTimeSpan;
+            });
+        }
+        else if (emailProvider.Equals("Smtp", StringComparison.OrdinalIgnoreCase))
+            services.AddSingleton<IEmailDeliverySender, SmtpEmailDeliverySender>();
+        else
+            throw new InvalidOperationException("Email provider must be Smtp or Resend.");
+        services.AddTransient<IEmailService, MailKitEmailSenderService>();
+        services.AddTransient<IEmailSenderService>(sp => (MailKitEmailSenderService)sp.GetRequiredService<IEmailService>());
 
         var deliverySettings = new DeliveryWorkerSettings();
         configuration.GetSection("DeliveryWorker").Bind(deliverySettings);
@@ -91,7 +118,6 @@ public static class DependencyInjection
         deliverySettings.Validate();
         services.AddSingleton(deliverySettings);
         services.TryAddSingleton<TimeProvider>(TimeProvider.System);
-        services.AddSingleton<IEmailDeliverySender, SmtpEmailDeliverySender>();
         var fcmOptions = new FcmOptions();
         configuration.GetSection("Fcm").Bind(fcmOptions);
         if (!string.IsNullOrWhiteSpace(configuration["FCM_PROJECT_ID"])) fcmOptions.ProjectId = configuration["FCM_PROJECT_ID"]!;

@@ -7,7 +7,7 @@ using Notification.Domain.Exceptions;
 
 public static class NotificationPreferencePolicy
 {
-    public static bool IsCritical(NotificationType type) => type is NotificationType.OrderPaid or NotificationType.SecurityAlert or NotificationType.Otp;
+    public static bool IsCritical(NotificationType type) => type is NotificationType.OrderPaid or NotificationType.SecurityAlert or NotificationType.Otp or NotificationType.WalletTopupSucceeded;
     public static bool IsSupported(ChannelType channel) => channel is ChannelType.Email or ChannelType.Push or ChannelType.InApp;
     public static T Parse<T>(string? value) where T : struct, Enum
     {

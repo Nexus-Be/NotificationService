@@ -1,4 +1,4 @@
-﻿namespace Notification.Domain.Enums;
+namespace Notification.Domain.Enums;
 
 public enum NotificationType
 {
@@ -38,5 +38,6 @@ public enum NotificationType
     ProductSuspended = 31,
     ProductBanned = 32,
     NewProductReview = 33,
-    ReviewHidden = 34
+    ReviewHidden = 34,
+    WalletTopupSucceeded = 35
 }

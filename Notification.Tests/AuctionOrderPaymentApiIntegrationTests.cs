@@ -416,7 +416,7 @@ public sealed class AuctionOrderPaymentApiIntegrationTests : IAsyncLifetime
         using var bp=JsonDocument.Parse(buyer.Payload!); using var sp=JsonDocument.Parse(seller.Payload!);
         Assert.Equal("Auction",bp.RootElement.GetProperty("orderKind").GetString()); Assert.Equal(r.AuctionId,bp.RootElement.GetProperty("auctionId").GetGuid()); Assert.Equal("Paid",sp.RootElement.GetProperty("orderStatus").GetString()); Assert.Equal("Settled",sp.RootElement.GetProperty("auctionStatus").GetString());
         Assert.False(bp.RootElement.TryGetProperty("sellerAcceptDeadline",out _)); Assert.False(sp.RootElement.TryGetProperty("totalAmount",out _)); Assert.False(sp.RootElement.TryGetProperty("currency",out _)); Assert.DoesNotContain(r.BuyerUserId.ToString()!,seller.Payload); Assert.DoesNotContain(r.SellerUserId.ToString()!,buyer.Payload); Assert.DoesNotContain("chuyển tiền",buyer.Body); Assert.DoesNotContain("ví",seller.Body);
-        Role("seller",r.SellerUserId); var prefs=(await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!; Assert.Equal(54,prefs.Count); Assert.Equal(18,prefs.Count(p => p.IsMandatory)); Assert.Equal(22,(int)AuditAction.AuctionOrderPaymentAccepted);
+        Role("seller",r.SellerUserId); var prefs=(await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!; Assert.Equal(63, prefs.Count); Assert.Equal(21, prefs.Count(p => p.IsMandatory)); Assert.Equal(22,(int)AuditAction.AuctionOrderPaymentAccepted);
     }
 
     [PostgresFact]

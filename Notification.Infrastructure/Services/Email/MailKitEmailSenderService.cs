@@ -10,18 +10,22 @@ using Microsoft.Extensions.Options;
 using MimeKit;
 using Notification.Application.Interfaces;
 using Notification.Application.Services.Email;
+using Notification.Application.Services.Deliveries;
 
 public sealed class MailKitEmailSenderService : IEmailService, IEmailSenderService
 {
     private readonly IOptionsMonitor<SmtpOptions> _smtpOptions;
     private readonly ILogger<MailKitEmailSenderService> _logger;
+    private readonly IEmailDeliverySender? _deliverySender;
 
     public MailKitEmailSenderService(
         IOptionsMonitor<SmtpOptions> smtpOptions,
-        ILogger<MailKitEmailSenderService> logger)
+        ILogger<MailKitEmailSenderService> logger,
+        IEmailDeliverySender? deliverySender = null)
     {
         _smtpOptions = smtpOptions;
         _logger = logger;
+        _deliverySender = deliverySender;
     }
 
     public async Task<bool> SendEmailAsync(
@@ -30,6 +34,14 @@ public sealed class MailKitEmailSenderService : IEmailService, IEmailSenderServi
         string htmlBody,
         CancellationToken cancellationToken = default)
     {
+        if (_deliverySender is not null)
+        {
+            var result = await _deliverySender.SendAsync(
+                new EmailDeliveryMessage(Guid.NewGuid(), toEmail, subject, htmlBody), cancellationToken);
+            if (!result.Succeeded)
+                _logger.LogWarning("Email provider rejected a direct email with code {ErrorCode}.", result.ErrorCode);
+            return result.Succeeded;
+        }
         var opts = _smtpOptions.CurrentValue;
 
         if (string.IsNullOrWhiteSpace(opts.Username) || string.IsNullOrWhiteSpace(opts.Password) || string.IsNullOrWhiteSpace(opts.Host))

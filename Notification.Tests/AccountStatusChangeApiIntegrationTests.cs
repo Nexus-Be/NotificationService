@@ -101,7 +101,8 @@ public sealed class AccountStatusChangeApiIntegrationTests : IAsyncLifetime
         await using var db = Db(); var row = await db.Notifications.SingleAsync(n => n.Id == accepted.NotificationId);
         Assert.Equal(request.UserId,row.UserId); Assert.Equal(NotificationType.SecurityAlert,row.NotificationType);
         Assert.Contains("tạm khóa",row.Title); Assert.Contains("&lt;b&gt;Owner&lt;/b&gt;",row.Body);
-        Assert.Contains("&lt;script&gt;unsafe()&lt;/script&gt;",row.Body); Assert.DoesNotContain("<script>",row.Body); Assert.Contains("UTC",row.Body); Assert.Null(row.Payload);
+        Assert.Contains("&lt;script&gt;unsafe()&lt;/script&gt;",row.Body); Assert.DoesNotContain("<script>",row.Body); Assert.Contains("UTC",row.Body);
+        Assert.Contains("\"kind\":\"AccountStatus\"",row.Payload!.Replace(" ",string.Empty));
         var receipt = await db.AccountStatusChangeDispatches.SingleAsync(); Assert.Equal(64,receipt.RequestHash.Length);
         var audit = Assert.Single(await db.AuditLogs.Where(a => a.Action == AuditAction.AccountStatusChangeAccepted).ToListAsync());
         Assert.DoesNotContain("unsafe",audit.NewValues); Assert.Equal(request.UserId.ToString(),audit.UserId);

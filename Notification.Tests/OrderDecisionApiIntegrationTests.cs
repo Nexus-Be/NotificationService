@@ -197,7 +197,7 @@ public sealed class OrderDecisionApiIntegrationTests : IAsyncLifetime
     [PostgresFact]
     public async Task PreferencesSwaggerAndEnums_ExposeNewTypeWithoutChangingPriorValues()
     {
-        Role("buyer"); var prefs=(await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!; Assert.Equal(54,prefs.Count); Assert.Equal(18,prefs.Count(p=>p.IsMandatory)); Assert.True(prefs.Single(p=>p.NotificationType=="OrderDecision" && p.ChannelCode=="Push").IsMandatory); Assert.False(prefs.Single(p=>p.NotificationType=="OrderDecision" && p.ChannelCode=="InApp").IsMandatory);
+        Role("buyer"); var prefs=(await _client.GetFromJsonAsync<List<NotificationPreferenceResponse>>("/api/v1/notifications/preferences"))!; Assert.Equal(63, prefs.Count); Assert.Equal(21, prefs.Count(p => p.IsMandatory)); Assert.True(prefs.Single(p=>p.NotificationType=="OrderDecision" && p.ChannelCode=="Push").IsMandatory); Assert.False(prefs.Single(p=>p.NotificationType=="OrderDecision" && p.ChannelCode=="InApp").IsMandatory);
         var swagger=await _client.GetStringAsync("/swagger/v1/swagger.json"); Assert.Contains(Route,swagger); Assert.Contains("decidedAt",swagger); Assert.Equal(12,(int)NotificationType.OrderDecision); Assert.Equal(23,(int)AuditAction.OrderDecisionAccepted); Assert.Equal(1,(int)NotificationOrderKind.Auction);
     }
 

@@ -117,4 +117,5 @@ public sealed class PublicRequestIdentityTests
         await new PublicRequestIdentityMiddleware(c=>{Assert.Null(c.GetUserId());Assert.Empty(c.GetUserRoles());
             Assert.Equal("Bearer "+token,c.Request.Headers.Authorization);return Task.CompletedTask;},Config()).InvokeAsync(context);
     }
+
 }
