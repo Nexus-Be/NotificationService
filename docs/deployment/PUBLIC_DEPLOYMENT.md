@@ -21,10 +21,12 @@ Use the platform's private environment-variable or secret settings. Do not commi
 | WalletNotificationAuth__ServiceKey | Existing dedicated Wallet notification key |
 | OtpProtection__RequireSharedKeyRing | true |
 | OtpProtection__SharedKeyRingBase64 | Private shared key-ring bundle used by every instance processing this DB |
-| Smtp__Host, Smtp__Port, Smtp__UseSsl | Configured SMTP transport settings |
+| Email__Provider | `Smtp` (default) or `Brevo` (HTTPS API v3, works on Render) |
+| Brevo__ApiKey, Brevo__SenderEmail, Brevo__SenderName | Brevo transactional API key and verified sender (`Brevo__BaseUrl`, `Brevo__TimeoutSeconds` optional) |
+| Smtp__Host, Smtp__Port, Smtp__UseSsl | Configured SMTP transport settings (when `Email__Provider=Smtp`) |
 | Smtp__SenderEmail, Smtp__SenderName | Configured sender |
 | Smtp__Username, Smtp__Password | Private SMTP credentials |
-| OtpWorker__Enabled | true normally; false on Render Free (OTP endpoint returns503/OTP_DELIVERY_DISABLED) |
+| OtpWorker__Enabled | `true` when using Brevo HTTPS API or SMTP-allowed hosts; `false` on Render Free when using SMTP only |
 | DeliveryWorker__Enabled | false until the DB queue and delivery configuration are reviewed; enable explicitly for business delivery |
 | EventLogRetention__Enabled | false initially |
 | Swagger__Enabled | false unless API documentation is intentionally exposed |
@@ -58,9 +60,14 @@ The deployed URL can only be reported after the hosting platform has created it 
 
 ## Render Free release profile
 
-Render Free blocks outbound SMTP ports465/587. This release uses Production mode, OtpWorker__Enabled=false, DeliveryWorker__Enabled=false, EventLogRetention__Enabled=false and startup migrations=false. Use HTTPS ingress to port8007 and /health/ready as the health-check path. For this profile only, OtpProtection__RequireSharedKeyRing=false is allowed because OTP enqueue/processing is disabled; no existing OTP key-ring bundle needs to be uploaded. Do not enable OTP against a shared DB before restoring the agreed shared key ring and a supported email transport.
+Render Free blocks outbound SMTP ports465/587. Two supported options exist:
 
-Use distinct private Production JWT/backend keys when the local bundle uses a publicly known example key. Existing local callers are unchanged; callers of the new URL must receive the Production configuration separately. The dedicated Auction and Wallet credentials remain scoped to their contracts. No SMTP password is needed for the API/in-app-only release.
+1. **Brevo HTTPS API profile (recommended when email/OTP delivery is needed on Render):**
+   Set `Email__Provider=Brevo` (or `EMAIL_PROVIDER=Brevo`), `Brevo__ApiKey=<private key>`, `Brevo__SenderEmail=<verified sender>`, `Brevo__SenderName=Nexus`. Because Brevo uses HTTPS (`443`), `OtpWorker__Enabled=true` and `DeliveryWorker__Enabled=true` work on Render Free. Ensure `OtpProtection__RequireSharedKeyRing=true` and `OtpProtection__SharedKeyRingBase64` is configured before enabling OTP.
+2. **API/in-app-only profile (when no HTTPS email provider is configured):**
+   Use Production mode, `OtpWorker__Enabled=false`, `DeliveryWorker__Enabled=false`, `EventLogRetention__Enabled=false` and startup migrations `false`. For this profile only, `OtpProtection__RequireSharedKeyRing=false` is allowed because OTP enqueue/processing is disabled; no existing OTP key-ring bundle needs to be uploaded. Do not enable OTP against a shared DB before restoring the agreed shared key ring and a supported email transport.
+
+Use HTTPS ingress to port8007 and /health/ready as the health-check path. Use distinct private Production JWT/backend keys when the local bundle uses a publicly known example key. Existing local callers are unchanged; callers of the new URL must receive the Production configuration separately. The dedicated Auction and Wallet credentials remain scoped to their contracts. No SMTP password is needed for either profile.
 
 Reference: https://render.com/docs/free
 

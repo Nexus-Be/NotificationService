@@ -47,7 +47,7 @@ public sealed partial class EmailNotificationService
             new EmailDeliveryMessage(Guid.NewGuid(), recipient, subject, html), cancellationToken);
         if (!result.Succeeded)
         {
-            if (result.ErrorCode == "SMTP_NOT_CONFIGURED")
+            if (result.ErrorCode is "SMTP_NOT_CONFIGURED" or "BREVO_NOT_CONFIGURED")
                 throw new DomainException("EMAIL_PROVIDER_UNAVAILABLE", "Email provider is not configured.", 503);
             throw new DomainException("EMAIL_SEND_FAILED", "Failed to deliver email via notification provider.", 500);
         }

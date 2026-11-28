@@ -50,6 +50,20 @@ public static class DependencyInjection
         services.AddScoped<INotificationDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
         // Email Infrastructure Service
+        var emailProviderOptions = new EmailProviderOptions();
+        configuration.GetSection(EmailProviderOptions.SectionName).Bind(emailProviderOptions);
+        var envEmailProvider = configuration["EMAIL_PROVIDER"];
+        if (!string.IsNullOrWhiteSpace(envEmailProvider)) emailProviderOptions.Provider = envEmailProvider.Trim();
+
+        var provider = string.IsNullOrWhiteSpace(emailProviderOptions.Provider)
+            ? "Smtp"
+            : emailProviderOptions.Provider.Trim();
+        if (!provider.Equals("Smtp", StringComparison.OrdinalIgnoreCase) &&
+            !provider.Equals("Brevo", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("Email provider must be 'Smtp' or 'Brevo'.");
+        }
+
         services.Configure<SmtpOptions>(opts =>
         {
             configuration.GetSection(SmtpOptions.SectionName).Bind(opts);
@@ -76,8 +90,31 @@ public static class DependencyInjection
             var envPassword = configuration["SMTP_PASSWORD"];
             if (!string.IsNullOrWhiteSpace(envPassword)) opts.Password = envPassword;
         });
-        services.AddSingleton<IEmailService, MailKitEmailSenderService>();
-        services.AddSingleton<IEmailSenderService>(sp => (MailKitEmailSenderService)sp.GetRequiredService<IEmailService>());
+
+        services.Configure<BrevoOptions>(opts =>
+        {
+            configuration.GetSection(BrevoOptions.SectionName).Bind(opts);
+
+            var envBaseUrl = configuration["BREVO_BASE_URL"];
+            if (!string.IsNullOrWhiteSpace(envBaseUrl)) opts.BaseUrl = envBaseUrl.Trim();
+
+            var envApiKey = configuration["BREVO_API_KEY"];
+            if (!string.IsNullOrWhiteSpace(envApiKey)) opts.ApiKey = envApiKey.Trim();
+
+            var envSenderName = configuration["BREVO_SENDER_NAME"];
+            if (!string.IsNullOrWhiteSpace(envSenderName)) opts.SenderName = envSenderName.Trim();
+
+            var envSenderEmail = configuration["BREVO_SENDER_EMAIL"];
+            if (!string.IsNullOrWhiteSpace(envSenderEmail)) opts.SenderEmail = envSenderEmail.Trim();
+
+            var envTimeout = configuration["BREVO_TIMEOUT_SECONDS"];
+            if (!string.IsNullOrWhiteSpace(envTimeout))
+            {
+                if (!int.TryParse(envTimeout, out var timeoutSeconds) || timeoutSeconds is < 1 or > 120)
+                    throw new InvalidOperationException("Brevo timeout seconds must be an integer between 1 and 120.");
+                opts.TimeoutSeconds = timeoutSeconds;
+            }
+        });
 
         var deliverySettings = new DeliveryWorkerSettings();
         configuration.GetSection("DeliveryWorker").Bind(deliverySettings);
@@ -91,7 +128,33 @@ public static class DependencyInjection
         deliverySettings.Validate();
         services.AddSingleton(deliverySettings);
         services.TryAddSingleton<TimeProvider>(TimeProvider.System);
-        services.AddSingleton<IEmailDeliverySender, SmtpEmailDeliverySender>();
+
+        if (provider.Equals("Brevo", StringComparison.OrdinalIgnoreCase))
+        {
+            var brevoTimeout = configuration.GetValue<int?>("Brevo:TimeoutSeconds") ?? 30;
+            var envTimeout = configuration["BREVO_TIMEOUT_SECONDS"];
+            if (!string.IsNullOrWhiteSpace(envTimeout))
+            {
+                if (!int.TryParse(envTimeout, out brevoTimeout))
+                    throw new InvalidOperationException("Brevo timeout seconds must be an integer between 1 and 120.");
+            }
+            if (brevoTimeout is < 1 or > 120)
+                throw new InvalidOperationException("Brevo timeout seconds must be an integer between 1 and 120.");
+
+            services.AddHttpClient<IEmailDeliverySender, BrevoEmailDeliverySender>(client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(brevoTimeout);
+            }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+
+            services.AddTransient<IEmailService, BrevoEmailSenderService>();
+            services.AddTransient<IEmailSenderService>(sp => sp.GetRequiredService<IEmailService>());
+        }
+        else
+        {
+            services.AddSingleton<IEmailService, MailKitEmailSenderService>();
+            services.AddSingleton<IEmailSenderService>(sp => (MailKitEmailSenderService)sp.GetRequiredService<IEmailService>());
+            services.AddSingleton<IEmailDeliverySender, SmtpEmailDeliverySender>();
+        }
         var fcmOptions = new FcmOptions();
         configuration.GetSection("Fcm").Bind(fcmOptions);
         if (!string.IsNullOrWhiteSpace(configuration["FCM_PROJECT_ID"])) fcmOptions.ProjectId = configuration["FCM_PROJECT_ID"]!;

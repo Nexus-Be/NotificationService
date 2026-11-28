@@ -137,6 +137,7 @@ public sealed class AccountStatusEmailCompatibilityTests : IAsyncLifetime
     [InlineData("SMTP_554", 500, "EMAIL_SEND_FAILED")]
     [InlineData("SMTP_AUTH_FAILED", 500, "EMAIL_SEND_FAILED")]
     [InlineData("SMTP_NOT_CONFIGURED", 503, "EMAIL_PROVIDER_UNAVAILABLE")]
+    [InlineData("BREVO_NOT_CONFIGURED", 503, "EMAIL_PROVIDER_UNAVAILABLE")]
     public async Task ProviderFailure_NeverPretendsSentOrExposesProviderDetails(string code, int status, string errorCode)
     {
         _sender.Result = EmailDeliveryResult.Failure(code, "Private provider diagnostics");
